@@ -27,6 +27,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cdrawPlatform", "..\..\vcxp
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cdrawCore", "..\..\vcxproj\cdrawCore\cdrawCore.vcxproj", "{55EDF0F0-9D47-4D3E-87D7-3288B20097EA}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cdraw", "..\..\vcxproj\cdraw\cdraw.vcxitems", "{B2673368-6BAF-427D-B106-7C12908926C1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

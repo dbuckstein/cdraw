@@ -15,23 +15,15 @@
 */
 
 /*
-* cdrawPlayer_WinMain.c
-* Windows entry point for player application.
+* cdraw.h
+* Global root header for entire framework.
 */
 
-#include "cdraw/cdraw/cdrawConfig.h"
-#if CDRAW_USING_WINDOWS
-#include <Windows.h>
+#ifndef _CDRAW_H_
+#define _CDRAW_H_
 
-int WINAPI WinMain(
-	_In_		HINSTANCE 	hInstance,
-	_In_opt_	HINSTANCE 	hPrevInstance,
-	_In_		LPSTR 		lpCmdLine,
-	_In_		int 		nCmdShow)
-{
-	int result = 0;
 
-	return result;
-}
+#include "cdraw/cdrawConfig.h"
 
-#endif // #if CDRAW_USING_WINDOWS
+
+#endif // #ifndef _CDRAW_H_

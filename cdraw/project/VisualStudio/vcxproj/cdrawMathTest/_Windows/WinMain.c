@@ -14,17 +14,24 @@
 *   limitations under the License.
 */
 
-#if (defined _WIN32)
+/*
+* cdrawMathTest_WinMain.c
+* Windows entry point for math test application.
+*/
 
-int __stdcall WinMain(
-	void const* const hInstance,
-	void const* const hPrevInstance,
-	char const* const lpCmdLine,
-	int const nCmdShow)
+#include "cdraw/cdraw/cdrawConfig.h"
+#if CDRAW_USING_WINDOWS
+#include <Windows.h>
+
+int WINAPI WinMain(
+	_In_		HINSTANCE 	hInstance,
+	_In_opt_	HINSTANCE 	hPrevInstance,
+	_In_		LPSTR 		lpCmdLine,
+	_In_		int 		nCmdShow)
 {
 	int result = 0;
 
 	return result;
 }
 
-#endif // #if (defined _WIN32)
+#endif // CDRAW_USING_WINDOWS

@@ -14,14 +14,19 @@
 *   limitations under the License.
 */
 
-#if (defined _WIN32)
+/*
+* cdrawPlugin_DllMain.c
+* Windows entry point for plugin DLL (optional).
+*/
 
+#include "cdraw/cdraw/cdrawConfig.h"
+#if CDRAW_USING_WINDOWS
 #include <Windows.h>
 
 int APIENTRY DllMain(
-	HMODULE hModule,
-	DWORD ul_reason_for_call,
-	LPVOID lpReserved)
+	HMODULE const	hModule,
+	DWORD const		ul_reason_for_call,
+	LPVOID const	lpReserved)
 {
 	switch (ul_reason_for_call)
 	{
@@ -37,4 +42,4 @@ int APIENTRY DllMain(
 	return TRUE;
 }
 
-#endif // #if (defined _WIN32)
+#endif // #if CDRAW_USING_WINDOWS
