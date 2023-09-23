@@ -21,7 +21,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="_Windows\WinMain.c">
+    <ClCompile Include="_Windows\cdrawMathTest_WinMain.c">
       <Filter>Source Files\_Windows</Filter>
     </ClCompile>
   </ItemGroup>

@@ -21,7 +21,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="_Windows\DllMain.c">
+    <ClCompile Include="_Windows\cdrawPlugin_DllMain.c">
       <Filter>Source Files\_Windows</Filter>
     </ClCompile>
   </ItemGroup>
