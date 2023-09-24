@@ -15,15 +15,15 @@
 */
 
 /*
-* cdraw.h
-* Global root header for entire framework.
+* cdrawMath.h
+* Global root header for math library.
 */
 
-#ifndef _CDRAW_H_
-#define _CDRAW_H_
+#ifndef _CDRAW_MATH_H_
+#define _CDRAW_MATH_H_
 
 
-#include "cdrawMath.h"
+#include "cdrawMath/cdrawScalar.h"
 
 
-#endif // #ifndef _CDRAW_H_
+#endif // #ifndef _CDRAW_MATH_H_

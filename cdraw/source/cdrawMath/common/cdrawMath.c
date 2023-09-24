@@ -13,3 +13,24 @@
 *   See the License for the specific language governing permissions and
 *   limitations under the License.
 */
+
+#include "cdraw/cdrawMath.h"
+
+
+result_t cdrawMathTest()
+{
+	result_init();
+
+	result_return();
+}
+
+
+/******************************************************************************
+* Precompile all inlines.
+******************************************************************************/
+
+#if CDRAW_USING_PRECOMPILE_LIBS
+#undef CDRAW_INL
+#define CDRAW_INL
+#include "cdraw/cdrawMath/_inl/cdrawScalar.inl"
+#endif // #if CDRAW_USING_PRECOMPILE_LIBS

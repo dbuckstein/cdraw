@@ -201,43 +201,4 @@ typedef byte_t const						labelk_t[sizeof(label_base_type)*4];								// Conveni
 #define swap4r(x,y,z,w,tmp)					(tmp=x);(x=w);(w=z);(z=y);(y=tmp)	// Swap four values (alt).
 
 
-// ****TO-DO: float constants - move to real
-#define f32Pi								3.1415926535897932384626433832795f
-#define f64Pi								3.1415926535897932384626433832795
-
-
-// ****TO-DO: float rands - move to real as functions
-#define f32rand()							((fp32_t)(rand()))
-#define f32randUnit()						((fp32_t)(rand())*0.000030517578125f)
-#define f32randSymm()						((fp32_t)(rand()-16384)*0.00006103515625f)
-#define f64rand()							((fp64_t)(rand()))
-#define f64randUnit()						((fp64_t)(rand())*0.000030517578125)
-#define f64randSymm()						((fp64_t)(rand()-16384)*0.00006103515625)
-
-
-// ****TO-DO: loop in range - move to real as functions
-#define flerp(x,min,max)					((min)+(x)*((max)-(min)))
-#define flerpinv(x,min,max)					(((x)-(min))/((max)-(min)))
-#define ffrac(x)							((x)-floor(x))
-#define fmod(x,y)							((x)-(y)*floor((x)/(y)))
-#define fmodrange(x,min,max)				((x)-((max)-(min))*floor(((x)-(min))/((max)-(min))))
-#define fclamp(x,min,max)					((x)>=(min)?(x)<=(max)?(x):(max):(min))
-#define fisclamped(x,min,max)				((x)>=(min)&&(x)<=(max))
-// min,max,abs,sgn,etc
-
-
-// ****TO-DO: vector/matrix base types - move to vector/matrix
-typedef int32_t								int2_t[2], int3_t[3], int4_t[4], * intN_t;
-typedef uint32_t							uint2_t[2], uint3_t[3], uint4_t[4], * uintN_t;
-typedef bool								bool2_t[2], bool3_t[3], bool4_t[4], * boolN_t;
-typedef fp32_t								float2_t[2], float3_t[3], float4_t[4], * floatN_t;
-typedef fp64_t								double2_t[2], double3_t[3], double4_t[4], * doubleN_t;
-typedef float2_t							float2x2_t[2], * floatNx2;
-typedef float3_t							float3x3_t[3], * floatNx3;
-typedef float4_t							float4x4_t[4], * floatNx4;
-typedef double2_t							double2x2_t[2], * doubleNx2;
-typedef double3_t							double3x3_t[3], * doubleNx3;
-typedef double4_t							double4x4_t[4], * doubleNx4;
-
-
 #endif // #ifndef _CDRAW_CONFIG_H_

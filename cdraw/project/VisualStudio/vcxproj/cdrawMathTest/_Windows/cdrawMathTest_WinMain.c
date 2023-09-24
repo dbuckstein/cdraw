@@ -19,7 +19,7 @@
 * Windows entry point for math test application.
 */
 
-#include "cdraw/cdraw/cdrawConfig.h"
+#include "cdraw/cdrawMath.h"
 #if CDRAW_USING_WINDOWS
 #include <Windows.h>
 

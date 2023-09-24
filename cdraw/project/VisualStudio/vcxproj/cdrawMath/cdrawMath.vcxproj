@@ -157,6 +157,13 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdrawMath\common\cdrawMath.c" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar.inl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

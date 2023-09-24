@@ -16,10 +16,29 @@
     <Filter Include="Source Files\common">
       <UniqueIdentifier>{73412c5d-1959-4d03-820d-2c9244cbb5a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\cdrawMath">
+      <UniqueIdentifier>{d5eebff0-0498-4112-bf95-5a9a1f18c461}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\_inl">
+      <UniqueIdentifier>{fe269746-05b9-45cc-a163-646a8068bb01}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdrawMath\common\cdrawMath.c">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar.h">
+      <Filter>Header Files\cdrawMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar.inl">
+      <Filter>Header Files\cdrawMath\_inl</Filter>
+    </None>
   </ItemGroup>
 </Project>
