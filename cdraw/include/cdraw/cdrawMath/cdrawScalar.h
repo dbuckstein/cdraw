@@ -43,19 +43,22 @@
 typedef fp64_t			scalar_t;	// Global scalar number representation (double-precision).
 #define scalar_suffix	D
 #define const_suffix	
-#define scEpsD			(DBL_EPSILON)
+#define SC_EPSILON		(DBL_EPSILON)
 #else // #if CDRAW_USING_SCALAR_DOUBLE
 typedef fp32_t			scalar_t;	// Global scalar number representation (single-precision).
 #define scalar_suffix	F
 #define const_suffix	f
-#define scEpsF			(FLT_EPSILON)
+#define SC_EPSILON		(FLT_EPSILON)
 #endif // #else // #if CDRAW_USING_SCALAR_DOUBLE
-#define cdraw_scalar_base(name)				tokencat(name, scalar_suffix)
-#define cdraw_scalar_base_t(name)			tokencat(cdraw_scalar_base(name), _t)
-#define cdraw_scalar_const(name,value_fp64)	\
-	static const fp64_t tokencat(name, D) = value_fp64;\
-	static const fp32_t tokencat(name, F) = tokencat(value_fp64, f);\
-	static const scalar_t name = tokencat(value_fp64, const_suffix)
+#define cdraw_scalar_base(name)											tokencat(name, scalar_suffix)
+#define cdraw_scalar_base_t(name)										tokencat(cdraw_scalar_base(name), _t)
+#define cdraw_scalar_const(name,value_fp64)									\
+		static fp64_t const tokencat(name, D) = value_fp64;					\
+		static fp32_t const tokencat(name, F) = tokencat(value_fp64, f);	\
+		static scalar_t const name = tokencat(value_fp64, const_suffix)
+#define cdraw_scalar_declDF(name,value_fp64)				\
+		fp64_t tokencat(name, D) = value_fp64;				\
+		fp32_t tokencat(name, F) = tokencat(value_fp64, f)
 
 
 /******************************************************************************
@@ -109,13 +112,20 @@ cdraw_scalar_const(scSqrt3_2, 1.2247448713915890490986420373529);
 cdraw_scalar_const(scSqrt3_4, 0.86602540378443864676372317075294);
 cdraw_scalar_const(scSqrt4_3, 1.1547005383792515290182975610039);
 cdraw_scalar_const(sc30, 30.0);
+cdraw_scalar_const(sc45, 45.0);
 cdraw_scalar_const(sc60, 60.0);
 cdraw_scalar_const(sc90, 90.0);
 cdraw_scalar_const(sc120, 120.0);
 cdraw_scalar_const(sc180, 180.0);
+cdraw_scalar_const(sc270, 270.0);
 cdraw_scalar_const(sc360, 360.0);
 
-#define scEps cdraw_scalar_base(scEps)
+#define scEpsD		(DBL_EPSILON)
+#define scEpsF		(FLT_EPSILON)
+#define scEps		cdraw_scalar_base(scEps)
+#define scAtrigEpsD	(DBL_EPSILON * 32.0)
+#define scAtrigEpsF	(FLT_EPSILON * 32.0f)
+#define scAtrigEps	cdraw_scalar_base(scAtrigEps)
 
 
 /******************************************************************************
@@ -167,29 +177,6 @@ extern "C" {
 	/// <param name="x">Value to test.</param>
 	/// <returns>True if value is approximately non-negative.</returns>
 	bool scIsNonNegativeApproxF(fp32_t const x);
-	
-	/// <summary>
-	/// Test if value is in specified range.
-	/// </summary>
-	/// <param name="x">Value to test.</param>
-	/// <param name="x_min">Minimum value or lower bound of range.</param>
-	/// <param name="x_max">Maximum value or upper bound of range.</param>
-	/// <returns>True if value is within range.</returns>
-	bool scIsInRangeF(fp32_t const x, fp32_t const x_min, fp32_t const x_max);
-
-	/// <summary>
-	/// Test if value is in unit range, inclusive: [0,1].
-	/// </summary>
-	/// <param name="x">Value to test.</param>
-	/// <returns>True if value is within range.</returns>
-	bool scIsInUnitRangeF(fp32_t const x);
-
-	/// <summary>
-	/// Test if value is in symmetric range, inclusive: [-1,+1].
-	/// </summary>
-	/// <param name="x">Value to test.</param>
-	/// <returns>True if value is within range.</returns>
-	bool scIsInSymmRangeF(fp32_t const x);
 
 
 	/// <summary>
@@ -283,6 +270,29 @@ extern "C" {
 	/// <returns>Value remapped to destination range.</returns>
 	fp32_t scRemapF(fp32_t const x, fp32_t const x_min_src, fp32_t const x_max_src, fp32_t const x_min_dst, fp32_t const x_max_dst);
 
+	/// <summary>
+	/// Test if value is in specified range.
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <param name="x_min">Minimum value or lower bound of range.</param>
+	/// <param name="x_max">Maximum value or upper bound of range.</param>
+	/// <returns>True if value is within range.</returns>
+	bool scIsInRangeF(fp32_t const x, fp32_t const x_min, fp32_t const x_max);
+
+	/// <summary>
+	/// Test if value is in unit range, inclusive: [0,1].
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <returns>True if value is within range.</returns>
+	bool scIsInUnitRangeF(fp32_t const x);
+
+	/// <summary>
+	/// Test if value is in symmetric range, inclusive: [-1,+1].
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <returns>True if value is within range.</returns>
+	bool scIsInSymmRangeF(fp32_t const x);
+
 
 	/// <summary>
 	/// Calculate square root of non-negative value.
@@ -326,6 +336,33 @@ extern "C" {
 	/// <returns>Angle in degrees.</returns>
 	fp32_t scRad2DegF(fp32_t const x);
 
+	/// <summary>
+	/// Calculate equivalent angle in range [-180,+180) degrees.
+	/// </summary>
+	/// <param name="x">Angle in degrees.</param>
+	/// <returns>Angle in degrees in range [-180,+180).</returns>
+	fp32_t scNormalizeAngle180F(fp32_t const x);
+
+	/// <summary>
+	/// Calculate equivalent angle in range [0,360) degrees.
+	/// </summary>
+	/// <param name="x">Angle in degrees.</param>
+	/// <returns>Angle in degrees in range [0,360).</returns>
+	fp32_t scNormalizeAngle360F(fp32_t const x);
+
+	/// <summary>
+	/// Calculate equivalent angle in range [-pi,+pi) radians.
+	/// </summary>
+	/// <param name="x">Angle in radians.</param>
+	/// <returns>Angle in radians in range [-pi,+pi).</returns>
+	fp32_t scNormalizeAnglePiF(fp32_t const x);
+
+	/// <summary>
+	/// Calculate equivalent angle in range [0,2pi) radians.
+	/// </summary>
+	/// <param name="x">Angle in radians.</param>
+	/// <returns>Angle in radians in range [0,2pi).</returns>
+	fp32_t scNormalizeAngle2PiF(fp32_t const x);
 
 	/// <summary>
 	/// Calculate sine of angle in radians.
@@ -489,29 +526,6 @@ extern "C" {
 	/// <returns>True if value is approximately non-negative.</returns>
 	bool scIsNonNegativeApproxD(fp64_t const x);
 
-	/// <summary>
-	/// Test if value is in specified range.
-	/// </summary>
-	/// <param name="x">Value to test.</param>
-	/// <param name="x_min">Minimum value or lower bound of range.</param>
-	/// <param name="x_max">Maximum value or upper bound of range.</param>
-	/// <returns>True if value is within range.</returns>
-	bool scIsInRangeD(fp64_t const x, fp64_t const x_min, fp64_t const x_max);
-
-	/// <summary>
-	/// Test if value is in unit range, inclusive: [0,1].
-	/// </summary>
-	/// <param name="x">Value to test.</param>
-	/// <returns>True if value is within range.</returns>
-	bool scIsInUnitRangeD(fp64_t const x);
-
-	/// <summary>
-	/// Test if value is in symmetric range, inclusive: [-1,+1].
-	/// </summary>
-	/// <param name="x">Value to test.</param>
-	/// <returns>True if value is within range.</returns>
-	bool scIsInSymmRangeD(fp64_t const x);
-
 
 	/// <summary>
 	/// Determine sign of input.
@@ -604,6 +618,29 @@ extern "C" {
 	/// <returns>Value remapped to destination range.</returns>
 	fp64_t scRemapD(fp64_t const x, fp64_t const x_min_src, fp64_t const x_max_src, fp64_t const x_min_dst, fp64_t const x_max_dst);
 
+	/// <summary>
+	/// Test if value is in specified range.
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <param name="x_min">Minimum value or lower bound of range.</param>
+	/// <param name="x_max">Maximum value or upper bound of range.</param>
+	/// <returns>True if value is within range.</returns>
+	bool scIsInRangeD(fp64_t const x, fp64_t const x_min, fp64_t const x_max);
+
+	/// <summary>
+	/// Test if value is in unit range, inclusive: [0,1].
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <returns>True if value is within range.</returns>
+	bool scIsInUnitRangeD(fp64_t const x);
+
+	/// <summary>
+	/// Test if value is in symmetric range, inclusive: [-1,+1].
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <returns>True if value is within range.</returns>
+	bool scIsInSymmRangeD(fp64_t const x);
+
 
 	/// <summary>
 	/// Calculate square root of non-negative value.
@@ -647,6 +684,33 @@ extern "C" {
 	/// <returns>Angle in degrees.</returns>
 	fp64_t scRad2DegD(fp64_t const x);
 
+	/// <summary>
+	/// Calculate equivalent angle in range [-180,+180) degrees.
+	/// </summary>
+	/// <param name="x">Angle in degrees.</param>
+	/// <returns>Angle in degrees in range [-180,+180).</returns>
+	fp64_t scNormalizeAngle180D(fp64_t const x);
+
+	/// <summary>
+	/// Calculate equivalent angle in range [0,360) degrees.
+	/// </summary>
+	/// <param name="x">Angle in degrees.</param>
+	/// <returns>Angle in degrees in range [0,360).</returns>
+	fp64_t scNormalizeAngle360D(fp64_t const x);
+
+	/// <summary>
+	/// Calculate equivalent angle in range [-pi,+pi) radians.
+	/// </summary>
+	/// <param name="x">Angle in radians.</param>
+	/// <returns>Angle in radians in range [-pi,+pi).</returns>
+	fp64_t scNormalizeAnglePiD(fp64_t const x);
+
+	/// <summary>
+	/// Calculate equivalent angle in range [0,2pi) radians.
+	/// </summary>
+	/// <param name="x">Angle in radians.</param>
+	/// <returns>Angle in radians in range [0,2pi).</returns>
+	fp64_t scNormalizeAngle2PiD(fp64_t const x);
 
 	/// <summary>
 	/// Calculate sine of angle in radians.
@@ -810,29 +874,6 @@ extern "C" {
 	/// <returns>True if value is approximately non-negative.</returns>
 #define scIsNonNegativeApprox cdraw_scalar_base(scIsNonNegativeApprox)
 
-	/// <summary>
-	/// Test if value is in specified range.
-	/// </summary>
-	/// <param name="x">Value to test.</param>
-	/// <param name="x_min">Minimum value or lower bound of range.</param>
-	/// <param name="x_max">Maximum value or upper bound of range.</param>
-	/// <returns>True if value is within range.</returns>
-#define scIsInRange cdraw_scalar_base(scIsInRange)
-
-	/// <summary>
-	/// Test if value is in unit range, inclusive: [0,1].
-	/// </summary>
-	/// <param name="x">Value to test.</param>
-	/// <returns>True if value is within range.</returns>
-#define scIsInUnitRange cdraw_scalar_base(scIsInUnitRange)
-
-	/// <summary>
-	/// Test if value is in symmetric range, inclusive: [-1,+1].
-	/// </summary>
-	/// <param name="x">Value to test.</param>
-	/// <returns>True if value is within range.</returns>
-#define scIsInSymmRange cdraw_scalar_base(scIsInSymmRange)
-
 
 	/// <summary>
 	/// Determine sign of input.
@@ -925,6 +966,29 @@ extern "C" {
 	/// <returns>Value remapped to destination range.</returns>
 #define scRemap cdraw_scalar_base(scRemap)
 
+	/// <summary>
+	/// Test if value is in specified range.
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <param name="x_min">Minimum value or lower bound of range.</param>
+	/// <param name="x_max">Maximum value or upper bound of range.</param>
+	/// <returns>True if value is within range.</returns>
+#define scIsInRange cdraw_scalar_base(scIsInRange)
+
+	/// <summary>
+	/// Test if value is in unit range, inclusive: [0,1].
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <returns>True if value is within range.</returns>
+#define scIsInUnitRange cdraw_scalar_base(scIsInUnitRange)
+
+	/// <summary>
+	/// Test if value is in symmetric range, inclusive: [-1,+1].
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <returns>True if value is within range.</returns>
+#define scIsInSymmRange cdraw_scalar_base(scIsInSymmRange)
+
 
 	/// <summary>
 	/// Calculate square root of non-negative value.
@@ -968,6 +1032,33 @@ extern "C" {
 	/// <returns>Angle in degrees.</returns>
 #define scRad2Deg cdraw_scalar_base(scRad2Deg)
 
+	/// <summary>
+	/// Calculate equivalent angle in range [-180,+180) degrees.
+	/// </summary>
+	/// <param name="x">Angle in degrees.</param>
+	/// <returns>Angle in degrees in range [-180,+180).</returns>
+#define scNormalizeAngle180 cdraw_scalar_base(scNormalizeAngle180)
+
+	/// <summary>
+	/// Calculate equivalent angle in range [0,360) degrees.
+	/// </summary>
+	/// <param name="x">Angle in degrees.</param>
+	/// <returns>Angle in degrees in range [0,360).</returns>
+#define scNormalizeAngle360 cdraw_scalar_base(scNormalizeAngle360)
+
+	/// <summary>
+	/// Calculate equivalent angle in range [-pi,+pi) radians.
+	/// </summary>
+	/// <param name="x">Angle in radians.</param>
+	/// <returns>Angle in radians in range [-pi,+pi).</returns>
+#define scNormalizeAnglePi cdraw_scalar_base(scNormalizeAnglePi)
+
+	/// <summary>
+	/// Calculate equivalent angle in range [0,2pi) radians.
+	/// </summary>
+	/// <param name="x">Angle in radians.</param>
+	/// <returns>Angle in radians in range [0,2pi).</returns>
+#define scNormalizeAngle2Pi cdraw_scalar_base(scNormalizeAngle2Pi)
 
 	/// <summary>
 	/// Calculate sine of angle in radians.
