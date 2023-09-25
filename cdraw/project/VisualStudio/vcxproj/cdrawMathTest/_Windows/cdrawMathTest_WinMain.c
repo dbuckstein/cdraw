@@ -23,15 +23,15 @@
 #if CDRAW_USING_WINDOWS
 #include <Windows.h>
 
+result_t cdrawMathTest();
+
 int WINAPI WinMain(
 	_In_		HINSTANCE 	hInstance,
 	_In_opt_	HINSTANCE 	hPrevInstance,
 	_In_		LPSTR 		lpCmdLine,
 	_In_		int 		nCmdShow)
 {
-	int result = 0;
-
-	return result;
+	return cdrawMathTest();
 }
 
 #endif // CDRAW_USING_WINDOWS
