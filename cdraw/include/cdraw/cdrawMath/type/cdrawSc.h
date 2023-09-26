@@ -16,7 +16,7 @@
 
 /*
 * cdrawSc.h
-* Declarations of preferred scalar functions.
+* Declarations of preferred floating point precision scalar functions.
 */
 
 #if (!(defined _CDRAW_SC_H_) && (defined _CDRAW_SCALAR_H_))

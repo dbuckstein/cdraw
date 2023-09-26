@@ -15,16 +15,13 @@
 */
 
 /*
-* cdrawScalar.inl
-* Definitions of scalar functions.
+* cdrawVec4b.inl
+* Definitions of boolean 4D vector functions.
 */
 
-#if (!(defined _CDRAW_SCALAR_INL_) && (defined _CDRAW_SCALAR_H_))
-#define _CDRAW_SCALAR_INL_
+#if (!(defined _CDRAW_VEC4B_INL_) && (defined _CDRAW_VECTOR_INL_))
+#define _CDRAW_VEC4B_INL_
 
 
-#include "type/cdrawScF.inl"
-#include "type/cdrawScD.inl"
 
-
-#endif // #if (!(defined _CDRAW_SCALAR_INL_) && (defined _CDRAW_SCALAR_H_))
+#endif // #if (!(defined _CDRAW_VEC4B_INL_) && (defined _CDRAW_VECTOR_INL_))

@@ -16,13 +16,13 @@
 
 /*
 * cdrawVector.inl
-* Definitions of vector methods.
+* Definitions of vector functions.
 */
 
 #if (!(defined _CDRAW_VECTOR_INL_) && (defined _CDRAW_VECTOR_H_))
 #define _CDRAW_VECTOR_INL_
 
-/*
+
 #include "type/cdrawVec2b.inl"
 #include "type/cdrawVec2i.inl"
 #include "type/cdrawVec2u.inl"
@@ -40,6 +40,6 @@
 #include "type/cdrawVec4u.inl"
 #include "type/cdrawVec4f.inl"
 #include "type/cdrawVec4d.inl"
-*/
+
 
 #endif // #if (!(defined _CDRAW_VECTOR_INL_) && (defined _CDRAW_VECTOR_H_))

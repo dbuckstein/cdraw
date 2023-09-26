@@ -16,7 +16,7 @@
 
 /*
 * cdrawScD.inl
-* Definitions of double-precision scalar methods.
+* Definitions of double-precision scalar functions.
 */
 
 #if (!(defined _CDRAW_SCD_INL_) && (defined _CDRAW_SCALAR_INL_))

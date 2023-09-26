@@ -16,7 +16,7 @@
 
 /*
 * cdrawScF.inl
-* Definitions of single-precision scalar methods.
+* Definitions of single-precision scalar functions.
 */
 
 #if (!(defined _CDRAW_SCF_INL_) && (defined _CDRAW_SCALAR_INL_))

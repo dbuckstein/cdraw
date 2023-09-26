@@ -15,16 +15,23 @@
 */
 
 /*
-* cdrawScalar.inl
-* Definitions of scalar functions.
+* cdrawVec4d.h
+* Declaration of double-precision 4D vector functions.
 */
 
-#if (!(defined _CDRAW_SCALAR_INL_) && (defined _CDRAW_SCALAR_H_))
-#define _CDRAW_SCALAR_INL_
+#if (!(defined _CDRAW_VEC4D_H_) && (defined _CDRAW_VECTOR_H_))
+#define _CDRAW_VEC4D_H_
 
 
-#include "type/cdrawScF.inl"
-#include "type/cdrawScD.inl"
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
 
 
-#endif // #if (!(defined _CDRAW_SCALAR_INL_) && (defined _CDRAW_SCALAR_H_))
+
+#ifdef __cplusplus
+}
+#endif // #ifdef __cplusplus
+
+
+#endif // #if (!(defined _CDRAW_VEC4D_H_) && (defined _CDRAW_VECTOR_H_))

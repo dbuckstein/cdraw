@@ -15,16 +15,23 @@
 */
 
 /*
-* cdrawScalar.inl
-* Definitions of scalar functions.
+* cdrawVec3f.h
+* Declaration of single-precision 3D vector functions.
 */
 
-#if (!(defined _CDRAW_SCALAR_INL_) && (defined _CDRAW_SCALAR_H_))
-#define _CDRAW_SCALAR_INL_
+#if (!(defined _CDRAW_VEC3F_H_) && (defined _CDRAW_VECTOR_H_))
+#define _CDRAW_VEC3F_H_
 
 
-#include "type/cdrawScF.inl"
-#include "type/cdrawScD.inl"
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
 
 
-#endif // #if (!(defined _CDRAW_SCALAR_INL_) && (defined _CDRAW_SCALAR_H_))
+
+#ifdef __cplusplus
+}
+#endif // #ifdef __cplusplus
+
+
+#endif // #if (!(defined _CDRAW_VEC3F_H_) && (defined _CDRAW_VECTOR_H_))
