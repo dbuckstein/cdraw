@@ -15,16 +15,15 @@
 */
 
 /*
-* cdrawMath.h
-* Global root header for math library.
+* cdrawVector.inl
+* Definitions of vector methods.
 */
 
-#ifndef _CDRAW_MATH_H_
-#define _CDRAW_MATH_H_
+#ifndef _CDRAW_VECTOR_INL_
+#define _CDRAW_VECTOR_INL_
+#ifdef _CDRAW_VECTOR_H_
 
 
-#include "cdrawMath/cdrawScalar.h"
-#include "cdrawMath/cdrawVector.h"
 
-
-#endif // #ifndef _CDRAW_MATH_H_
+#endif // #ifdef _CDRAW_VECTOR_H_
+#endif // #ifndef _CDRAW_VECTOR_INL_

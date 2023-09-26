@@ -35,9 +35,15 @@
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector.h">
+      <Filter>Header Files\cdrawMath</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar.inl">
+      <Filter>Header Files\cdrawMath\_inl</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector.inl">
       <Filter>Header Files\cdrawMath\_inl</Filter>
     </None>
   </ItemGroup>

@@ -1185,20 +1185,6 @@ extern "C" {
 #endif // #ifdef __cplusplus
 
 
-// ****TO-DO: vector/matrix base types - move to vector/matrix
-typedef int32_t								int2_t[2], int3_t[3], int4_t[4], * intN_t;
-typedef uint32_t							uint2_t[2], uint3_t[3], uint4_t[4], * uintN_t;
-typedef bool								bool2_t[2], bool3_t[3], bool4_t[4], * boolN_t;
-typedef fp32_t								float2_t[2], float3_t[3], float4_t[4], * floatN_t;
-typedef fp64_t								double2_t[2], double3_t[3], double4_t[4], * doubleN_t;
-typedef float2_t							float2x2_t[2], * floatNx2;
-typedef float3_t							float3x3_t[3], * floatNx3;
-typedef float4_t							float4x4_t[4], * floatNx4;
-typedef double2_t							double2x2_t[2], * doubleNx2;
-typedef double3_t							double3x3_t[3], * doubleNx3;
-typedef double4_t							double4x4_t[4], * doubleNx4;
-
-
 #if !CDRAW_USING_PRECOMPILE_LIBS
 #include "_inl/cdrawScalar.inl"
 #endif // #if !CDRAW_USING_PRECOMPILE_LIBS
