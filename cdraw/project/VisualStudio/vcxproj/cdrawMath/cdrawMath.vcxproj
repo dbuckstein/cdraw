@@ -161,10 +161,15 @@
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\type\cdrawSc.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\type\cdrawScD.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\type\cdrawScF.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar.inl" />
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\type\cdrawScD.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\type\cdrawScF.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

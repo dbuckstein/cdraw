@@ -19,11 +19,27 @@
 * Definitions of vector methods.
 */
 
-#ifndef _CDRAW_VECTOR_INL_
+#if (!(defined _CDRAW_VECTOR_INL_) && (defined _CDRAW_VECTOR_H_))
 #define _CDRAW_VECTOR_INL_
-#ifdef _CDRAW_VECTOR_H_
 
+/*
+#include "type/cdrawVec2b.inl"
+#include "type/cdrawVec2i.inl"
+#include "type/cdrawVec2u.inl"
+#include "type/cdrawVec2f.inl"
+#include "type/cdrawVec2d.inl"
 
+#include "type/cdrawVec3b.inl"
+#include "type/cdrawVec3i.inl"
+#include "type/cdrawVec3u.inl"
+#include "type/cdrawVec3f.inl"
+#include "type/cdrawVec3d.inl"
 
-#endif // #ifdef _CDRAW_VECTOR_H_
-#endif // #ifndef _CDRAW_VECTOR_INL_
+#include "type/cdrawVec4b.inl"
+#include "type/cdrawVec4i.inl"
+#include "type/cdrawVec4u.inl"
+#include "type/cdrawVec4f.inl"
+#include "type/cdrawVec4d.inl"
+*/
+
+#endif // #if (!(defined _CDRAW_VECTOR_INL_) && (defined _CDRAW_VECTOR_H_))

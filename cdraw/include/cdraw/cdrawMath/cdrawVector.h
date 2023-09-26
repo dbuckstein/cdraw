@@ -764,17 +764,28 @@ typedef union vec4d_t
 /******************************************************************************
 * Functions.
 ******************************************************************************/
+/*
+#include "type/cdrawVec2b.h"
+#include "type/cdrawVec2i.h"
+#include "type/cdrawVec2u.h"
+#include "type/cdrawVec2f.h"
+#include "type/cdrawVec2d.h"
+#include "type/cdrawVec2.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif // #ifdef __cplusplus
+#include "type/cdrawVec3b.h"
+#include "type/cdrawVec3i.h"
+#include "type/cdrawVec3u.h"
+#include "type/cdrawVec3f.h"
+#include "type/cdrawVec3d.h"
+#include "type/cdrawVec3.h"
 
-
-
-#ifdef __cplusplus
-}
-#endif // #ifdef __cplusplus
-
+#include "type/cdrawVec4b.h"
+#include "type/cdrawVec4i.h"
+#include "type/cdrawVec4u.h"
+#include "type/cdrawVec4f.h"
+#include "type/cdrawVec4d.h"
+#include "type/cdrawVec4.h"
+*/
 
 // ****TO-DO: matrix base types - move to matrix
 typedef float2_t							float2x2_t[2], * floatNx2;
