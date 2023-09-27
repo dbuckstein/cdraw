@@ -29,6 +29,15 @@ extern "C" {
 
 
 
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy22b tokencat(vecCopy2, tokencat(vector_suffix, 2b))
+
+
 #ifdef __cplusplus
 }
 #endif // #ifdef __cplusplus
