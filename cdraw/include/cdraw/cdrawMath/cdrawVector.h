@@ -55,6 +55,11 @@ typedef fp32_t								vecf_t, float2_t[2], float3_t[3], float4_t[4], * floatN_t;
 /// </summary>
 typedef fp64_t								vecd_t, double2_t[2], double3_t[3], double4_t[4], * doubleN_t;
 
+/// <summary>
+/// Array-based preferred precision vectors, faster and more explicit than objects: 2D, 3D, 4D or pointer.
+/// </summary>
+typedef scalar_t							vec_t, scalar2_t[2], scalar3_t[3], scalar4_t[4], * scalarN_t;
+
 
 /// <summary>
 /// Integer 2D vector container for array and named components in vector, color and parametric spaces.
@@ -759,6 +764,69 @@ typedef union vec4d_t
 		};
 	};
 } vec4d_t;
+
+
+/******************************************************************************
+* Configuration.
+******************************************************************************/
+
+#if CDRAW_USING_SCALAR_DOUBLE
+typedef vec2d_t			vec2_t;
+typedef vec3d_t			vec3_t;
+typedef vec4d_t			vec4_t;
+#define vector_suffix	d
+#else // #if CDRAW_USING_SCALAR_DOUBLE
+typedef vec2f_t			vec2_t;
+typedef vec3f_t			vec3_t;
+typedef vec4f_t			vec4_t;
+#define vector_suffix	f
+#endif // #else // #if CDRAW_USING_SCALAR_DOUBLE
+#define cdraw_vector_base(name)											tokencat(name, vector_suffix)
+#define cdraw_vector_const(name,len,...)													\
+		static tokencat(vec, tokencat(len, b_t)) const tokencat(name, b) = { __VA_ARGS__ };	\
+		static tokencat(vec, tokencat(len, i_t)) const tokencat(name, i) = { __VA_ARGS__ };	\
+		static tokencat(vec, tokencat(len, u_t)) const tokencat(name, u) = { __VA_ARGS__ };	\
+		static tokencat(vec, tokencat(len, f_t)) const tokencat(name, f) = { __VA_ARGS__ };	\
+		static tokencat(vec, tokencat(len, d_t)) const tokencat(name, d) = { __VA_ARGS__ };	\
+		static tokencat(vec, tokencat(len, _t)) const name = { __VA_ARGS__ }
+#define vx(v) v[0]
+#define vy(v) v[1]
+#define vz(v) v[2]
+#define vw(v) v[3]
+
+
+/******************************************************************************
+* Constant vectors.
+******************************************************************************/
+
+cdraw_vector_const(vecID2, 2, 0, 0);
+cdraw_vector_const(vecX2, 2, 1, 0);
+cdraw_vector_const(vecY2, 2, 0, 1);
+cdraw_vector_const(vecXY2, 2, 1, 1);
+cdraw_vector_const(vecID3, 3, 0, 0, 0);
+cdraw_vector_const(vecX3, 3, 1, 0, 0);
+cdraw_vector_const(vecY3, 3, 0, 1, 0);
+cdraw_vector_const(vecZ3, 3, 0, 0, 1);
+cdraw_vector_const(vecXY3, 3, 1, 1, 0);
+cdraw_vector_const(vecXZ3, 3, 1, 0, 1);
+cdraw_vector_const(vecYZ3, 3, 0, 1, 1);
+cdraw_vector_const(vecXYZ3, 3, 1, 1, 1);
+cdraw_vector_const(vecID4, 4, 0, 0, 0, 0);
+cdraw_vector_const(vecX4, 4, 1, 0, 0, 0);
+cdraw_vector_const(vecY4, 4, 0, 1, 0, 0);
+cdraw_vector_const(vecZ4, 4, 0, 0, 1, 0);
+cdraw_vector_const(vecW4, 4, 0, 0, 0, 1);
+cdraw_vector_const(vecXY4, 4, 1, 1, 0, 0);
+cdraw_vector_const(vecXZ4, 4, 1, 0, 1, 0);
+cdraw_vector_const(vecXW4, 4, 1, 0, 0, 1);
+cdraw_vector_const(vecYZ4, 4, 0, 1, 1, 0);
+cdraw_vector_const(vecYW4, 4, 0, 1, 0, 1);
+cdraw_vector_const(vecZW4, 4, 0, 0, 1, 1);
+cdraw_vector_const(vecXYZ4, 4, 1, 1, 1, 0);
+cdraw_vector_const(vecXYW4, 4, 1, 1, 0, 1);
+cdraw_vector_const(vecXZW4, 4, 1, 0, 1, 1);
+cdraw_vector_const(vecYZW4, 4, 0, 1, 1, 1);
+cdraw_vector_const(vecXYZW4, 4, 1, 1, 1, 1);
 
 
 /******************************************************************************

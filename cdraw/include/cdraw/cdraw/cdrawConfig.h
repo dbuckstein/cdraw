@@ -185,15 +185,17 @@ typedef byte_t const						labelk_t[sizeof(label_base_type)*4];								// Conveni
 
 
 #define cdraw_assert(condition)				assert(condition)														// Framework assert.
-#if (defined CDRAW_ASSERT_TEST)
-#define cdraw_assert_defaultname			tokencat(__CDRAW_ASSERT_TEST__, CDRAW_ASSERT_TEST)
-static bool cdraw_assert_defaultname;																				// Assert test value.
-#define cdraw_assert_test(condition)		(cdraw_assert_defaultname = !(condition))								// Framework assert disabled by testing, replaced by flag instead.
-#else // #if (defined CDRAW_ASSERT_TEST)
-#define cdraw_assert_test(condition)		cdraw_assert(condition)													// Framework assert safe for testing.
-#endif // #else // #if (defined CDRAW_ASSERT_TEST)
 #define failret(condition,...)				if (!(condition)) return __VA_ARGS__									// Return variadic argument if condition fails.
-#define failassertret(condition,...)		cdraw_assert_test(condition); failret(condition, __VA_ARGS__)			// Assert and/or return variadic argument if condition fails.
+#if (defined CDRAW_ASSERT_TEST)
+#define assert_defaultname					tokencat(__CDRAW_ASSERT_TEST__, CDRAW_ASSERT_TEST)
+static bool assert_defaultname;
+#define cdraw_assert_test(condition)																				// Framework assert disabled by testing, replaced by flag instead.
+#define failassert(condition,...)			(assert_defaultname = !(condition)); failret(condition, __VA_ARGS__)	// Raise assert flag and return variadic argument if condition fails;
+#define failassertret(condition,...)		failassert(condition, __VA_ARGS__)										// Raise assert flag and return variadic argument if condition fails.
+#else // #if (defined CDRAW_ASSERT_TEST)
+#define failassert(condition,...)			cdraw_assert(condition)													// Assert without returning if condition fails.
+#define failassertret(condition,...)		cdraw_assert(condition); failret(condition, __VA_ARGS__)				// Assert and/or return variadic argument if condition fails.
+#endif // #else // #if (defined CDRAW_ASSERT_TEST)
 #define asserterr(condition,errcode)		cdraw_assert(condition); failret(condition, result_seterror(errcode))	// Assert and/or return error result if condition fails.
 #define asserterr_rng(x,xmin,xmax,errcode)	asserterr((x)>=(xmin)&&(x)<=(xmax), errcode)							// Assert and/or return error result if value is not in range.
 #define asserterr_ptr(ptr,errcode)			asserterr((ptr)!=NULL, errcode)											// Assert and/or return error result if pointer is not initialized.
@@ -218,7 +220,7 @@ static bool cdraw_assert_defaultname;																				// Assert test value.
 #define cdraw_test_exact_asserterr(errcode,expect,result,func,...)				asserterr(cdraw_test_exact(expect, result, func, __VA_ARGS__), errcode)																	// Basic unit test for exact result with assert.
 #define cdraw_test_approx_asserterr(errcode,tolerance,expect,result,func,...)	asserterr(cdraw_test_approx(tolerance, expect, result, func, __VA_ARGS__), errcode)														// Basic unit test for approximate result with assert.
 #if (defined CDRAW_ASSERT_TEST)
-#define cdraw_test_unsafe(expect,result,func,...)								(cdraw_test_exact(expect, result, func, __VA_ARGS__) && cdraw_assert_defaultname)														// Basic unit test, pass if result is reflective of an unsafe failure case.
+#define cdraw_test_unsafe(expect,result,func,...)								(cdraw_test_exact(expect, result, func, __VA_ARGS__) && assert_defaultname)																// Basic unit test, pass if result is reflective of an unsafe failure case.
 #define cdraw_test_unsafe_asserterr(errcode,expect,result,func,...)				asserterr(cdraw_test_unsafe(expect, result, func, __VA_ARGS__), errcode)																// Basic unit test for unsafe result with assert.
 #endif // #if (defined CDRAW_ASSERT_TEST)
 
