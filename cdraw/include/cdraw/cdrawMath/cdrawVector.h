@@ -765,26 +765,26 @@ typedef union vec4d_t
 * Functions.
 ******************************************************************************/
 
-#include "type/cdrawVec2b.h"
-#include "type/cdrawVec2i.h"
-#include "type/cdrawVec2u.h"
-#include "type/cdrawVec2f.h"
-#include "type/cdrawVec2d.h"
-#include "type/cdrawVec2.h"
+#include "cdrawVector/cdrawVec2b.h"
+#include "cdrawVector/cdrawVec2i.h"
+#include "cdrawVector/cdrawVec2u.h"
+#include "cdrawVector/cdrawVec2f.h"
+#include "cdrawVector/cdrawVec2d.h"
+#include "cdrawVector/cdrawVec2.h"
 
-#include "type/cdrawVec3b.h"
-#include "type/cdrawVec3i.h"
-#include "type/cdrawVec3u.h"
-#include "type/cdrawVec3f.h"
-#include "type/cdrawVec3d.h"
-#include "type/cdrawVec3.h"
+#include "cdrawVector/cdrawVec3b.h"
+#include "cdrawVector/cdrawVec3i.h"
+#include "cdrawVector/cdrawVec3u.h"
+#include "cdrawVector/cdrawVec3f.h"
+#include "cdrawVector/cdrawVec3d.h"
+#include "cdrawVector/cdrawVec3.h"
 
-#include "type/cdrawVec4b.h"
-#include "type/cdrawVec4i.h"
-#include "type/cdrawVec4u.h"
-#include "type/cdrawVec4f.h"
-#include "type/cdrawVec4d.h"
-#include "type/cdrawVec4.h"
+#include "cdrawVector/cdrawVec4b.h"
+#include "cdrawVector/cdrawVec4i.h"
+#include "cdrawVector/cdrawVec4u.h"
+#include "cdrawVector/cdrawVec4f.h"
+#include "cdrawVector/cdrawVec4d.h"
+#include "cdrawVector/cdrawVec4.h"
 
 
 // ****TO-DO: matrix base types - move to matrix

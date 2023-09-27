@@ -23,8 +23,8 @@
 #define _CDRAW_SCALAR_INL_
 
 
-#include "type/cdrawScF.inl"
-#include "type/cdrawScD.inl"
+#include "cdrawScalar/cdrawScF.inl"
+#include "cdrawScalar/cdrawScD.inl"
 
 
 #endif // #if (!(defined _CDRAW_SCALAR_INL_) && (defined _CDRAW_SCALAR_H_))

@@ -34,10 +34,14 @@
 * Configuration.
 ******************************************************************************/
 
+#ifndef CDRAW_SCALAR_DOUBLE
 // Describes whether double-precision float is desired for base scalar type.
+// Should be defined by includer outside of this file as one of the following: 
 //	-CDRAW_ENABLE if requesting base scalar type use double-precision (double).
 //	-CDRAW_DISABLE if requesting base scalar type use single-precision (float).
 #define CDRAW_SCALAR_DOUBLE			CDRAW_DISABLE
+#endif // #ifndef CDRAW_SCALAR_DOUBLE
+
 #define CDRAW_USING_SCALAR_DOUBLE	cdraw_enabled(CDRAW_SCALAR_DOUBLE) && !CDRAW_USING_PRECOMPILE_LIBS
 #if CDRAW_USING_SCALAR_DOUBLE
 typedef fp64_t			scalar_t;	// Global scalar number representation (double-precision).
@@ -51,7 +55,6 @@ typedef fp32_t			scalar_t;	// Global scalar number representation (single-precis
 #define SC_EPSILON		(FLT_EPSILON)
 #endif // #else // #if CDRAW_USING_SCALAR_DOUBLE
 #define cdraw_scalar_base(name)											tokencat(name, scalar_suffix)
-#define cdraw_scalar_base_t(name)										tokencat(cdraw_scalar_base(name), _t)
 #define cdraw_scalar_const(name,value_fp64)									\
 		static fp64_t const tokencat(name, D) = value_fp64;					\
 		static fp32_t const tokencat(name, F) = tokencat(value_fp64, f);	\
@@ -123,18 +126,18 @@ cdraw_scalar_const(sc360, 360.0);
 #define scEpsD		(DBL_EPSILON)
 #define scEpsF		(FLT_EPSILON)
 #define scEps		cdraw_scalar_base(scEps)
-#define scAtrigEpsD	(DBL_EPSILON * 32.0)
-#define scAtrigEpsF	(FLT_EPSILON * 32.0f)
-#define scAtrigEps	cdraw_scalar_base(scAtrigEps)
+#define scBigEpsD	(DBL_EPSILON * 32.0)
+#define scBigEpsF	(FLT_EPSILON * 32.0f)
+#define scBigEps	cdraw_scalar_base(scBigEps)
 
 
 /******************************************************************************
 * Functions.
 ******************************************************************************/
 
-#include "type/cdrawScF.h"
-#include "type/cdrawScD.h"
-#include "type/cdrawSc.h"
+#include "cdrawScalar/cdrawScF.h"
+#include "cdrawScalar/cdrawScD.h"
+#include "cdrawScalar/cdrawSc.h"
 
 
 #if !CDRAW_USING_PRECOMPILE_LIBS

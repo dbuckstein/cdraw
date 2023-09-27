@@ -58,20 +58,20 @@
 		cdraw_test_exact_asserterr(cdraw_testDF_errcode, (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64), (fp32_t)(arg3_fp64), (fp32_t)(arg4_fp64))
 
 #define cdraw_testDF_approx1(expect_fp64,funcD,funcF,arg0_fp64)																										\
-		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scAtrigEpsD), (fp64_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, D), funcD, (fp64_t)(arg0_fp64));	\
-		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scAtrigEpsF), (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64))
+		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scBigEpsD), (fp64_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, D), funcD, (fp64_t)(arg0_fp64));	\
+		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scBigEpsF), (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64))
 #define cdraw_testDF_approx2(expect_fp64,funcD,funcF,arg0_fp64,arg1_fp64)																													\
-		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scAtrigEpsD), (fp64_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, D), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64));	\
-		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scAtrigEpsF), (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64))
+		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scBigEpsD), (fp64_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, D), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64));	\
+		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scBigEpsF), (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64))
 #define cdraw_testDF_approx3(expect_fp64,funcD,funcF,arg0_fp64,arg1_fp64,arg2_fp64)																																\
-		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scAtrigEpsD), (fp64_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, D), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64));	\
-		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scAtrigEpsF), (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64))
+		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scBigEpsD), (fp64_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, D), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64));	\
+		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scBigEpsF), (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64))
 #define cdraw_testDF_approx4(expect_fp64,funcD,funcF,arg0_fp64,arg1_fp64,arg2_fp64,arg3_fp64)																																		\
-		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scAtrigEpsD), (fp64_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, D), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64), (fp64_t)(arg3_fp64));	\
-		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scAtrigEpsF), (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64), (fp32_t)(arg3_fp64))
+		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scBigEpsD), (fp64_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, D), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64), (fp64_t)(arg3_fp64));	\
+		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scBigEpsF), (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64), (fp32_t)(arg3_fp64))
 #define cdraw_testDF_approx5(expect_fp64,funcD,funcF,arg0_fp64,arg1_fp64,arg2_fp64,arg3_fp64,arg4_fp64)																																					\
-		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scAtrigEpsD), (fp64_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, D), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64), (fp64_t)(arg3_fp64), (fp64_t)(arg4_fp64));	\
-		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scAtrigEpsF), (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64), (fp32_t)(arg3_fp64), (fp32_t)(arg4_fp64))
+		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scBigEpsD), (fp64_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, D), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64), (fp64_t)(arg3_fp64), (fp64_t)(arg4_fp64));	\
+		cdraw_test_approx_asserterr(cdraw_testDF_errcode, (scBigEpsF), (fp32_t)(expect_fp64), tokencat(cdraw_testDF_defaultname, F), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64), (fp32_t)(arg3_fp64), (fp32_t)(arg4_fp64))
 
 #if (defined CDRAW_ASSERT_TEST)
 #define cdraw_testDF_unsafe1(expect_fp64,funcD,funcF,arg0_fp64)																							\
