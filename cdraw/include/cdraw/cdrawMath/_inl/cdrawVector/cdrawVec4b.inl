@@ -173,7 +173,7 @@ CDRAW_INL boolN_t vecXor4b(bool4_t v_out, bool4_t const v_lh, bool4_t const v_rh
 	return v_out;
 }
 
-CDRAW_INL boolN_t vecNxor4b(bool4_t v_out, bool4_t const v_lh, bool4_t const v_rh)
+CDRAW_INL boolN_t vecXnor4b(bool4_t v_out, bool4_t const v_lh, bool4_t const v_rh)
 {
 	failassert(v_out && v_lh && v_rh, NULL);
 	vx(v_out) = !((vx(v_lh) && !vx(v_rh)) || (!vx(v_lh) && vx(v_rh)));
@@ -192,7 +192,6 @@ CDRAW_INL boolN_t vecEq4b(bool4_t v_out, bool4_t const v_lh, bool4_t const v_rh)
 	vw(v_out) = (vw(v_lh) == vw(v_rh));
 	return v_out;
 }
-
 
 CDRAW_INL boolN_t vecNeq4b(bool4_t v_out, bool4_t const v_lh, bool4_t const v_rh)
 {

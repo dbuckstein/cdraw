@@ -84,71 +84,71 @@ extern "C" {
 	boolN_t vecCopy2d2b(bool2_t v_out, double2_t const v);
 
 	/// <summary>
-	/// Evaluate component-wise NOT operator.
+	/// Evaluate component-wise logical NOT operator.
 	/// </summary>
-	/// <param name="v_out">Result vector</param>
+	/// <param name="v_out">Result vector.</param>
 	/// <param name="v">Input vector.</param>
 	/// <returns><paramref name="v_out"/></returns>
 	boolN_t vecNot2b(bool2_t v_out, bool2_t const v);
 
 	/// <summary>
-	/// Evaluate component-wise AND operator.
+	/// Evaluate component-wise logical AND operator.
 	/// </summary>
-	/// <param name="v_out">Result vector</param>
+	/// <param name="v_out">Result vector.</param>
 	/// <param name="v_lh">Left-hand input vector.</param>
 	/// <param name="v_rh">Right-hand input vector.</param>
 	/// <returns><paramref name="v_out"/></returns>
 	boolN_t vecAnd2b(bool2_t v_out, bool2_t const v_lh, bool2_t const v_rh);
 
 	/// <summary>
-	/// Evaluate component-wise NAND (NOT AND) operator.
+	/// Evaluate component-wise logical NAND (NOT AND) operator.
 	/// </summary>
-	/// <param name="v_out">Result vector</param>
+	/// <param name="v_out">Result vector.</param>
 	/// <param name="v_lh">Left-hand input vector.</param>
 	/// <param name="v_rh">Right-hand input vector.</param>
 	/// <returns><paramref name="v_out"/></returns>
 	boolN_t vecNand2b(bool2_t v_out, bool2_t const v_lh, bool2_t const v_rh);
 
 	/// <summary>
-	/// Evaluate component-wise OR operator.
+	/// Evaluate component-wise logical OR operator.
 	/// </summary>
-	/// <param name="v_out">Result vector</param>
+	/// <param name="v_out">Result vector.</param>
 	/// <param name="v_lh">Left-hand input vector.</param>
 	/// <param name="v_rh">Right-hand input vector.</param>
 	/// <returns><paramref name="v_out"/></returns>
 	boolN_t vecOr2b(bool2_t v_out, bool2_t const v_lh, bool2_t const v_rh);
 
 	/// <summary>
-	/// Evaluate component-wise NOR (NOT OR) operator.
+	/// Evaluate component-wise logical NOR (NOT OR) operator.
 	/// </summary>
-	/// <param name="v_out">Result vector</param>
+	/// <param name="v_out">Result vector.</param>
 	/// <param name="v_lh">Left-hand input vector.</param>
 	/// <param name="v_rh">Right-hand input vector.</param>
 	/// <returns><paramref name="v_out"/></returns>
 	boolN_t vecNor2b(bool2_t v_out, bool2_t const v_lh, bool2_t const v_rh);
 
 	/// <summary>
-	/// Evaluate component-wise XOR (exclusive or) operator.
+	/// Evaluate component-wise logical XOR (exclusive or) operator.
 	/// </summary>
-	/// <param name="v_out">Result vector</param>
+	/// <param name="v_out">Result vector.</param>
 	/// <param name="v_lh">Left-hand input vector.</param>
 	/// <param name="v_rh">Right-hand input vector.</param>
 	/// <returns><paramref name="v_out"/></returns>
 	boolN_t vecXor2b(bool2_t v_out, bool2_t const v_lh, bool2_t const v_rh);
 
 	/// <summary>
-	/// Evaluate component-wise NXOR (NOT XOR) operator.
+	/// Evaluate component-wise logical XNOR (exclusive nor, NOT XOR) operator.
 	/// </summary>
-	/// <param name="v_out">Result vector</param>
+	/// <param name="v_out">Result vector.</param>
 	/// <param name="v_lh">Left-hand input vector.</param>
 	/// <param name="v_rh">Right-hand input vector.</param>
 	/// <returns><paramref name="v_out"/></returns>
-	boolN_t vecNxor2b(bool2_t v_out, bool2_t const v_lh, bool2_t const v_rh);
+	boolN_t vecXnor2b(bool2_t v_out, bool2_t const v_lh, bool2_t const v_rh);
 
 	/// <summary>
 	/// Test component-wise equality (left-hand input equals right-hand input).
 	/// </summary>
-	/// <param name="v_out">Result vector</param>
+	/// <param name="v_out">Result vector.</param>
 	/// <param name="v_lh">Left-hand input vector.</param>
 	/// <param name="v_rh">Right-hand input vector.</param>
 	/// <returns><paramref name="v_out"/></returns>
@@ -157,7 +157,7 @@ extern "C" {
 	/// <summary>
 	/// Test component-wise inequality (left-hand input does not equal right-hand input).
 	/// </summary>
-	/// <param name="v_out">Result vector</param>
+	/// <param name="v_out">Result vector.</param>
 	/// <param name="v_lh">Left-hand input vector.</param>
 	/// <param name="v_rh">Right-hand input vector.</param>
 	/// <returns><paramref name="v_out"/></returns>
