@@ -87,6 +87,11 @@ CDRAW_INL fp64_t scModD(fp64_t const x_num, fp64_t const x_den)
 	return (x_num - x_den * floor(x_num / x_den));
 }
 
+CDRAW_INL fp64_t scMadD(fp64_t const u, fp64_t const x_origin, fp64_t const x_delta)
+{
+	return (x_origin + x_delta * u);
+}
+
 CDRAW_INL fp64_t scLerpD(fp64_t const u, fp64_t const x_min, fp64_t const x_max)
 {
 	return (x_min + (x_max - x_min) * u);

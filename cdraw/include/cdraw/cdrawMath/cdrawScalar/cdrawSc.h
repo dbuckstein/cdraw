@@ -115,6 +115,15 @@ extern "C" {
 #define scMod cdraw_scalar_base(scMod)
 
 	/// <summary>
+	/// Calculate multiply-add given origin and delta to scale by some parameter.
+	/// </summary>
+	/// <param name="u">Scaling parameter, in [0,1] for some result in [x_origin,x_origin+x_delta].</param>
+	/// <param name="x_origin">Known value in range.</param>
+	/// <param name="x_delta">Known change in range.</param>
+	/// <returns>Sum of origin and scaled delta.</returns>
+#define scMad cdraw_scalar_base(scMad)
+
+	/// <summary>
 	/// Calculate linear interpolation value given parameter and range.
 	/// </summary>
 	/// <param name="u">Interpolation parameter, in [0,1] for interpolation, otherwise extrapolation.</param>

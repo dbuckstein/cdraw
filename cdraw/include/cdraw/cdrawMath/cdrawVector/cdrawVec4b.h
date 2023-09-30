@@ -46,6 +46,14 @@ extern "C" {
 	boolN_t vecInit4b(bool4_t v_out, vecb_t const x, vecb_t const y, vecb_t const z, vecb_t const w);
 
 	/// <summary>
+	/// Initialize all components of vector given single value.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="x">Value to assign to all components.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	boolN_t vecInitS4b(bool4_t v_out, vecb_t const x);
+
+	/// <summary>
 	/// Initialize vector by copying another and additional components.
 	/// </summary>
 	/// <param name="v_out">Result vector.</param>

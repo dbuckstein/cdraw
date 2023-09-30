@@ -166,6 +166,10 @@ result_t cdrawScalarTest()
 	{
 		fp64_t const x_A = +0.75, x_B = +1.25, x_C = -0.25, x_min = -2.0, x_max = +6.0, x_min_dst = +50.0, x_max_dst = +100.0;
 
+		cdraw_testDF_approx3(+2.5, scMadD, scMadF, x_A, x_min, x_max);
+		cdraw_testDF_approx3(+5.5, scMadD, scMadF, x_B, x_min, x_max);
+		cdraw_testDF_approx3(-3.5, scMadD, scMadF, x_C, x_min, x_max);
+
 		cdraw_testDF_approx3(+4.0, scLerpD, scLerpF, x_A, x_min, x_max);
 		cdraw_testDF_approx3(+8.0, scLerpD, scLerpF, x_B, x_min, x_max);
 		cdraw_testDF_approx3(x_min, scLerpD, scLerpF, x_C, x_min, x_min);
@@ -313,10 +317,19 @@ result_t cdrawScalarTest()
 }
 
 
+result_t cdrawVectorTest()
+{
+	result_init();
+
+	result_return();
+}
+
+
 result_t cdrawMathTest()
 {
 	result_init();
 	cdrawScalarTest();
+	cdrawVectorTest();
 	result_return();
 }
 

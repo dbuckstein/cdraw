@@ -130,6 +130,13 @@ cdraw_scalar_const(sc360, 360.0);
 #define scBigEpsF	(FLT_EPSILON * 32.0f)
 #define scBigEps	cdraw_scalar_base(scBigEps)
 
+#define gSq(x)							((x) * (x))																				// Compute general square of input.
+#define gDivSafe(x_num,x_den)			((x_den) ? (x_num) / (x_den) : 0)														// Compute general safe quotient.
+#define gModSafe(x_num,x_den)			((x_den) ? (x_num) % (x_den) : (x_num))													// Compute general safe modulo.
+#define gDivModSafe(x_mod,x_num,x_den)	((x_den) ? ((x_mod) = (x_num) % (x_den), (x_num) / (x_den)) : ((x_mod) = (x_num), 0))	// Compute general safe quotient and modulo.
+#define gMad(x0,dx,u)					((x0) + (dx) * (u))																		// Compute general multiply-add.
+#define gLerp(x0,x1,u)					((x0) + ((x1) - (x0)) * u)																// Compute general linear interpolation.
+
 
 /******************************************************************************
 * Functions.

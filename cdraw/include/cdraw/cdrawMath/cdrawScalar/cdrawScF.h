@@ -115,6 +115,15 @@ extern "C" {
 	fp32_t scModF(fp32_t const x_num, fp32_t const x_den);
 
 	/// <summary>
+	/// Calculate multiply-add given origin and delta to scale by some parameter.
+	/// </summary>
+	/// <param name="u">Scaling parameter, in [0,1] for some result in [x_origin,x_origin+x_delta].</param>
+	/// <param name="x_origin">Known value in range.</param>
+	/// <param name="x_delta">Known change in range.</param>
+	/// <returns>Sum of origin and scaled delta.</returns>
+	fp32_t scMadF(fp32_t const u, fp32_t const x_origin, fp32_t const x_delta);
+
+	/// <summary>
 	/// Calculate linear interpolation value given parameter and range.
 	/// </summary>
 	/// <param name="u">Interpolation parameter, in [0,1] for interpolation, otherwise extrapolation.</param>

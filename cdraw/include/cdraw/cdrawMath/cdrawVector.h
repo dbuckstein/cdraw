@@ -789,10 +789,11 @@ typedef vec4f_t			vec4_t;
 		static tokencat(vec, tokencat(len, f_t)) const tokencat(name, f) = { __VA_ARGS__ };	\
 		static tokencat(vec, tokencat(len, d_t)) const tokencat(name, d) = { __VA_ARGS__ };	\
 		static tokencat(vec, tokencat(len, _t)) const name = { __VA_ARGS__ }
-#define vx(v) v[0]
-#define vy(v) v[1]
-#define vz(v) v[2]
-#define vw(v) v[3]
+
+#define vx(v) ((v)[0])	// Access first component of vector for read/write ('x').
+#define vy(v) ((v)[1])	// Access second component of vector for read/write ('y').
+#define vz(v) ((v)[2])	// Access third component of vector for read/write ('z').
+#define vw(v) ((v)[3])	// Access fourth component of vector for read/write ('w').
 
 
 /******************************************************************************

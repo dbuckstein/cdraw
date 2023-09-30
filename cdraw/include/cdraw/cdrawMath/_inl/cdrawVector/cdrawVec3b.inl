@@ -41,6 +41,15 @@ CDRAW_INL boolN_t vecInit3b(bool3_t v_out, vecb_t const x, vecb_t const y, vecb_
 	return v_out;
 }
 
+CDRAW_INL boolN_t vecInitS3b(bool3_t v_out, vecb_t const x)
+{
+	failassert(v_out, NULL);
+	vx(v_out) = x;
+	vy(v_out) = x;
+	vz(v_out) = x;
+	return v_out;
+}
+
 CDRAW_INL boolN_t vecCopy2z3b(bool3_t v_out, bool2_t const xy, vecb_t const z)
 {
 	failassert(v_out && xy, NULL);

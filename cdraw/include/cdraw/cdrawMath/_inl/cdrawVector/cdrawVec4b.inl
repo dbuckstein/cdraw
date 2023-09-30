@@ -43,6 +43,16 @@ CDRAW_INL boolN_t vecInit4b(bool4_t v_out, vecb_t const x, vecb_t const y, vecb_
 	return v_out;
 }
 
+CDRAW_INL boolN_t vecInitS4b(bool4_t v_out, vecb_t const x)
+{
+	failassert(v_out, NULL);
+	vx(v_out) = x;
+	vy(v_out) = x;
+	vz(v_out) = x;
+	vw(v_out) = x;
+	return v_out;
+}
+
 CDRAW_INL boolN_t vecCopy2zw4b(bool4_t v_out, bool2_t const xy, vecb_t const z, vecb_t const w)
 {
 	failassert(v_out && xy, NULL);

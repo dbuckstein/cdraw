@@ -44,6 +44,14 @@ extern "C" {
 	boolN_t vecInit2b(bool2_t v_out, vecb_t const x, vecb_t const y);
 
 	/// <summary>
+	/// Initialize all components of vector given single value.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="x">Value to assign to all components.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	boolN_t vecInitS2b(bool2_t v_out, vecb_t const x);
+
+	/// <summary>
 	/// Initialize vector by copying the leading components of another.
 	/// </summary>
 	/// <param name="v_out">Result vector.</param>

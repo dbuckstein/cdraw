@@ -39,6 +39,14 @@ CDRAW_INL intN_t vecInit2i(int2_t v_out, veci_t const x, veci_t const y)
 	return v_out;
 }
 
+CDRAW_INL intN_t vecInitS2i(int2_t v_out, veci_t const x)
+{
+	failassert(v_out, NULL);
+	vx(v_out) = x;
+	vy(v_out) = x;
+	return v_out;
+}
+
 CDRAW_INL intN_t vecCopy2i(int2_t v_out, int2_t const v)
 {
 	failassert(v_out && v, NULL);
@@ -143,12 +151,197 @@ CDRAW_INL boolN_t vecEq2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh)
 	return v_out;
 }
 
-
 CDRAW_INL boolN_t vecNeq2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh)
 {
 	failassert(v_out && v_lh && v_rh, NULL);
 	vx(v_out) = (vx(v_lh) != vx(v_rh));
 	vy(v_out) = (vy(v_lh) != vy(v_rh));
+	return v_out;
+}
+
+CDRAW_INL boolN_t vecGreater2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_out && v_lh && v_rh, NULL);
+	vx(v_out) = (vx(v_lh) > vx(v_rh));
+	vy(v_out) = (vy(v_lh) > vy(v_rh));
+	return v_out;
+}
+
+CDRAW_INL boolN_t vecGreaterEq2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_out && v_lh && v_rh, NULL);
+	vx(v_out) = (vx(v_lh) >= vx(v_rh));
+	vy(v_out) = (vy(v_lh) >= vy(v_rh));
+	return v_out;
+}
+
+CDRAW_INL boolN_t vecLess2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_out && v_lh && v_rh, NULL);
+	vx(v_out) = (vx(v_lh) < vx(v_rh));
+	vy(v_out) = (vy(v_lh) < vy(v_rh));
+	return v_out;
+}
+
+CDRAW_INL boolN_t vecLessEq2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_out && v_lh && v_rh, NULL);
+	vx(v_out) = (vx(v_lh) <= vx(v_rh));
+	vy(v_out) = (vy(v_lh) <= vy(v_rh));
+	return v_out;
+}
+
+CDRAW_INL intN_t vecNegate2i(int2_t v_out, int2_t const v)
+{
+	failassert(v_out && v, NULL);
+	vx(v_out) = -vx(v);
+	vy(v_out) = -vy(v);
+	return v_out;
+}
+
+CDRAW_INL intN_t vecAdd2i(int2_t v_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_out && v_lh && v_rh, NULL);
+	vx(v_out) = vx(v_lh) + vx(v_rh);
+	vy(v_out) = vy(v_lh) + vy(v_rh);
+	return v_out;
+}
+
+CDRAW_INL intN_t vecSub2i(int2_t v_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_out && v_lh && v_rh, NULL);
+	vx(v_out) = vx(v_lh) - vx(v_rh);
+	vy(v_out) = vy(v_lh) - vy(v_rh);
+	return v_out;
+}
+
+CDRAW_INL intN_t vecMul2i(int2_t v_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_out && v_lh && v_rh, NULL);
+	vx(v_out) = vx(v_lh) * vx(v_rh);
+	vy(v_out) = vy(v_lh) * vy(v_rh);
+	return v_out;
+}
+
+CDRAW_INL intN_t vecDiv2i(int2_t v_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_out && v_lh && v_rh, NULL);
+	failassert(vx(v_rh) && vy(v_rh), vecInit2i(v_out,
+		gDivSafe(vx(v_lh), vx(v_rh)),
+		gDivSafe(vy(v_lh), vy(v_rh))));
+	vx(v_out) = vx(v_lh) / vx(v_rh);
+	vy(v_out) = vy(v_lh) / vy(v_rh);
+	return v_out;
+}
+
+CDRAW_INL intN_t vecMod2i(int2_t v_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_out && v_lh && v_rh, NULL);
+	failassert(vx(v_rh) && vy(v_rh), vecInit2i(v_out,
+		gModSafe(vx(v_lh), vx(v_rh)),
+		gModSafe(vy(v_lh), vy(v_rh))));
+	vx(v_out) = vx(v_lh) % vx(v_rh);
+	vy(v_out) = vy(v_lh) % vy(v_rh);
+	return v_out;
+}
+
+CDRAW_INL intN_t vecDivMod2i(int2_t v_out, int2_t v_mod_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_out && v_mod_out && v_lh && v_rh, NULL);
+	failassert(vx(v_rh) && vy(v_rh), vecInit2i(v_out,
+		gDivModSafe(vx(v_mod_out), vx(v_lh), vx(v_rh)),
+		gDivModSafe(vy(v_mod_out), vy(v_lh), vy(v_rh))));
+	vx(v_out) = vx(v_lh) / vx(v_rh);
+	vx(v_mod_out) = vx(v_lh) % vx(v_rh);
+	vy(v_out) = vy(v_lh) / vy(v_rh);
+	vy(v_mod_out) = vy(v_lh) % vy(v_rh);
+	return v_out;
+}
+
+CDRAW_INL intN_t vecAddS2i(int2_t v_out, int2_t const v_lh, veci_t const s_rh)
+{
+	failassert(v_out && v_lh, NULL);
+	vx(v_out) = vx(v_lh) + s_rh;
+	vy(v_out) = vy(v_lh) + s_rh;
+	return v_out;
+}
+
+CDRAW_INL intN_t vecSubS2i(int2_t v_out, int2_t const v_lh, veci_t const s_rh)
+{
+	failassert(v_out && v_lh, NULL);
+	vx(v_out) = vx(v_lh) - s_rh;
+	vy(v_out) = vy(v_lh) - s_rh;
+	return v_out;
+}
+
+CDRAW_INL intN_t vecMulS2i(int2_t v_out, int2_t const v_lh, veci_t const s_rh)
+{
+	failassert(v_out && v_lh, NULL);
+	vx(v_out) = vx(v_lh) * s_rh;
+	vy(v_out) = vy(v_lh) * s_rh;
+	return v_out;
+}
+
+CDRAW_INL intN_t vecDivS2i(int2_t v_out, int2_t const v_lh, veci_t const s_rh)
+{
+	failassert(v_out && v_lh, NULL);
+	failassert(s_rh, vecZero2i(v_out));
+	vx(v_out) = vx(v_lh) / s_rh;
+	vy(v_out) = vy(v_lh) / s_rh;
+	return v_out;
+}
+
+CDRAW_INL intN_t vecModS2i(int2_t v_out, int2_t const v_lh, veci_t const s_rh)
+{
+	failassert(v_out && v_lh, NULL);
+	failassert(s_rh, vecCopy2i(v_out, v_lh));
+	vx(v_out) = vx(v_lh) % s_rh;
+	vy(v_out) = vy(v_lh) % s_rh;
+	return v_out;
+}
+
+CDRAW_INL intN_t vecDivModS2i(int2_t v_out, int2_t v_mod_out, int2_t const v_lh, veci_t const s_rh)
+{
+	failassert(v_out && v_lh, NULL);
+	failassert(s_rh, vecCopy2i(v_mod_out, v_lh), vecZero2i(v_out));
+	vx(v_out) = vx(v_lh) / s_rh;
+	vx(v_mod_out) = vx(v_lh) % s_rh;
+	vy(v_out) = vy(v_lh) / s_rh;
+	vy(v_mod_out) = vy(v_lh) % s_rh;
+	return v_out;
+}
+
+CDRAW_INL veci_t vecDot2i(int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_lh && v_rh, 0);
+	return (vx(v_lh) * vx(v_rh) + vy(v_lh) * vy(v_rh));
+}
+
+CDRAW_INL veci_t vecCross2i(int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_lh && v_rh, 0);
+	return (vx(v_lh) * vy(v_lh) - vy(v_lh) * vx(v_rh));
+}
+
+CDRAW_INL veci_t vecLenSq2i(int2_t const v)
+{
+	failassert(v, 0);
+	return (gSq(vx(v)) + gSq(vy(v)));
+}
+
+CDRAW_INL intN_t vecMad2i(int2_t v_out, veci_t const u, int2_t const v_origin, int2_t const v_delta)
+{
+	failassert(v_out && v_origin && v_delta, NULL);
+	vx(v_out) = gMad(vx(v_origin), vx(v_delta), u);
+	vy(v_out) = gMad(vy(v_origin), vy(v_delta), u);
+	return v_out;
+}
+
+CDRAW_INL intN_t vecLerp2i(int2_t v_out, veci_t const u, int2_t const v_min, int2_t const v_max)
+{
+	failassert(v_out && v_min && v_max, NULL);
+	vx(v_out) = gLerp(vx(v_min), vx(v_max), u);
+	vy(v_out) = gLerp(vy(v_min), vy(v_max), u);
 	return v_out;
 }
 

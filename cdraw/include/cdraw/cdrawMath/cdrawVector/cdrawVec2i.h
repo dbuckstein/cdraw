@@ -44,6 +44,14 @@ extern "C" {
 	intN_t vecInit2i(int2_t v_out, veci_t const x, veci_t const y);
 
 	/// <summary>
+	/// Initialize all components of vector given single value.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="x">Value to assign to all components.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecInitS2i(int2_t v_out, veci_t const x);
+
+	/// <summary>
 	/// Initialize vector by copying the leading components of another.
 	/// </summary>
 	/// <param name="v_out">Result vector.</param>
@@ -162,6 +170,203 @@ extern "C" {
 	/// <param name="v_rh">Right-hand input vector.</param>
 	/// <returns><paramref name="v_out"/></returns>
 	boolN_t vecNeq2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh);
+
+	/// <summary>
+	/// Test component-wise greater-than (left-hand input is greater than right-hand input).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	boolN_t vecGreater2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh);
+	
+	/// <summary>
+	/// Test component-wise greater-than-or-equal-to (left-hand input is greater than or equal to right-hand input).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	boolN_t vecGreaterEq2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh);
+	
+	/// <summary>
+	/// Test component-wise less-than (left-hand input is less than right-hand input).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	boolN_t vecLess2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh);
+	
+	/// <summary>
+	/// Test component-wise less-than-or-equal-to (left-hand input is less than or equal to right-hand input).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	boolN_t vecLessEq2i(bool2_t v_out, int2_t const v_lh, int2_t const v_rh);
+
+	/// <summary>
+	/// Calculate component-wise negative of input vector.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecNegate2i(int2_t v_out, int2_t const v);
+
+	/// <summary>
+	/// Calculate component-wise sum of input vectors (left-hand plus right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecAdd2i(int2_t v_out, int2_t const v_lh, int2_t const v_rh);
+
+	/// <summary>
+	/// Calculate component-wise difference of input vectors (left-hand minus right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecSub2i(int2_t v_out, int2_t const v_lh, int2_t const v_rh);
+	
+	/// <summary>
+	/// Calculate component-wise product of input vectors (left-hand times right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecMul2i(int2_t v_out, int2_t const v_lh, int2_t const v_rh);
+	
+	/// <summary>
+	/// Calculate component-wise quotient of input vectors (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecDiv2i(int2_t v_out, int2_t const v_lh, int2_t const v_rh);
+	
+	/// <summary>
+	/// Calculate component-wise modulo of input vectors (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecMod2i(int2_t v_out, int2_t const v_lh, int2_t const v_rh);
+	
+	/// <summary>
+	/// Calculate component-wise quotient and modulo of input vectors (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector (quotient).</param>
+	/// <param name="v_mod_out">Result vector (modulo).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecDivMod2i(int2_t v_out, int2_t v_mod_out, int2_t const v_lh, int2_t const v_rh);
+
+	/// <summary>
+	/// Calculate component-wise sum of input vector and scalar (left-hand times right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecAddS2i(int2_t v_out, int2_t const v_lh, veci_t const s_rh);
+
+	/// <summary>
+	/// Calculate component-wise difference of input vector and scalar (left-hand times right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecSubS2i(int2_t v_out, int2_t const v_lh, veci_t const s_rh);
+
+	/// <summary>
+	/// Calculate product of input vector and scalar (left-hand times right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecMulS2i(int2_t v_out, int2_t const v_lh, veci_t const s_rh);
+	
+	/// <summary>
+	/// Calculate quotient of input vector and scalar (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecDivS2i(int2_t v_out, int2_t const v_lh, veci_t const s_rh);
+	
+	/// <summary>
+	/// Calculate modulo of input vector and scalar (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecModS2i(int2_t v_out, int2_t const v_lh, veci_t const s_rh);
+	
+	/// <summary>
+	/// Calculate quotient and modulo of input vector and scalar (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector (quotient).</param>
+	/// <param name="v_mod_out">Result vector (modulo).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecDivModS2i(int2_t v_out, int2_t v_mod_out, int2_t const v_lh, veci_t const s_rh);
+
+	/// <summary>
+	/// Calculate dot product of input vectors (the scalar sum of component products).
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Dot product of inputs.</returns>
+	veci_t vecDot2i(int2_t const v_lh, int2_t const v_rh);
+
+	/// <summary>
+	/// Calculate cross product of input vectors (for 2D, just the singular perpendicular component).
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Cross product of inputs.</returns>
+	veci_t vecCross2i(int2_t const v_lh, int2_t const v_rh);
+
+	/// <summary>
+	/// Calculate squared length or magnitude of vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Squared length of input.</returns>
+	veci_t vecLenSq2i(int2_t const v);
+
+	/// <summary>
+	/// Calculate component-wise multiply-add of origin vector, delta vector and scaling parameter.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="u">Scaling parameter applied to delta.</param>
+	/// <param name="v_origin">Origin vector (value at u=0).</param>
+	/// <param name="v_delta">Delta vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecMad2i(int2_t v_out, veci_t const u, int2_t const v_origin, int2_t const v_delta);
+
+	/// <summary>
+	/// Calculate component-wise linear interprolation between origin and target given parameter.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="u">Interpolation parameter in [0,1] for interpolation, otherwise extrapolation.</param>
+	/// <param name="v_min">Minimum (origin) vector for interpolation interval (value at u=0).</param>
+	/// <param name="v_max">Maximum (target) vector for interpolation interval (value at u=1).</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecLerp2i(int2_t v_out, veci_t const u, int2_t const v_min, int2_t const v_max);
 
 
 #ifdef __cplusplus

@@ -46,6 +46,14 @@ extern "C" {
 	intN_t vecInit4i(int4_t v_out, veci_t const x, veci_t const y, veci_t const z, veci_t const w);
 
 	/// <summary>
+	/// Initialize all components of vector given single value.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="x">Value to assign to all components.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	intN_t vecInitS4i(int4_t v_out, veci_t const x);
+
+	/// <summary>
 	/// Initialize vector by copying another and additional components.
 	/// </summary>
 	/// <param name="v_out">Result vector.</param>

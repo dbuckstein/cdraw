@@ -87,6 +87,11 @@ CDRAW_INL fp32_t scModF(fp32_t const x_num, fp32_t const x_den)
 	return (x_num - x_den * floorf(x_num / x_den));
 }
 
+CDRAW_INL fp32_t scMadF(fp32_t const u, fp32_t const x_origin, fp32_t const x_delta)
+{
+	return (x_origin + x_delta * u);
+}
+
 CDRAW_INL fp32_t scLerpF(fp32_t const u, fp32_t const x_min, fp32_t const x_max)
 {
 	return (x_min + (x_max - x_min) * u);

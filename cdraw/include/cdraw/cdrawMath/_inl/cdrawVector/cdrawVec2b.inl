@@ -39,6 +39,14 @@ CDRAW_INL boolN_t vecInit2b(bool2_t v_out, vecb_t const x, vecb_t const y)
 	return v_out;
 }
 
+CDRAW_INL boolN_t vecInitS2b(bool2_t v_out, vecb_t const x)
+{
+	failassert(v_out, NULL);
+	vx(v_out) = x;
+	vy(v_out) = x;
+	return v_out;
+}
+
 CDRAW_INL boolN_t vecCopy2b(bool2_t v_out, bool2_t const v)
 {
 	failassert(v_out && v, NULL);

@@ -43,6 +43,16 @@ CDRAW_INL intN_t vecInit4i(int4_t v_out, veci_t const x, veci_t const y, veci_t 
 	return v_out;
 }
 
+CDRAW_INL intN_t vecInitS4i(int4_t v_out, veci_t const x)
+{
+	failassert(v_out, NULL);
+	vx(v_out) = x;
+	vy(v_out) = x;
+	vz(v_out) = x;
+	vw(v_out) = x;
+	return v_out;
+}
+
 CDRAW_INL intN_t vecCopy2zw4i(int4_t v_out, int2_t const xy, veci_t const z, veci_t const w)
 {
 	failassert(v_out && xy, NULL);
@@ -192,7 +202,6 @@ CDRAW_INL boolN_t vecEq4i(bool4_t v_out, int4_t const v_lh, int4_t const v_rh)
 	vw(v_out) = (vw(v_lh) == vw(v_rh));
 	return v_out;
 }
-
 
 CDRAW_INL boolN_t vecNeq4i(bool4_t v_out, int4_t const v_lh, int4_t const v_rh)
 {

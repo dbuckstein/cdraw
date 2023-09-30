@@ -41,6 +41,15 @@ CDRAW_INL intN_t vecInit3i(int3_t v_out, veci_t const x, veci_t const y, veci_t 
 	return v_out;
 }
 
+CDRAW_INL intN_t vecInitS3i(int3_t v_out, veci_t const x)
+{
+	failassert(v_out, NULL);
+	vx(v_out) = x;
+	vy(v_out) = x;
+	vz(v_out) = x;
+	return v_out;
+}
+
 CDRAW_INL intN_t vecCopy2z3i(int3_t v_out, int2_t const xy, veci_t const z)
 {
 	failassert(v_out && xy, NULL);
@@ -166,7 +175,6 @@ CDRAW_INL boolN_t vecEq3i(bool3_t v_out, int3_t const v_lh, int3_t const v_rh)
 	vz(v_out) = (vz(v_lh) == vz(v_rh));
 	return v_out;
 }
-
 
 CDRAW_INL boolN_t vecNeq3i(bool3_t v_out, int3_t const v_lh, int3_t const v_rh)
 {
