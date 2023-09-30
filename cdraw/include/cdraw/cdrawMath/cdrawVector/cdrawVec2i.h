@@ -346,7 +346,38 @@ extern "C" {
 	/// </summary>
 	/// <param name="v">Input vector.</param>
 	/// <returns>Squared length of input.</returns>
-	veci_t vecLenSq2i(int2_t const v);
+	vecu_t vecLenSq2i(int2_t const v);
+
+	/// <summary>
+	/// Calculate the squared distance between two vectors.
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Squared distance between inputs.</returns>
+	vecu_t vecDistSq2i(int2_t const v_lh, int2_t const v_rh);
+
+	/// <summary>
+	/// Calculate the squared distance between two vectors and store the displacement.
+	/// </summary>
+	/// <param name="v_disp_out">Result vector (displacement).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Squared distance between inputs.</returns>
+	vecu_t vecDispDistSq2i(int2_t v_disp_out, int2_t const v_lh, int2_t const v_rh);
+
+	/// <summary>
+	/// Determine if input is zero vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if input is considered zero vector.</returns>
+	vecb_t vecIsZero2i(int2_t const v);
+
+	/// <summary>
+	/// Determine if input is not zero vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if input is not considered zero vector.</returns>
+	vecb_t vecIsNonZero2i(int2_t const v);
 
 	/// <summary>
 	/// Calculate component-wise multiply-add of origin vector, delta vector and scaling parameter.

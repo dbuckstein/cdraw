@@ -323,10 +323,38 @@ CDRAW_INL veci_t vecCross2i(int2_t const v_lh, int2_t const v_rh)
 	return (vx(v_lh) * vy(v_lh) - vy(v_lh) * vx(v_rh));
 }
 
-CDRAW_INL veci_t vecLenSq2i(int2_t const v)
+CDRAW_INL vecu_t vecLenSq2i(int2_t const v)
 {
 	failassert(v, 0);
 	return (gSq(vx(v)) + gSq(vy(v)));
+}
+
+CDRAW_INL vecu_t vecDistSq2i(int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_lh && v_rh, 0);
+	int2_t const disp = {
+		vx(v_lh) - vx(v_rh),
+		vy(v_lh) - vy(v_rh),
+	};
+	return (gSq(vx(disp)) + gSq(vy(disp)));
+}
+
+CDRAW_INL vecu_t vecDispDistSq2i(int2_t v_disp_out, int2_t const v_lh, int2_t const v_rh)
+{
+	failassert(v_disp_out && v_lh && v_rh, 0);
+	vx(v_disp_out) = vx(v_lh) - vx(v_rh);
+	vy(v_disp_out) = vy(v_lh) - vy(v_rh);
+	return (gSq(vx(v_disp_out)) + gSq(vy(v_disp_out)));
+}
+
+CDRAW_INL vecb_t vecIsZero2i(int2_t const v)
+{
+	return ((vx(v) == 0) && (vy(v) == 0));
+}
+
+CDRAW_INL vecb_t vecIsNonZero2i(int2_t const v)
+{
+	return ((vx(v) != 0) || (vy(v) != 0));
 }
 
 CDRAW_INL intN_t vecMad2i(int2_t v_out, veci_t const u, int2_t const v_origin, int2_t const v_delta)
