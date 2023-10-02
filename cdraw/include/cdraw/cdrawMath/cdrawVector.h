@@ -781,14 +781,39 @@ typedef vec3f_t			vec3_t;
 typedef vec4f_t			vec4_t;
 #define vector_suffix	f
 #endif // #else // #if CDRAW_USING_SCALAR_DOUBLE
-#define cdraw_vector_base(name)											tokencat(name, vector_suffix)
-#define cdraw_vector_const(name,len,...)													\
-		static tokencat(vec, tokencat(len, b_t)) const tokencat(name, b) = { __VA_ARGS__ };	\
-		static tokencat(vec, tokencat(len, i_t)) const tokencat(name, i) = { __VA_ARGS__ };	\
-		static tokencat(vec, tokencat(len, u_t)) const tokencat(name, u) = { __VA_ARGS__ };	\
-		static tokencat(vec, tokencat(len, f_t)) const tokencat(name, f) = { __VA_ARGS__ };	\
-		static tokencat(vec, tokencat(len, d_t)) const tokencat(name, d) = { __VA_ARGS__ };	\
-		static tokencat(vec, tokencat(len, _t)) const name = { __VA_ARGS__ }
+#define cdraw_vector_base(name)													tokencat(name, vector_suffix)
+#define cdraw_vector_decl(name,len,...)											\
+		tokencat(vec, tokencat(len, b_t)) tokencat(name, b) = { __VA_ARGS__ };	\
+		tokencat(vec, tokencat(len, i_t)) tokencat(name, i) = { __VA_ARGS__ };	\
+		tokencat(vec, tokencat(len, u_t)) tokencat(name, u) = { __VA_ARGS__ };	\
+		tokencat(vec, tokencat(len, f_t)) tokencat(name, f) = { __VA_ARGS__ };	\
+		tokencat(vec, tokencat(len, d_t)) tokencat(name, d) = { __VA_ARGS__ };	\
+		tokencat(vec, tokencat(len, _t)) name = { __VA_ARGS__ }
+#define cdraw_vector_const(name,len,...)										cdraw_vector_decl(static const name, len, __VA_ARGS__)
+#define cdraw_vector_decl2B(name,x_value,y_value)																									\
+		vec2b_t tokencat(name, 2B) = { x_value, y_value }
+#define cdraw_vector_decl3B(name,x_value,y_value,z_value)																							\
+		vec3b_t tokencat(name, 3B) = { x_value, y_value, z_value }
+#define cdraw_vector_decl4B(name,x_value,y_value,z_value,w_value)																					\
+		vec4b_t tokencat(name, 4B) = { x_value, y_value, z_value, w_value }
+#define cdraw_vector_decl2IU(name,x_value_int,y_value_int)																							\
+		vec2i_t tokencat(name, 2I) = { x_value_int, y_value_int };																					\
+		vec2u_t tokencat(name, 2U) = { tokencat(x_value_int, u), tokencat(y_value_int, u) }
+#define cdraw_vector_decl3IU(name,x_value_int,y_value_int,z_value_int)																				\
+		vec3i_t tokencat(name, 3I) = { x_value_int, y_value_int, z_value_int };																		\
+		vec3u_t tokencat(name, 3U) = { tokencat(x_value_int, u), tokencat(y_value_int, u), tokencat(z_value_int, u) }
+#define cdraw_vector_decl4IU(name,x_value_int,y_value_int,z_value_int,w_value_int)																	\
+		vec4i_t tokencat(name, 4I) = { x_value_int, y_value_int, z_value_int, w_value_int };														\
+		vec4u_t tokencat(name, 4U) = { tokencat(x_value_int, u), tokencat(y_value_int, u), tokencat(z_value_int, u), tokencat(w_value_int, u) }
+#define cdraw_vector_decl2DF(name,x_value_fp64,y_value_fp64)																						\
+		vec2d_t tokencat(name, 2D) = { x_value_fp64, y_value_fp64 };																				\
+		vec2f_t tokencat(name, 2F) = { tokencat(x_value_fp64, f), tokencat(y_value_fp64, f) }
+#define cdraw_vector_decl3DF(name,x_value_fp64,y_value_fp64,z_value_fp64)																			\
+		vec3d_t tokencat(name, 3D) = { x_value_fp64, y_value_fp64, z_value_fp64 };																	\
+		vec3f_t tokencat(name, 3F) = { tokencat(x_value_fp64, f), tokencat(y_value_fp64, f), tokencat(z_value_fp64, f) }
+#define cdraw_vector_decl4DF(name,x_value_fp64,y_value_fp64,z_value_fp64,w_value_fp64)																\
+		vec4d_t tokencat(name, 4D) = { x_value_fp64, y_value_fp64, z_value_fp64, w_value_fp64 };													\
+		vec4f_t tokencat(name, 4F) = { tokencat(x_value_fp64, f), tokencat(y_value_fp64, f), tokencat(z_value_fp64, f), tokencat(w_value_fp64, f) }
 
 #define vx(v) ((v)[0])	// Access first component of vector for read/write ('x').
 #define vy(v) ((v)[1])	// Access second component of vector for read/write ('y').

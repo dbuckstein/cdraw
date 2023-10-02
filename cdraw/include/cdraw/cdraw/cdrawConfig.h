@@ -184,11 +184,28 @@ typedef byte_t const						labelk_t[sizeof(label_base_type)*4];								// Conveni
 #define label_copy(label_dst,label_src)		buffer_copy4(label_dst,label_src,0,label_base_type);label_term(dst)	// Copy and terminate label string.
 
 
+#define swap2(x,y,tmp)						(tmp=x);(x=y);(y=tmp)				// Swap two values.
+#define swap3(x,y,z,tmp)					(tmp=x);(x=y);(y=z);(z=tmp)			// Swap three values.
+#define swap3r(x,y,z,tmp)					(tmp=x);(x=z);(z=y);(y=tmp)			// Swap three values (alt).
+#define swap4(x,y,z,w,tmp)					(tmp=x);(x=y);(y=z);(z=w);(w=tmp)	// Swap four values.
+#define swap4r(x,y,z,w,tmp)					(tmp=x);(x=w);(w=z);(z=y);(y=tmp)	// Swap four values (alt).
+
+
+/******************************************************************************
+* Universal testing macros and interfaces.
+******************************************************************************/
+
 #define cdraw_assert(condition)				assert(condition)														// Framework assert.
 #define failret(condition,...)				if (!(condition)) return __VA_ARGS__									// Return variadic argument if condition fails.
 #if (defined CDRAW_ASSERT_TEST)
 #define assert_defaultname					tokencat(__CDRAW_ASSERT_TEST__, CDRAW_ASSERT_TEST)
-static bool assert_defaultname;
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
+	static bool assert_defaultname;
+#ifdef __cplusplus
+}
+#endif // #ifdef __cplusplus
 #define cdraw_assert_test(condition)																				// Framework assert disabled by testing, replaced by flag instead.
 #define failassert(condition,...)			(assert_defaultname = !(condition)); failret(condition, __VA_ARGS__)	// Raise assert flag and return variadic argument if condition fails;
 #define failassertret(condition,...)		failassert(condition, __VA_ARGS__)										// Raise assert flag and return variadic argument if condition fails.
@@ -204,25 +221,14 @@ static bool assert_defaultname;
 #define asserterr_count(x,count,errcode)	asserterr_rng(x, 0, count, errcode)										// Assert and/or return error result if value is negative or exceeds count.
 
 
-#define swap2(x,y,tmp)						(tmp=x);(x=y);(y=tmp)				// Swap two values.
-#define swap3(x,y,z,tmp)					(tmp=x);(x=y);(y=z);(z=tmp)			// Swap three values.
-#define swap3r(x,y,z,tmp)					(tmp=x);(x=z);(z=y);(y=tmp)			// Swap three values (alt).
-#define swap4(x,y,z,w,tmp)					(tmp=x);(x=y);(y=z);(z=w);(w=tmp)	// Swap four values.
-#define swap4r(x,y,z,w,tmp)					(tmp=x);(x=w);(w=z);(z=y);(y=tmp)	// Swap four values (alt).
-
-
-#define cdraw_test_true(func,...)												(!!func(__VA_ARGS__))																													// Basic unit test, pass if result is true.
-#define cdraw_test_false(func,...)												(!func(__VA_ARGS__))																													// Basic unit test, pass if result is false.
-#define cdraw_test_exact(expect,result,func,...)								((result = func(__VA_ARGS__)), (result == expect))																						// Basic unit test, pass if result is expected value exactly.
-#define cdraw_test_approx(tolerance,expect,result,func,...)						((result = func(__VA_ARGS__)), (result -= expect), (result <= max(+tolerance, -tolerance) && result >= min(-tolerance, +tolerance)))	// Basic unit test, pass if result is within tolerable range of expected value.
-#define cdraw_test_true_asserterr(errcode,func,...)								asserterr(cdraw_test_true(func, __VA_ARGS__), errcode)																					// Basic unit test for true result with assert.
-#define cdraw_test_false_asserterr(errcode,func,...)							asserterr(cdraw_test_false(func, __VA_ARGS__), errcode)																					// Basic unit test for false result with assert.
-#define cdraw_test_exact_asserterr(errcode,expect,result,func,...)				asserterr(cdraw_test_exact(expect, result, func, __VA_ARGS__), errcode)																	// Basic unit test for exact result with assert.
-#define cdraw_test_approx_asserterr(errcode,tolerance,expect,result,func,...)	asserterr(cdraw_test_approx(tolerance, expect, result, func, __VA_ARGS__), errcode)														// Basic unit test for approximate result with assert.
+#define cdraw_istrue(tolerance_unused,expect_unused,result)		(!!result)																// Definition of true result test.
+#define cdraw_isfalse(tolerance_unused,expect_unused,result)	(!result)																// Definition of false result test.
+#define cdraw_isexact(tolerance_unused,expect,result)			(result==expect)														// Definition of exact result test.
+#define cdraw_isapprox(tolerance,expect,result)					(result<=(expect+tolerance) && result>=(expect-tolerance))				// Definition of approximate result test.
 #if (defined CDRAW_ASSERT_TEST)
-#define cdraw_test_unsafe(expect,result,func,...)								(cdraw_test_exact(expect, result, func, __VA_ARGS__) && assert_defaultname)																// Basic unit test, pass if result is reflective of an unsafe failure case.
-#define cdraw_test_unsafe_asserterr(errcode,expect,result,func,...)				asserterr(cdraw_test_unsafe(expect, result, func, __VA_ARGS__), errcode)																// Basic unit test for unsafe result with assert.
+#define cdraw_isunsafe(tolerance_unused,expect,result)			(cdraw_isexact(tolerance_unused,expect,result) && assert_defaultname)	// Definition of unsafe result test.
 #endif // #if (defined CDRAW_ASSERT_TEST)
+#define cdraw_testname(name,_t)									tokencat(tokencat(cdraw_, name), _t)
 
 
 #endif // #ifndef _CDRAW_CONFIG_H_

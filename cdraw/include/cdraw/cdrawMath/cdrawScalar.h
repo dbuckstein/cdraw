@@ -54,14 +54,17 @@ typedef fp32_t			scalar_t;	// Global scalar number representation (single-precis
 #define const_suffix	f
 #define SC_EPSILON		(FLT_EPSILON)
 #endif // #else // #if CDRAW_USING_SCALAR_DOUBLE
-#define cdraw_scalar_base(name)											tokencat(name, scalar_suffix)
-#define cdraw_scalar_const(name,value_fp64)									\
-		static fp64_t const tokencat(name, D) = value_fp64;					\
-		static fp32_t const tokencat(name, F) = tokencat(value_fp64, f);	\
-		static scalar_t const name = tokencat(value_fp64, const_suffix)
+#define cdraw_scalar_base(name)								tokencat(name, scalar_suffix)
 #define cdraw_scalar_declDF(name,value_fp64)				\
 		fp64_t tokencat(name, D) = value_fp64;				\
 		fp32_t tokencat(name, F) = tokencat(value_fp64, f)
+#define cdraw_scalar_declIU(name,value_int)					\
+		 int32_t tokencat(name, I) = value_int;				\
+		uint32_t tokencat(name, U) = tokencat(value_int, u)
+#define cdraw_scalar_decl(name,value_fp64)					\
+		cdraw_scalar_declDF(name, value_fp64);				\
+		scalar_t name = tokencat(value_fp64, const_suffix)
+#define cdraw_scalar_const(name,value_fp64)					cdraw_scalar_decl(static const name, value_fp64)
 
 
 /******************************************************************************
