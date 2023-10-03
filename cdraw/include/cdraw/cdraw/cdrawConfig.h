@@ -195,8 +195,8 @@ typedef byte_t const						labelk_t[sizeof(label_base_type)*4];								// Conveni
 * Universal testing macros and interfaces.
 ******************************************************************************/
 
-#define cdraw_assert(condition)				assert(condition)														// Framework assert.
-#define failret(condition,...)				if (!(condition)) return __VA_ARGS__									// Return variadic argument if condition fails.
+#define cdraw_assert(condition)				assert(condition)																			// Framework assert.
+#define failret(condition,...)				if (!(condition)) return __VA_ARGS__														// Return variadic argument if condition fails.
 #if (defined CDRAW_ASSERT_TEST)
 #define assert_defaultname					tokencat(__CDRAW_ASSERT_TEST__, CDRAW_ASSERT_TEST)
 #ifdef __cplusplus
@@ -206,19 +206,21 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif // #ifdef __cplusplus
-#define cdraw_assert_test(condition)																				// Framework assert disabled by testing, replaced by flag instead.
-#define failassert(condition,...)			(assert_defaultname = !(condition)); failret(condition, __VA_ARGS__)	// Raise assert flag and return variadic argument if condition fails;
-#define failassertret(condition,...)		failassert(condition, __VA_ARGS__)										// Raise assert flag and return variadic argument if condition fails.
+#define cdraw_assert_test(condition)																									// Framework assert disabled by testing, replaced by flag instead.
+#define failassert(condition,...)			(assert_defaultname = assert_defaultname || !(condition)); failret(condition, __VA_ARGS__)	// Raise assert flag and return variadic argument if condition fails;
+#define failassertret(condition,...)		failassert(condition, __VA_ARGS__)															// Raise assert flag and return variadic argument if condition fails.
+#define failassertreset()					(assert_defaultname = false)
 #else // #if (defined CDRAW_ASSERT_TEST)
-#define failassert(condition,...)			cdraw_assert(condition)													// Assert without returning if condition fails.
-#define failassertret(condition,...)		cdraw_assert(condition); failret(condition, __VA_ARGS__)				// Assert and/or return variadic argument if condition fails.
+#define failassert(condition,...)			cdraw_assert(condition)																		// Assert without returning if condition fails.
+#define failassertret(condition,...)		cdraw_assert(condition); failret(condition, __VA_ARGS__)									// Assert and/or return variadic argument if condition fails.
+#define failassertreset()
 #endif // #else // #if (defined CDRAW_ASSERT_TEST)
-#define asserterr(condition,errcode)		cdraw_assert(condition); failret(condition, result_seterror(errcode))	// Assert and/or return error result if condition fails.
-#define asserterr_rng(x,xmin,xmax,errcode)	asserterr((x)>=(xmin)&&(x)<=(xmax), errcode)							// Assert and/or return error result if value is not in range.
-#define asserterr_ptr(ptr,errcode)			asserterr((ptr)!=NULL, errcode)											// Assert and/or return error result if pointer is not initialized.
-#define asserterr_ptrval(ptr,errcode)		asserterr(buffer_valid(ptr), errcode)									// Assert and/or return error result if pointer or its value is not initialized.
-#define asserterr_cstr(cstr,errorcode)		asserterr(label_valid(cstr), errcode)									// Assert and/or return error result if c-style string is not initialized.
-#define asserterr_count(x,count,errcode)	asserterr_rng(x, 0, count, errcode)										// Assert and/or return error result if value is negative or exceeds count.
+#define asserterr(condition,errcode)		cdraw_assert(condition); failret(condition, result_seterror(errcode))						// Assert and/or return error result if condition fails.
+#define asserterr_rng(x,xmin,xmax,errcode)	asserterr((x)>=(xmin)&&(x)<=(xmax), errcode)												// Assert and/or return error result if value is not in range.
+#define asserterr_ptr(ptr,errcode)			asserterr((ptr)!=NULL, errcode)																// Assert and/or return error result if pointer is not initialized.
+#define asserterr_ptrval(ptr,errcode)		asserterr(buffer_valid(ptr), errcode)														// Assert and/or return error result if pointer or its value is not initialized.
+#define asserterr_cstr(cstr,errorcode)		asserterr(label_valid(cstr), errcode)														// Assert and/or return error result if c-style string is not initialized.
+#define asserterr_count(x,count,errcode)	asserterr_rng(x, 0, count, errcode)															// Assert and/or return error result if value is negative or exceeds count.
 
 
 #define cdraw_istrue(tolerance_unused,expect_unused,result)		(!!result)																// Definition of true result test.

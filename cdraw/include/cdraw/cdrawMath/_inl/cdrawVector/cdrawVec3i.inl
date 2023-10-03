@@ -368,9 +368,9 @@ CDRAW_INL veci_t vecDot3i(int3_t const v_lh, int3_t const v_rh)
 CDRAW_INL intN_t vecCross3i(int3_t v_out, int3_t const v_lh, int3_t const v_rh)
 {
 	failassert(v_out && v_lh && v_rh, NULL);
-	vx(v_out) = vy(v_lh) * vz(v_rh) - vz(v_lh) * vy(v_rh);
-	vy(v_out) = vz(v_lh) * vx(v_rh) - vx(v_lh) * vz(v_rh);
-	vz(v_out) = vx(v_lh) * vy(v_rh) - vy(v_lh) * vx(v_rh);
+	vx(v_out) = (vy(v_lh) * vz(v_rh) - vz(v_lh) * vy(v_rh));
+	vy(v_out) = (vz(v_lh) * vx(v_rh) - vx(v_lh) * vz(v_rh));
+	vz(v_out) = (vx(v_lh) * vy(v_rh) - vy(v_lh) * vx(v_rh));
 	return v_out;
 }
 
@@ -384,9 +384,9 @@ CDRAW_INL vecu_t vecDistSq3i(int3_t const v_lh, int3_t const v_rh)
 {
 	failassert(v_lh && v_rh, 0);
 	int3_t const disp = {
-		vx(v_lh) - vx(v_rh),
-		vy(v_lh) - vy(v_rh),
-		vz(v_lh) - vz(v_rh),
+		(vx(v_lh) - vx(v_rh)),
+		(vy(v_lh) - vy(v_rh)),
+		(vz(v_lh) - vz(v_rh)),
 	};
 	return (gSq(vx(disp)) + gSq(vy(disp)) + gSq(vz(disp)));
 }

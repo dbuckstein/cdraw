@@ -320,7 +320,7 @@ CDRAW_INL vecu_t vecDot2u(uint2_t const v_lh, uint2_t const v_rh)
 CDRAW_INL veci_t vecCross2u(uint2_t const v_lh, uint2_t const v_rh)
 {
 	failassert(v_lh && v_rh, 0);
-	return (vx(v_lh) * vy(v_lh) - vy(v_lh) * vx(v_rh));
+	return (vx(v_lh) * vy(v_rh) - vy(v_lh) * vx(v_rh));
 }
 
 CDRAW_INL vecu_t vecLenSq2u(uint2_t const v)
@@ -332,9 +332,9 @@ CDRAW_INL vecu_t vecLenSq2u(uint2_t const v)
 CDRAW_INL vecu_t vecDistSq2u(uint2_t const v_lh, uint2_t const v_rh)
 {
 	failassert(v_lh && v_rh, 0);
-	uint2_t const disp = {
-		vx(v_lh) - vx(v_rh),
-		vy(v_lh) - vy(v_rh),
+	int2_t const disp = {
+		(vx(v_lh) - vx(v_rh)),
+		(vy(v_lh) - vy(v_rh)),
 	};
 	return (gSq(vx(disp)) + gSq(vy(disp)));
 }
