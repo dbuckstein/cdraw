@@ -797,6 +797,12 @@ typedef union vec4d_t
 		vec4d_t tokencat(name, 4D) = { x_value_fp64, y_value_fp64, z_value_fp64, w_value_fp64 };													\
 		vec4f_t tokencat(name, 4F) = { tokencat(x_value_fp64, f), tokencat(y_value_fp64, f), tokencat(z_value_fp64, f), tokencat(w_value_fp64, f) }
 
+#define vx(v) ((v)[0])	// Access first component of vector for read/write ('x').
+#define vy(v) ((v)[1])	// Access second component of vector for read/write ('y').
+#define vz(v) ((v)[2])	// Access third component of vector for read/write ('z').
+#define vw(v) ((v)[3])	// Access fourth component of vector for read/write ('w').
+
+
 #if CDRAW_USING_SCALAR_PREF
 /// <summary>
 /// Array-based preferred precision vectors, faster and more explicit than objects: 2D, 3D, 4D or pointer.
@@ -823,11 +829,6 @@ typedef vec4f_t			vec4_t;
 		cdraw_vector_decl_sc(name, len, __VA_ARGS__)
 #endif // #else // #if CDRAW_USING_SCALAR_PREF
 #define cdraw_vector_const(name,len,...)										cdraw_vector_decl(static const name, len, __VA_ARGS__)
-
-#define vx(v) ((v)[0])	// Access first component of vector for read/write ('x').
-#define vy(v) ((v)[1])	// Access second component of vector for read/write ('y').
-#define vz(v) ((v)[2])	// Access third component of vector for read/write ('z').
-#define vw(v) ((v)[3])	// Access fourth component of vector for read/write ('w').
 
 
 /******************************************************************************

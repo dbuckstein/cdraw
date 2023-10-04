@@ -52,6 +52,7 @@
 #endif // #ifndef CDRAW_SCALAR_PREF_DOUBLE
 #define CDRAW_USING_SCALAR_PREF_DOUBLE	cdraw_enabled(CDRAW_SCALAR_PREF_DOUBLE) && CDRAW_USING_SCALAR_PREF
 
+
 #define cdraw_scalar_base(name)								tokencat(name, scalar_suffix)
 #define cdraw_scalar_declDF(name,value_fp64)				\
 		fp64_t tokencat(name, D) = value_fp64;				\
@@ -59,6 +60,12 @@
 #define cdraw_scalar_declIU(name,value_int)					\
 		 int32_t tokencat(name, I) = value_int;				\
 		uint32_t tokencat(name, U) = tokencat(value_int, u)
+
+#define scEpsD		(DBL_EPSILON)				// Standard epsilon ("smallest value") for double-precision.
+#define scEpsF		(FLT_EPSILON)				// Standard epsilon ("smallest value") for single-precision.
+#define scBigEpsD	(DBL_EPSILON * 64.0)		// Bigger epsilon for double-precision (32x covers inverse trigonometry).
+#define scBigEpsF	(FLT_EPSILON * 64.0f)		// Bigger epsilon for single-precision (32x covers inverse trigonometry).
+
 
 #if CDRAW_USING_SCALAR_PREF
 #if CDRAW_USING_SCALAR_PREF_DOUBLE
@@ -75,6 +82,8 @@ typedef fp32_t			scalar_t;	// Global scalar number representation (single-precis
 #define cdraw_scalar_decl(name,value_fp64)					\
 		cdraw_scalar_declDF(name, value_fp64);				\
 		scalar_t name = tokencat(value_fp64, const_suffix)
+#define scEps		cdraw_scalar_base(scEps)	// Standard epsilon ("smallest value") for preferred precision.
+#define scBigEps	cdraw_scalar_base(scBigEps)	// Bigger epsilon for preferred precision (32x covers inverse trigonometry).
 #else // #if CDRAW_USING_SCALAR_PREF
 #define cdraw_scalar_decl(name,value_fp64)					\
 		cdraw_scalar_declDF(name, value_fp64)
@@ -141,13 +150,6 @@ cdraw_scalar_const(sc180, 180.0);
 cdraw_scalar_const(sc270, 270.0);
 cdraw_scalar_const(sc360, 360.0);
 
-#define scEpsD		(DBL_EPSILON)
-#define scEpsF		(FLT_EPSILON)
-#define scEps		cdraw_scalar_base(scEps)
-#define scBigEpsD	(DBL_EPSILON * 32.0)
-#define scBigEpsF	(FLT_EPSILON * 32.0f)
-#define scBigEps	cdraw_scalar_base(scBigEps)
-
 
 /******************************************************************************
 * Functions.
@@ -175,8 +177,8 @@ cdraw_scalar_const(sc360, 360.0);
 #define gDivSafeF(x_num,x_den)				(scIsNonZeroApproxF(x_den) ? gDiv(x_num, x_den) : sc0F)										// Compute safe quotient for single-precision float.
 #define gDivSafeD(x_num,x_den)				(scIsNonZeroApproxD(x_den) ? gDiv(x_num, x_den) : sc0D)										// Compute safe quotient for double-precision float.
 #define gModSafe(x_num,x_den)				((x_den) ? gMod(x_num, x_den) : (x_num))													// Compute general safe modulo.
-#define gModSafeF(x_num,x_den)				(scIsNonZeroApproxF(x_den) ? gModF(x_num, x_den) : sc0F)									// Compute safe modulo for single-precision float.
-#define gModSafeD(x_num,x_den)				(scIsNonZeroApproxD(x_den) ? gModD(x_num, x_den) : sc0D)									// Compute safe modulo for double-precision float.
+#define gModSafeF(x_num,x_den)				(scIsNonZeroApproxF(x_den) ? gModF(x_num, x_den) : (x_num))									// Compute safe modulo for single-precision float.
+#define gModSafeD(x_num,x_den)				(scIsNonZeroApproxD(x_den) ? gModD(x_num, x_den) : (x_num))									// Compute safe modulo for double-precision float.
 #define gDivModSafe(x_mod,x_num,x_den)		((x_den) ? gDivMod(x_mod, x_num, x_den) : (((x_mod) = (x_num)), 0))							// Compute general safe quotient and modulo.
 #define gDivModSafeF(x_mod,x_num,x_den)		(scIsNonZeroApproxF(x_den) ? gDivModF(x_mod, x_num, x_den) : (((x_mod) = (x_num)), sc0F))	// Compute safe quotient and modulo for single-precision float.
 #define gDivModSafeD(x_mod,x_num,x_den)		(scIsNonZeroApproxD(x_den) ? gDivModD(x_mod, x_num, x_den) : (((x_mod) = (x_num)), sc0D))	// Compute safe quotient and modulo for double-precision float.
