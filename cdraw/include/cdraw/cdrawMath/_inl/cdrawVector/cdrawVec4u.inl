@@ -26,10 +26,10 @@
 CDRAW_INL uintN_t vecZero4u(uint4_t v_out)
 {
 	failassert(v_out, NULL);
-	vx(v_out) = 0;
-	vy(v_out) = 0;
-	vz(v_out) = 0;
-	vw(v_out) = 0;
+	vx(v_out) = 0u;
+	vy(v_out) = 0u;
+	vz(v_out) = 0u;
+	vw(v_out) = 0u;
 	return v_out;
 }
 
@@ -86,10 +86,10 @@ CDRAW_INL uintN_t vecCopy4u(uint4_t v_out, uint4_t const v)
 CDRAW_INL uintN_t vecCopy4b4u(uint4_t v_out, bool4_t const v)
 {
 	failassert(v_out && v, NULL);
-	vx(v_out) = (vx(v) ? 1 : 0);
-	vy(v_out) = (vy(v) ? 1 : 0);
-	vz(v_out) = (vz(v) ? 1 : 0);
-	vw(v_out) = (vw(v) ? 1 : 0);
+	vx(v_out) = (vx(v) ? 1u : 0u);
+	vy(v_out) = (vy(v) ? 1u : 0u);
+	vz(v_out) = (vz(v) ? 1u : 0u);
+	vw(v_out) = (vw(v) ? 1u : 0u);
 	return v_out;
 }
 
@@ -447,11 +447,13 @@ CDRAW_INL vecu_t vecDispDistSq4u(int4_t v_disp_out, uint4_t const v_lh, uint4_t 
 
 CDRAW_INL vecb_t vecIsZero4u(uint4_t const v)
 {
+	failassert(v, true);
 	return ((vx(v) == 0) && (vy(v) == 0) && (vz(v) == 0) && (vw(v) == 0));
 }
 
 CDRAW_INL vecb_t vecIsNonZero4u(uint4_t const v)
 {
+	failassert(v, false);
 	return ((vx(v) != 0) || (vy(v) != 0) || (vz(v) != 0) || (vw(v) != 0));
 }
 

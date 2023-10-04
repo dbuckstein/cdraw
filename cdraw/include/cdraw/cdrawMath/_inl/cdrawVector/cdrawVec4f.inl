@@ -26,10 +26,10 @@
 CDRAW_INL floatN_t vecZero4f(float4_t v_out)
 {
 	failassert(v_out, NULL);
-	vx(v_out) = 0;
-	vy(v_out) = 0;
-	vz(v_out) = 0;
-	vw(v_out) = 0;
+	vx(v_out) = 0.0f;
+	vy(v_out) = 0.0f;
+	vz(v_out) = 0.0f;
+	vw(v_out) = 0.0f;
 	return v_out;
 }
 
@@ -388,12 +388,14 @@ CDRAW_INL vecf_t vecDispDistSq4f(float4_t v_disp_out, float4_t const v_lh, float
 
 CDRAW_INL vecb_t vecIsZero4f(float4_t const v)
 {
-	return ((vx(v) == 0) && (vy(v) == 0) && (vz(v) == 0) && (vw(v) == 0));
+	failassert(v, true);
+	return scIsZeroApproxF(gSq(vx(v)) + gSq(vy(v)) + gSq(vz(v)) + gSq(vw(v)));
 }
 
 CDRAW_INL vecb_t vecIsNonZero4f(float4_t const v)
 {
-	return ((vx(v) != 0) || (vy(v) != 0) || (vz(v) != 0) || (vw(v) != 0));
+	failassert(v, false);
+	return scIsNonZeroApproxF(gSq(vx(v)) + gSq(vy(v)) + gSq(vz(v)) + gSq(vw(v)));
 }
 
 CDRAW_INL floatN_t vecMad4f(float4_t v_out, vecf_t const u, float4_t const v_origin, float4_t const v_delta)

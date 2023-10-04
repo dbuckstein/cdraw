@@ -55,11 +55,6 @@ typedef fp32_t								vecf_t, float2_t[2], float3_t[3], float4_t[4], * floatN_t;
 /// </summary>
 typedef fp64_t								vecd_t, double2_t[2], double3_t[3], double4_t[4], * doubleN_t;
 
-/// <summary>
-/// Array-based preferred precision vectors, faster and more explicit than objects: 2D, 3D, 4D or pointer.
-/// </summary>
-typedef scalar_t							vec_t, scalar2_t[2], scalar3_t[3], scalar4_t[4], * scalarN_t;
-
 
 /// <summary>
 /// Integer 2D vector container for array and named components in vector, color and parametric spaces.
@@ -770,26 +765,13 @@ typedef union vec4d_t
 * Configuration.
 ******************************************************************************/
 
-#if CDRAW_USING_SCALAR_DOUBLE
-typedef vec2d_t			vec2_t;
-typedef vec3d_t			vec3_t;
-typedef vec4d_t			vec4_t;
-#define vector_suffix	d
-#else // #if CDRAW_USING_SCALAR_DOUBLE
-typedef vec2f_t			vec2_t;
-typedef vec3f_t			vec3_t;
-typedef vec4f_t			vec4_t;
-#define vector_suffix	f
-#endif // #else // #if CDRAW_USING_SCALAR_DOUBLE
 #define cdraw_vector_base(name)													tokencat(name, vector_suffix)
-#define cdraw_vector_decl(name,len,...)											\
+#define cdraw_vector_decl_sc(name,len,...)										\
 		tokencat(vec, tokencat(len, b_t)) tokencat(name, b) = { __VA_ARGS__ };	\
 		tokencat(vec, tokencat(len, i_t)) tokencat(name, i) = { __VA_ARGS__ };	\
 		tokencat(vec, tokencat(len, u_t)) tokencat(name, u) = { __VA_ARGS__ };	\
 		tokencat(vec, tokencat(len, f_t)) tokencat(name, f) = { __VA_ARGS__ };	\
-		tokencat(vec, tokencat(len, d_t)) tokencat(name, d) = { __VA_ARGS__ };	\
-		tokencat(vec, tokencat(len, _t)) name = { __VA_ARGS__ }
-#define cdraw_vector_const(name,len,...)										cdraw_vector_decl(static const name, len, __VA_ARGS__)
+		tokencat(vec, tokencat(len, d_t)) tokencat(name, d) = { __VA_ARGS__ }
 #define cdraw_vector_decl2B(name,x_value,y_value)																									\
 		vec2b_t tokencat(name, 2B) = { x_value, y_value }
 #define cdraw_vector_decl3B(name,x_value,y_value,z_value)																							\
@@ -814,6 +796,33 @@ typedef vec4f_t			vec4_t;
 #define cdraw_vector_decl4DF(name,x_value_fp64,y_value_fp64,z_value_fp64,w_value_fp64)																\
 		vec4d_t tokencat(name, 4D) = { x_value_fp64, y_value_fp64, z_value_fp64, w_value_fp64 };													\
 		vec4f_t tokencat(name, 4F) = { tokencat(x_value_fp64, f), tokencat(y_value_fp64, f), tokencat(z_value_fp64, f), tokencat(w_value_fp64, f) }
+
+#if CDRAW_USING_SCALAR_PREF
+/// <summary>
+/// Array-based preferred precision vectors, faster and more explicit than objects: 2D, 3D, 4D or pointer.
+/// </summary>
+typedef scalar_t							vec_t, scalar2_t[2], scalar3_t[3], scalar4_t[4], * scalarN_t;
+#if CDRAW_USING_SCALAR_PREF_DOUBLE
+typedef vec2d_t			vec2_t;
+typedef vec3d_t			vec3_t;
+typedef vec4d_t			vec4_t;
+#define vector_suffix	d
+#define vector_other	f
+#else // #if CDRAW_USING_SCALAR_PREF_DOUBLE
+typedef vec2f_t			vec2_t;
+typedef vec3f_t			vec3_t;
+typedef vec4f_t			vec4_t;
+#define vector_suffix	f
+#define vector_other	d
+#endif // #else // #if CDRAW_USING_SCALAR_PREF_DOUBLE
+#define cdraw_vector_decl(name,len,...)	\
+		cdraw_vector_decl_sc(name, len, __VA_ARGS__);	\
+		tokencat(vec, tokencat(len, _t)) name = { __VA_ARGS__ }
+#else // #if CDRAW_USING_SCALAR_PREF
+#define cdraw_vector_decl(name,len,...)	\
+		cdraw_vector_decl_sc(name, len, __VA_ARGS__)
+#endif // #else // #if CDRAW_USING_SCALAR_PREF
+#define cdraw_vector_const(name,len,...)										cdraw_vector_decl(static const name, len, __VA_ARGS__)
 
 #define vx(v) ((v)[0])	// Access first component of vector for read/write ('x').
 #define vy(v) ((v)[1])	// Access second component of vector for read/write ('y').
@@ -864,21 +873,24 @@ cdraw_vector_const(vecXYZW4, 4, 1, 1, 1, 1);
 #include "cdrawVector/cdrawVec2u.h"
 #include "cdrawVector/cdrawVec2f.h"
 #include "cdrawVector/cdrawVec2d.h"
-#include "cdrawVector/cdrawVec2.h"
 
 #include "cdrawVector/cdrawVec3b.h"
 #include "cdrawVector/cdrawVec3i.h"
 #include "cdrawVector/cdrawVec3u.h"
 #include "cdrawVector/cdrawVec3f.h"
 #include "cdrawVector/cdrawVec3d.h"
-#include "cdrawVector/cdrawVec3.h"
 
 #include "cdrawVector/cdrawVec4b.h"
 #include "cdrawVector/cdrawVec4i.h"
 #include "cdrawVector/cdrawVec4u.h"
 #include "cdrawVector/cdrawVec4f.h"
 #include "cdrawVector/cdrawVec4d.h"
+
+#if CDRAW_USING_SCALAR_PREF
+#include "cdrawVector/cdrawVec2.h"
+#include "cdrawVector/cdrawVec3.h"
 #include "cdrawVector/cdrawVec4.h"
+#endif // #if CDRAW_USING_SCALAR_PREF
 
 
 // ****TO-DO: matrix base types - move to matrix

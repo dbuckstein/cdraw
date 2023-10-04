@@ -26,8 +26,8 @@
 CDRAW_INL uintN_t vecZero2u(uint2_t v_out)
 {
 	failassert(v_out, NULL);
-	vx(v_out) = 0;
-	vy(v_out) = 0;
+	vx(v_out) = 0u;
+	vy(v_out) = 0u;
 	return v_out;
 }
 
@@ -58,8 +58,8 @@ CDRAW_INL uintN_t vecCopy2u(uint2_t v_out, uint2_t const v)
 CDRAW_INL uintN_t vecCopy2b2u(uint2_t v_out, bool2_t const v)
 {
 	failassert(v_out && v, NULL);
-	vx(v_out) = (vx(v) ? 1 : 0);
-	vy(v_out) = (vy(v) ? 1 : 0);
+	vx(v_out) = (vx(v) ? 1u : 0u);
+	vy(v_out) = (vy(v) ? 1u : 0u);
 	return v_out;
 }
 
@@ -345,11 +345,13 @@ CDRAW_INL vecu_t vecDispDistSq2u(int2_t v_disp_out, uint2_t const v_lh, uint2_t 
 
 CDRAW_INL vecb_t vecIsZero2u(uint2_t const v)
 {
+	failassert(v, true);
 	return ((vx(v) == 0) && (vy(v) == 0));
 }
 
 CDRAW_INL vecb_t vecIsNonZero2u(uint2_t const v)
 {
+	failassert(v, false);
 	return ((vx(v) != 0) || (vy(v) != 0));
 }
 

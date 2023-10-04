@@ -26,9 +26,9 @@
 CDRAW_INL uintN_t vecZero3u(uint3_t v_out)
 {
 	failassert(v_out, NULL);
-	vx(v_out) = 0;
-	vy(v_out) = 0;
-	vz(v_out) = 0;
+	vx(v_out) = 0u;
+	vy(v_out) = 0u;
+	vz(v_out) = 0u;
 	return v_out;
 }
 
@@ -71,9 +71,9 @@ CDRAW_INL uintN_t vecCopy3u(uint3_t v_out, uint3_t const v)
 CDRAW_INL uintN_t vecCopy3b3u(uint3_t v_out, bool3_t const v)
 {
 	failassert(v_out && v, NULL);
-	vx(v_out) = (vx(v) ? 1 : 0);
-	vy(v_out) = (vy(v) ? 1 : 0);
-	vz(v_out) = (vz(v) ? 1 : 0);
+	vx(v_out) = (vx(v) ? 1u : 0u);
+	vy(v_out) = (vy(v) ? 1u : 0u);
+	vz(v_out) = (vz(v) ? 1u : 0u);
 	return v_out;
 }
 
@@ -396,11 +396,13 @@ CDRAW_INL vecu_t vecDispDistSq3u(int3_t v_disp_out, uint3_t const v_lh, uint3_t 
 
 CDRAW_INL vecb_t vecIsZero3u(uint3_t const v)
 {
+	failassert(v, true);
 	return ((vx(v) == 0) && (vy(v) == 0) && (vz(v) == 0));
 }
 
 CDRAW_INL vecb_t vecIsNonZero3u(uint3_t const v)
 {
+	failassert(v, false);
 	return ((vx(v) != 0) || (vy(v) != 0) || (vz(v) != 0));
 }
 

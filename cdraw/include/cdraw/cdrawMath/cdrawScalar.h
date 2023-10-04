@@ -34,26 +34,24 @@
 * Configuration.
 ******************************************************************************/
 
-#ifndef CDRAW_SCALAR_DOUBLE
+#ifndef CDRAW_SCALAR_PREF
+// Describes whether using preferred base scalar type.
+// Should be defined by includer outside of this file as one of the following: 
+//	-CDRAW_ENABLE if requesting preferred scalar type.
+//	-CDRAW_DISABLE if requesting no preferred scalar type.
+#define CDRAW_SCALAR_PREF				CDRAW_DISABLE
+#endif // #ifndef CDRAW_SCALAR_PREF
+#define CDRAW_USING_SCALAR_PREF			cdraw_enabled(CDRAW_SCALAR_PREF) && !CDRAW_USING_PRECOMPILE_LIBS
+
+#ifndef CDRAW_SCALAR_PREF_DOUBLE
 // Describes whether double-precision float is desired for base scalar type.
 // Should be defined by includer outside of this file as one of the following: 
 //	-CDRAW_ENABLE if requesting base scalar type use double-precision (double).
 //	-CDRAW_DISABLE if requesting base scalar type use single-precision (float).
-#define CDRAW_SCALAR_DOUBLE			CDRAW_DISABLE
-#endif // #ifndef CDRAW_SCALAR_DOUBLE
+#define CDRAW_SCALAR_PREF_DOUBLE		CDRAW_DISABLE
+#endif // #ifndef CDRAW_SCALAR_PREF_DOUBLE
+#define CDRAW_USING_SCALAR_PREF_DOUBLE	cdraw_enabled(CDRAW_SCALAR_PREF_DOUBLE) && CDRAW_USING_SCALAR_PREF
 
-#define CDRAW_USING_SCALAR_DOUBLE	cdraw_enabled(CDRAW_SCALAR_DOUBLE) && !CDRAW_USING_PRECOMPILE_LIBS
-#if CDRAW_USING_SCALAR_DOUBLE
-typedef fp64_t			scalar_t;	// Global scalar number representation (double-precision).
-#define scalar_suffix	D
-#define const_suffix	
-#define SC_EPSILON		(DBL_EPSILON)
-#else // #if CDRAW_USING_SCALAR_DOUBLE
-typedef fp32_t			scalar_t;	// Global scalar number representation (single-precision).
-#define scalar_suffix	F
-#define const_suffix	f
-#define SC_EPSILON		(FLT_EPSILON)
-#endif // #else // #if CDRAW_USING_SCALAR_DOUBLE
 #define cdraw_scalar_base(name)								tokencat(name, scalar_suffix)
 #define cdraw_scalar_declDF(name,value_fp64)				\
 		fp64_t tokencat(name, D) = value_fp64;				\
@@ -61,9 +59,26 @@ typedef fp32_t			scalar_t;	// Global scalar number representation (single-precis
 #define cdraw_scalar_declIU(name,value_int)					\
 		 int32_t tokencat(name, I) = value_int;				\
 		uint32_t tokencat(name, U) = tokencat(value_int, u)
+
+#if CDRAW_USING_SCALAR_PREF
+#if CDRAW_USING_SCALAR_PREF_DOUBLE
+typedef fp64_t			scalar_t;	// Global scalar number representation (double-precision).
+#define scalar_suffix	D
+#define const_suffix	
+#define SC_EPSILON		(DBL_EPSILON)
+#else // #if CDRAW_USING_SCALAR_PREF_DOUBLE
+typedef fp32_t			scalar_t;	// Global scalar number representation (single-precision).
+#define scalar_suffix	F
+#define const_suffix	f
+#define SC_EPSILON		(FLT_EPSILON)
+#endif // #else // #if CDRAW_USING_SCALAR_PREF_DOUBLE
 #define cdraw_scalar_decl(name,value_fp64)					\
 		cdraw_scalar_declDF(name, value_fp64);				\
 		scalar_t name = tokencat(value_fp64, const_suffix)
+#else // #if CDRAW_USING_SCALAR_PREF
+#define cdraw_scalar_decl(name,value_fp64)					\
+		cdraw_scalar_declDF(name, value_fp64)
+#endif // #else // #if CDRAW_USING_SCALAR_PREF
 #define cdraw_scalar_const(name,value_fp64)					cdraw_scalar_decl(static const name, value_fp64)
 
 
@@ -140,7 +155,10 @@ cdraw_scalar_const(sc360, 360.0);
 
 #include "cdrawScalar/cdrawScF.h"
 #include "cdrawScalar/cdrawScD.h"
+
+#if CDRAW_USING_SCALAR_PREF
 #include "cdrawScalar/cdrawSc.h"
+#endif // #if CDRAW_USING_SCALAR_PREF
 
 
 #define gSq(x)								((x) * (x))																					// Compute general square of input.

@@ -59,24 +59,24 @@ static bool cdraw_isunsafe_d(fp64_t tolerance_unused, fp64_t const expect, fp64_
 		asserterr(test(tolerance, expect, func(__VA_ARGS__)), errcode_CUSTOM_BEGIN)
 #define cdraw_testSc_rB(test,func,...) failassertreset();								\
 		asserterr(test(0, 0, func(__VA_ARGS__)), errcode_CUSTOM_BEGIN)
-#define cdraw_testScDF_rB1S(testname,funcD,funcF,arg0_fp64)								\
-		cdraw_testSc(cdraw_testname(testname,_d), 0, 0, funcD, (fp64_t)(arg0_fp64));	\
-		cdraw_testSc(cdraw_testname(testname,_f), 0, 0, funcF, (fp32_t)(arg0_fp64))
-#define cdraw_testScDF_rB3S(testname,funcD,funcF,arg0_fp64,arg1_fp64,arg2_fp64)													\
-		cdraw_testSc(cdraw_testname(testname,_d), 0, 0, funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64));	\
-		cdraw_testSc(cdraw_testname(testname,_f), 0, 0, funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64))
-#define cdraw_testScDF_1S(testname,expect_fp64,funcD,funcF,arg0_fp64)												\
-		cdraw_testSc(cdraw_testname(testname,_d), (scBigEpsD), (fp64_t)(expect_fp64), funcD, (fp64_t)(arg0_fp64));	\
-		cdraw_testSc(cdraw_testname(testname,_f), (scBigEpsF), (fp32_t)(expect_fp64), funcF, (fp32_t)(arg0_fp64))
-#define cdraw_testScDF_2S(testname,expect_fp64,funcD,funcF,arg0_fp64,arg1_fp64)															\
-		cdraw_testSc(cdraw_testname(testname,_d), (scBigEpsD), (fp64_t)(expect_fp64), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64));	\
-		cdraw_testSc(cdraw_testname(testname,_f), (scBigEpsF), (fp32_t)(expect_fp64), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64))
-#define cdraw_testScDF_3S(testname,expect_fp64,funcD,funcF,arg0_fp64,arg1_fp64,arg2_fp64)																		\
-		cdraw_testSc(cdraw_testname(testname,_d), (scBigEpsD), (fp64_t)(expect_fp64), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64));	\
-		cdraw_testSc(cdraw_testname(testname,_f), (scBigEpsF), (fp32_t)(expect_fp64), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64))
-#define cdraw_testScDF_5S(testname,expect_fp64,funcD,funcF,arg0_fp64,arg1_fp64,arg2_fp64,arg3_fp64,arg4_fp64)																							\
-		cdraw_testSc(cdraw_testname(testname,_d), (scBigEpsD), (fp64_t)(expect_fp64), funcD, (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64), (fp64_t)(arg3_fp64), (fp64_t)(arg4_fp64));	\
-		cdraw_testSc(cdraw_testname(testname,_f), (scBigEpsF), (fp32_t)(expect_fp64), funcF, (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64), (fp32_t)(arg3_fp64), (fp32_t)(arg4_fp64))
+#define cdraw_testScDF_rB1S(testname,funcname,arg0_fp64)												\
+		cdraw_testSc(cdraw_testname(testname,_d), 0, 0, tokencat(funcname, D), (fp64_t)(arg0_fp64));	\
+		cdraw_testSc(cdraw_testname(testname,_f), 0, 0, tokencat(funcname, F), (fp32_t)(arg0_fp64))
+#define cdraw_testScDF_rB3S(testname,funcname,arg0_fp64,arg1_fp64,arg2_fp64)																	\
+		cdraw_testSc(cdraw_testname(testname,_d), 0, 0, tokencat(funcname, D), (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64));	\
+		cdraw_testSc(cdraw_testname(testname,_f), 0, 0, tokencat(funcname, F), (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64))
+#define cdraw_testScDF_1S(testname,expect_fp64,funcname,arg0_fp64)																	\
+		cdraw_testSc(cdraw_testname(testname,_d), (scBigEpsD), (fp64_t)(expect_fp64), tokencat(funcname, D), (fp64_t)(arg0_fp64));	\
+		cdraw_testSc(cdraw_testname(testname,_f), (scBigEpsF), (fp32_t)(expect_fp64), tokencat(funcname, F), (fp32_t)(arg0_fp64))
+#define cdraw_testScDF_2S(testname,expect_fp64,funcname,arg0_fp64,arg1_fp64)																			\
+		cdraw_testSc(cdraw_testname(testname,_d), (scBigEpsD), (fp64_t)(expect_fp64), tokencat(funcname, D), (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64));	\
+		cdraw_testSc(cdraw_testname(testname,_f), (scBigEpsF), (fp32_t)(expect_fp64), tokencat(funcname, F), (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64))
+#define cdraw_testScDF_3S(testname,expect_fp64,funcname,arg0_fp64,arg1_fp64,arg2_fp64)																							\
+		cdraw_testSc(cdraw_testname(testname,_d), (scBigEpsD), (fp64_t)(expect_fp64), tokencat(funcname, D), (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64));	\
+		cdraw_testSc(cdraw_testname(testname,_f), (scBigEpsF), (fp32_t)(expect_fp64), tokencat(funcname, F), (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64))
+#define cdraw_testScDF_5S(testname,expect_fp64,funcname,arg0_fp64,arg1_fp64,arg2_fp64,arg3_fp64,arg4_fp64)																												\
+		cdraw_testSc(cdraw_testname(testname,_d), (scBigEpsD), (fp64_t)(expect_fp64), tokencat(funcname, D), (fp64_t)(arg0_fp64), (fp64_t)(arg1_fp64), (fp64_t)(arg2_fp64), (fp64_t)(arg3_fp64), (fp64_t)(arg4_fp64));	\
+		cdraw_testSc(cdraw_testname(testname,_f), (scBigEpsF), (fp32_t)(expect_fp64), tokencat(funcname, F), (fp32_t)(arg0_fp64), (fp32_t)(arg1_fp64), (fp32_t)(arg2_fp64), (fp32_t)(arg3_fp64), (fp32_t)(arg4_fp64))
 
 
 #define cdraw_testVec_rB(test,func,...)																												\
@@ -237,191 +237,191 @@ result_t cdrawScalarTest()
 
 		cdraw_testSc_rB(cdraw_istrue_d, scIsZeroApproxD, scEpsD);
 		cdraw_testSc_rB(cdraw_istrue_f, scIsZeroApproxF, scEpsF);
-		cdraw_testScDF_rB1S(isfalse, scIsZeroApproxD, scIsZeroApproxF, x_B);
-		cdraw_testScDF_rB1S(isfalse, scIsZeroApproxD, scIsZeroApproxF, x_C);
+		cdraw_testScDF_rB1S(isfalse, scIsZeroApprox, x_B);
+		cdraw_testScDF_rB1S(isfalse, scIsZeroApprox, x_C);
 
 		cdraw_testSc_rB(cdraw_isfalse_d, scIsNonZeroApproxD, scEpsD);
 		cdraw_testSc_rB(cdraw_isfalse_f, scIsNonZeroApproxF, scEpsF);
-		cdraw_testScDF_rB1S(istrue, scIsNonZeroApproxD, scIsNonZeroApproxF, x_B);
-		cdraw_testScDF_rB1S(istrue, scIsNonZeroApproxD, scIsNonZeroApproxF, x_C);
+		cdraw_testScDF_rB1S(istrue, scIsNonZeroApprox, x_B);
+		cdraw_testScDF_rB1S(istrue, scIsNonZeroApprox, x_C);
 
 		cdraw_testSc_rB(cdraw_isfalse_d, scIsPositiveApproxD, scEpsD);
 		cdraw_testSc_rB(cdraw_isfalse_f, scIsPositiveApproxF, scEpsF);
-		cdraw_testScDF_rB1S(istrue, scIsPositiveApproxD, scIsPositiveApproxF, x_B);
-		cdraw_testScDF_rB1S(isfalse, scIsPositiveApproxD, scIsPositiveApproxF, x_C);
+		cdraw_testScDF_rB1S(istrue, scIsPositiveApprox, x_B);
+		cdraw_testScDF_rB1S(isfalse, scIsPositiveApprox, x_C);
 
 		cdraw_testSc_rB(cdraw_istrue_d, scIsNonPositiveApproxD, scEpsD);
 		cdraw_testSc_rB(cdraw_istrue_f, scIsNonPositiveApproxF, scEpsF);
-		cdraw_testScDF_rB1S(isfalse, scIsNonPositiveApproxD, scIsNonPositiveApproxF, x_B);
-		cdraw_testScDF_rB1S(istrue, scIsNonPositiveApproxD, scIsNonPositiveApproxF, x_C);
+		cdraw_testScDF_rB1S(isfalse, scIsNonPositiveApprox, x_B);
+		cdraw_testScDF_rB1S(istrue, scIsNonPositiveApprox, x_C);
 
 		cdraw_testSc_rB(cdraw_isfalse_d, scIsNegativeApproxD, scEpsD);
 		cdraw_testSc_rB(cdraw_isfalse_f, scIsNegativeApproxF, scEpsF);
-		cdraw_testScDF_rB1S(isfalse, scIsNegativeApproxD, scIsNegativeApproxF, x_B);
-		cdraw_testScDF_rB1S(istrue, scIsNegativeApproxD, scIsNegativeApproxF, x_C);
+		cdraw_testScDF_rB1S(isfalse, scIsNegativeApprox, x_B);
+		cdraw_testScDF_rB1S(istrue, scIsNegativeApprox, x_C);
 
 		cdraw_testSc_rB(cdraw_istrue_d, scIsNonNegativeApproxD, scEpsD);
 		cdraw_testSc_rB(cdraw_istrue_f, scIsNonNegativeApproxF, scEpsF);
-		cdraw_testScDF_rB1S(istrue, scIsNonNegativeApproxD, scIsNonNegativeApproxF, x_B);
-		cdraw_testScDF_rB1S(isfalse, scIsNonNegativeApproxD, scIsNonNegativeApproxF, x_C);
+		cdraw_testScDF_rB1S(istrue, scIsNonNegativeApprox, x_B);
+		cdraw_testScDF_rB1S(isfalse, scIsNonNegativeApprox, x_C);
 	}
 	
 	{
 		fp64_t const x_A = +2.5, x_B = -1.25, x_C = 0.0, x_num = 4.0;
 
-		cdraw_testScDF_1S(isexact, +1.0, scSgnD, scSgnF, x_A);
-		cdraw_testScDF_1S(isexact, -1.0, scSgnD, scSgnF, x_B);
-		cdraw_testScDF_1S(isexact, 0.00, scSgnD, scSgnF, x_C);
+		cdraw_testScDF_1S(isexact, +1.0, scSgn, x_A);
+		cdraw_testScDF_1S(isexact, -1.0, scSgn, x_B);
+		cdraw_testScDF_1S(isexact, 0.00, scSgn, x_C);
 
-		cdraw_testScDF_1S(isexact, +x_A, scAbsD, scAbsF, x_A);
-		cdraw_testScDF_1S(isexact, -x_B, scAbsD, scAbsF, x_B);
-		cdraw_testScDF_1S(isexact, 0.00, scAbsD, scAbsF, x_C);
+		cdraw_testScDF_1S(isexact, +x_A, scAbs, x_A);
+		cdraw_testScDF_1S(isexact, -x_B, scAbs, x_B);
+		cdraw_testScDF_1S(isexact, 0.00, scAbs, x_C);
 
-		cdraw_testScDF_1S(isapprox, 0.50, scFracD, scFracF, x_A);
-		cdraw_testScDF_1S(isapprox, 0.75, scFracD, scFracF, x_B);
-		cdraw_testScDF_1S(isapprox, 0.00, scFracD, scFracF, x_C);
+		cdraw_testScDF_1S(isapprox, 0.50, scFrac, x_A);
+		cdraw_testScDF_1S(isapprox, 0.75, scFrac, x_B);
+		cdraw_testScDF_1S(isapprox, 0.00, scFrac, x_C);
 
-		cdraw_testScDF_1S(isapprox, +0.4, scRecipD, scRecipF, x_A);
-		cdraw_testScDF_1S(isapprox, -0.8, scRecipD, scRecipF, x_B);
-		cdraw_testScDF_1S(isunsafe, 0.00, scRecipD, scRecipF, x_C);
+		cdraw_testScDF_1S(isapprox, +0.4, scRecip, x_A);
+		cdraw_testScDF_1S(isapprox, -0.8, scRecip, x_B);
+		cdraw_testScDF_1S(isunsafe, 0.00, scRecip, x_C);
 
-		cdraw_testScDF_2S(isapprox, +1.6, scDivD, scDivF, x_num, x_A);
-		cdraw_testScDF_2S(isapprox, -3.2, scDivD, scDivF, x_num, x_B);
-		cdraw_testScDF_2S(isunsafe, 0.00, scDivD, scDivF, x_num, x_C);
+		cdraw_testScDF_2S(isapprox, +1.6, scDiv, x_num, x_A);
+		cdraw_testScDF_2S(isapprox, -3.2, scDiv, x_num, x_B);
+		cdraw_testScDF_2S(isunsafe, 0.00, scDiv, x_num, x_C);
 
-		cdraw_testScDF_2S(isapprox, +1.5, scModD, scModF, x_num, x_A);
-		cdraw_testScDF_2S(isapprox, -1.0, scModD, scModF, x_num, x_B);
-		cdraw_testScDF_2S(isunsafe, x_num, scModD, scModF, x_num, x_C);
+		cdraw_testScDF_2S(isapprox, +1.5, scMod, x_num, x_A);
+		cdraw_testScDF_2S(isapprox, -1.0, scMod, x_num, x_B);
+		cdraw_testScDF_2S(isunsafe, x_num, scMod, x_num, x_C);
 	}
 
 	{
 		fp64_t const x_A = +0.75, x_B = +1.25, x_C = -0.25, x_min = -2.0, x_max = +6.0, x_min_dst = +50.0, x_max_dst = +100.0;
 
-		cdraw_testScDF_3S(isapprox, +2.5, scMadD, scMadF, x_A, x_min, x_max);
-		cdraw_testScDF_3S(isapprox, +5.5, scMadD, scMadF, x_B, x_min, x_max);
-		cdraw_testScDF_3S(isapprox, -3.5, scMadD, scMadF, x_C, x_min, x_max);
+		cdraw_testScDF_3S(isapprox, +2.5, scMad, x_A, x_min, x_max);
+		cdraw_testScDF_3S(isapprox, +5.5, scMad, x_B, x_min, x_max);
+		cdraw_testScDF_3S(isapprox, -3.5, scMad, x_C, x_min, x_max);
 
-		cdraw_testScDF_3S(isapprox, +4.00, scLerpD, scLerpF, x_A, x_min, x_max);
-		cdraw_testScDF_3S(isapprox, +8.00, scLerpD, scLerpF, x_B, x_min, x_max);
-		cdraw_testScDF_3S(isapprox, x_min, scLerpD, scLerpF, x_C, x_min, x_min);
+		cdraw_testScDF_3S(isapprox, +4.00, scLerp, x_A, x_min, x_max);
+		cdraw_testScDF_3S(isapprox, +8.00, scLerp, x_B, x_min, x_max);
+		cdraw_testScDF_3S(isapprox, x_min, scLerp, x_C, x_min, x_min);
 
-		cdraw_testScDF_3S(isapprox, x_A, scLerpInvD, scLerpInvF, 4.0, x_min, x_max);
-		cdraw_testScDF_3S(isapprox, x_B, scLerpInvD, scLerpInvF, 8.0, x_min, x_max);
-		cdraw_testScDF_3S(isunsafe, 0.0, scLerpInvD, scLerpInvF, x_C, x_min, x_min);
+		cdraw_testScDF_3S(isapprox, x_A, scLerpInv, 4.0, x_min, x_max);
+		cdraw_testScDF_3S(isapprox, x_B, scLerpInv, 8.0, x_min, x_max);
+		cdraw_testScDF_3S(isunsafe, 0.0, scLerpInv, x_C, x_min, x_min);
 
-		cdraw_testScDF_3S(isexact, x_A, scClampD, scClampF, x_A, x_min, x_max);
-		cdraw_testScDF_3S(isexact, x_max, scClampD, scClampF, +x_max_dst, x_min, x_max);
-		cdraw_testScDF_3S(isexact, x_min, scClampD, scClampF, -x_max_dst, x_min, x_max);
+		cdraw_testScDF_3S(isexact, x_A, scClamp, x_A, x_min, x_max);
+		cdraw_testScDF_3S(isexact, x_max, scClamp, +x_max_dst, x_min, x_max);
+		cdraw_testScDF_3S(isexact, x_min, scClamp, -x_max_dst, x_min, x_max);
 
-		cdraw_testScDF_3S(isapprox, x_A, scRepeatD, scRepeatF, x_A, x_min, x_max);
-		cdraw_testScDF_3S(isapprox, 4.0, scRepeatD, scRepeatF, x_max_dst, x_min, x_max);
-		cdraw_testScDF_3S(isunsafe, x_C, scRepeatD, scRepeatF, x_C, x_min, x_min);
+		cdraw_testScDF_3S(isapprox, x_A, scRepeat, x_A, x_min, x_max);
+		cdraw_testScDF_3S(isapprox, 4.0, scRepeat, x_max_dst, x_min, x_max);
+		cdraw_testScDF_3S(isunsafe, x_C, scRepeat, x_C, x_min, x_min);
 
-		cdraw_testScDF_5S(isapprox, 87.5, scRemapD, scRemapF, +4.0, x_min, x_max, x_min_dst, x_max_dst);
-		cdraw_testScDF_5S(isapprox, x_min_dst, scRemapD, scRemapF, +8.0, x_min, x_max, x_min_dst, x_min_dst);
-		cdraw_testScDF_5S(isunsafe, x_min_dst, scRemapD, scRemapF, x_C, x_min, x_min, x_min_dst, x_max_dst);
+		cdraw_testScDF_5S(isapprox, 87.5, scRemap, +4.0, x_min, x_max, x_min_dst, x_max_dst);
+		cdraw_testScDF_5S(isapprox, x_min_dst, scRemap, +8.0, x_min, x_max, x_min_dst, x_min_dst);
+		cdraw_testScDF_5S(isunsafe, x_min_dst, scRemap, x_C, x_min, x_min, x_min_dst, x_max_dst);
 
-		cdraw_testScDF_rB3S(istrue, scIsInRangeD, scIsInRangeF, x_A, x_min, x_max);
-		cdraw_testScDF_rB3S(isfalse, scIsInRangeD, scIsInRangeF, x_B, x_min_dst, x_max_dst);
-		cdraw_testScDF_rB3S(istrue, scIsInRangeD, scIsInRangeF, x_C, x_C, x_C);
+		cdraw_testScDF_rB3S(istrue, scIsInRange, x_A, x_min, x_max);
+		cdraw_testScDF_rB3S(isfalse, scIsInRange, x_B, x_min_dst, x_max_dst);
+		cdraw_testScDF_rB3S(istrue, scIsInRange, x_C, x_C, x_C);
 
-		cdraw_testScDF_rB1S(istrue, scIsInUnitRangeD, scIsInUnitRangeF, x_A);
-		cdraw_testScDF_rB1S(isfalse, scIsInUnitRangeD, scIsInUnitRangeF, x_B);
-		cdraw_testScDF_rB1S(isfalse, scIsInUnitRangeD, scIsInUnitRangeF, x_C);
+		cdraw_testScDF_rB1S(istrue, scIsInUnitRange, x_A);
+		cdraw_testScDF_rB1S(isfalse, scIsInUnitRange, x_B);
+		cdraw_testScDF_rB1S(isfalse, scIsInUnitRange, x_C);
 
-		cdraw_testScDF_rB1S(istrue, scIsInSymmRangeD, scIsInSymmRangeF, x_A);
-		cdraw_testScDF_rB1S(isfalse, scIsInSymmRangeD, scIsInSymmRangeF, x_B);
-		cdraw_testScDF_rB1S(istrue, scIsInSymmRangeD, scIsInSymmRangeF, x_C);
+		cdraw_testScDF_rB1S(istrue, scIsInSymmRange, x_A);
+		cdraw_testScDF_rB1S(isfalse, scIsInSymmRange, x_B);
+		cdraw_testScDF_rB1S(istrue, scIsInSymmRange, x_C);
 	}
 
 	{
 		fp64_t const x_A = +64.0, x_B = -64.0, x_C = 0.0;
 
-		cdraw_testScDF_1S(isapprox, 8.0, scSqrtD, scSqrtF, x_A);
-		cdraw_testScDF_1S(isunsafe, 0.0, scSqrtD, scSqrtF, x_B);
-		cdraw_testScDF_1S(isexact, 0.00, scSqrtD, scSqrtF, x_C);
+		cdraw_testScDF_1S(isapprox, 8.0, scSqrt, x_A);
+		cdraw_testScDF_1S(isunsafe, 0.0, scSqrt, x_B);
+		cdraw_testScDF_1S(isexact, 0.00, scSqrt, x_C);
 
-		cdraw_testScDF_1S(isapprox, 0.125, scSqrtInvD, scSqrtInvF, x_A);
-		cdraw_testScDF_1S(isunsafe, 0.000, scSqrtInvD, scSqrtInvF, x_B);
-		cdraw_testScDF_1S(isunsafe, 0.000, scSqrtInvD, scSqrtInvF, x_C);
+		cdraw_testScDF_1S(isapprox, 0.125, scSqrtInv, x_A);
+		cdraw_testScDF_1S(isunsafe, 0.000, scSqrtInv, x_B);
+		cdraw_testScDF_1S(isunsafe, 0.000, scSqrtInv, x_C);
 
-		cdraw_testScDF_1S(isapprox, +4.0, scCbrtD, scCbrtF, x_A);
-		cdraw_testScDF_1S(isapprox, -4.0, scCbrtD, scCbrtF, x_B);
-		cdraw_testScDF_1S(isexact, 0.000, scCbrtD, scCbrtF, x_C);
+		cdraw_testScDF_1S(isapprox, +4.0, scCbrt, x_A);
+		cdraw_testScDF_1S(isapprox, -4.0, scCbrt, x_B);
+		cdraw_testScDF_1S(isexact, 0.000, scCbrt, x_C);
 
-		cdraw_testScDF_1S(isapprox, +0.25, scCbrtInvD, scCbrtInvF, x_A);
-		cdraw_testScDF_1S(isapprox, -0.25, scCbrtInvD, scCbrtInvF, x_B);
-		cdraw_testScDF_1S(isunsafe, 0.000, scCbrtInvD, scCbrtInvF, x_C);
+		cdraw_testScDF_1S(isapprox, +0.25, scCbrtInv, x_A);
+		cdraw_testScDF_1S(isapprox, -0.25, scCbrtInv, x_B);
+		cdraw_testScDF_1S(isunsafe, 0.000, scCbrtInv, x_C);
 	}
 
 	{
 		fp64_t const x_r = sc3Pi_2D, x_d = sc270D, x_rr = -scPi_4D, x_dd = -sc45D;
 
-		cdraw_testScDF_1S(isapprox, x_r, scDeg2RadD, scDeg2RadF, x_d);
-		cdraw_testScDF_1S(isapprox, x_rr, scDeg2RadD, scDeg2RadF, x_dd);
+		cdraw_testScDF_1S(isapprox, x_r, scDeg2Rad, x_d);
+		cdraw_testScDF_1S(isapprox, x_rr, scDeg2Rad, x_dd);
 		
-		cdraw_testScDF_1S(isapprox, x_d, scRad2DegD, scRad2DegF, x_r);
-		cdraw_testScDF_1S(isapprox, x_dd, scRad2DegD, scRad2DegF, x_rr);
+		cdraw_testScDF_1S(isapprox, x_d, scRad2Deg, x_r);
+		cdraw_testScDF_1S(isapprox, x_dd, scRad2Deg, x_rr);
 		
-		cdraw_testScDF_1S(isapprox, -sc90D, scNormalizeAngle180D, scNormalizeAngle180F, x_d);
-		cdraw_testScDF_1S(isapprox, x_dd, scNormalizeAngle180D, scNormalizeAngle180F, x_dd);
+		cdraw_testScDF_1S(isapprox, -sc90D, scNormalizeAngle180, x_d);
+		cdraw_testScDF_1S(isapprox, x_dd, scNormalizeAngle180, x_dd);
 		
-		cdraw_testScDF_1S(isapprox, x_d, scNormalizeAngle360D, scNormalizeAngle360F, x_d);
-		cdraw_testScDF_1S(isapprox, 315.0, scNormalizeAngle360D, scNormalizeAngle360F, x_dd);
+		cdraw_testScDF_1S(isapprox, x_d, scNormalizeAngle360, x_d);
+		cdraw_testScDF_1S(isapprox, 315.0, scNormalizeAngle360, x_dd);
 		
-		cdraw_testScDF_1S(isapprox, -scPi_2D, scNormalizeAnglePiD, scNormalizeAnglePiF, x_r);
-		cdraw_testScDF_1S(isapprox, x_rr, scNormalizeAnglePiD, scNormalizeAnglePiF, x_rr);
+		cdraw_testScDF_1S(isapprox, -scPi_2D, scNormalizeAnglePi, x_r);
+		cdraw_testScDF_1S(isapprox, x_rr, scNormalizeAnglePi, x_rr);
 		
-		cdraw_testScDF_1S(isapprox, x_r, scNormalizeAngle2PiD, scNormalizeAngle2PiF, x_r);
-		cdraw_testScDF_1S(isapprox, (scPi_4D * 7.0), scNormalizeAngle2PiD, scNormalizeAngle2PiF, x_rr);
+		cdraw_testScDF_1S(isapprox, x_r, scNormalizeAngle2Pi, x_r);
+		cdraw_testScDF_1S(isapprox, (scPi_4D * 7.0), scNormalizeAngle2Pi, x_rr);
 
-		cdraw_testScDF_1S(isapprox, -1.0, scSinrD, scSinrF, x_r);
-		cdraw_testScDF_1S(isapprox, -scSqrt1_2D, scSinrD, scSinrF, x_rr);
+		cdraw_testScDF_1S(isapprox, -1.0, scSinr, x_r);
+		cdraw_testScDF_1S(isapprox, -scSqrt1_2D, scSinr, x_rr);
 
-		cdraw_testScDF_1S(isapprox, x_r - sc2PiD, scAsinrD, scAsinrF, -1.0);
-		cdraw_testScDF_1S(isapprox, x_rr, scAsinrD, scAsinrF, -scSqrt1_2D);
-		cdraw_testScDF_1S(isunsafe, 0.0, scAsinrD, scAsinrF, -2.0);
+		cdraw_testScDF_1S(isapprox, x_r - sc2PiD, scAsinr, -1.0);
+		cdraw_testScDF_1S(isapprox, x_rr, scAsinr, -scSqrt1_2D);
+		cdraw_testScDF_1S(isunsafe, 0.0, scAsinr, -2.0);
 
-		cdraw_testScDF_1S(isapprox, 0.0, scCosrD, scCosrF, x_r);
-		cdraw_testScDF_1S(isapprox, +scSqrt1_2D, scCosrD, scCosrF, x_rr);
+		cdraw_testScDF_1S(isapprox, 0.0, scCosr, x_r);
+		cdraw_testScDF_1S(isapprox, +scSqrt1_2D, scCosr, x_rr);
 
-		cdraw_testScDF_1S(isapprox, x_r - scPi_2D, scAcosrD, scAcosrF, -1.0);
-		cdraw_testScDF_1S(isapprox, x_rr + scPiD, scAcosrD, scAcosrF, -scSqrt1_2D);
-		cdraw_testScDF_1S(isunsafe, 1.0, scAcosrD, scAcosrF, -2.0);
+		cdraw_testScDF_1S(isapprox, x_r - scPi_2D, scAcosr, -1.0);
+		cdraw_testScDF_1S(isapprox, x_rr + scPiD, scAcosr, -scSqrt1_2D);
+		cdraw_testScDF_1S(isunsafe, 1.0, scAcosr, -2.0);
 
-		cdraw_testScDF_1S(isunsafe, 0.0, scTanrD, scTanrF, x_r);
-		cdraw_testScDF_1S(isapprox, -1.0, scTanrD, scTanrF, x_rr);
+		cdraw_testScDF_1S(isunsafe, 0.0, scTanr, x_r);
+		cdraw_testScDF_1S(isapprox, -1.0, scTanr, x_rr);
 
-		cdraw_testScDF_1S(isapprox, 0.0, scAtanrD, scAtanrF, 0.0);
-		cdraw_testScDF_1S(isapprox, x_rr, scAtanrD, scAtanrF, -1.0);
+		cdraw_testScDF_1S(isapprox, 0.0, scAtanr, 0.0);
+		cdraw_testScDF_1S(isapprox, x_rr, scAtanr, -1.0);
 
-		cdraw_testScDF_2S(isapprox, (x_r - sc2PiD), scAtan2rD, scAtan2rF, -1.0, 0.0);
-		cdraw_testScDF_2S(isapprox, x_rr, scAtan2rD, scAtan2rF, -1.0, +1.0);
-		cdraw_testScDF_2S(isunsafe, 0.0, scAtan2rD, scAtan2rF, 0.0, 0.0);
+		cdraw_testScDF_2S(isapprox, (x_r - sc2PiD), scAtan2r, -1.0, 0.0);
+		cdraw_testScDF_2S(isapprox, x_rr, scAtan2r, -1.0, +1.0);
+		cdraw_testScDF_2S(isunsafe, 0.0, scAtan2r, 0.0, 0.0);
 
-		cdraw_testScDF_1S(isapprox, -1.0, scSindD, scSindF, x_d);
-		cdraw_testScDF_1S(isapprox, -scSqrt1_2D, scSindD, scSindF, x_dd);
+		cdraw_testScDF_1S(isapprox, -1.0, scSind, x_d);
+		cdraw_testScDF_1S(isapprox, -scSqrt1_2D, scSind, x_dd);
 
-		cdraw_testScDF_1S(isapprox, x_d - sc360D, scAsindD, scAsindF, -1.0);
-		cdraw_testScDF_1S(isapprox, x_dd, scAsindD, scAsindF, -scSqrt1_2D);
-		cdraw_testScDF_1S(isunsafe, 0.0, scAsindD, scAsindF, -2.0);
+		cdraw_testScDF_1S(isapprox, x_d - sc360D, scAsind, -1.0);
+		cdraw_testScDF_1S(isapprox, x_dd, scAsind, -scSqrt1_2D);
+		cdraw_testScDF_1S(isunsafe, 0.0, scAsind, -2.0);
 
-		cdraw_testScDF_1S(isapprox, 0.0, scCosdD, scCosdF, x_d);
-		cdraw_testScDF_1S(isapprox, +scSqrt1_2D, scCosdD, scCosdF, x_dd);
+		cdraw_testScDF_1S(isapprox, 0.0, scCosd, x_d);
+		cdraw_testScDF_1S(isapprox, +scSqrt1_2D, scCosd, x_dd);
 
-		cdraw_testScDF_1S(isapprox, x_d - sc90D, scAcosdD, scAcosdF, -1.0);
-		cdraw_testScDF_1S(isapprox, x_dd + sc180D, scAcosdD, scAcosdF, -scSqrt1_2D);
-		cdraw_testScDF_1S(isunsafe, 1.0, scAcosdD, scAcosdF, -2.0);
+		cdraw_testScDF_1S(isapprox, x_d - sc90D, scAcosd, -1.0);
+		cdraw_testScDF_1S(isapprox, x_dd + sc180D, scAcosd, -scSqrt1_2D);
+		cdraw_testScDF_1S(isunsafe, 1.0, scAcosd, -2.0);
 
-		cdraw_testScDF_1S(isunsafe, 0.0, scTandD, scTandF, x_d);
-		cdraw_testScDF_1S(isapprox, -1.0, scTandD, scTandF, x_dd);
+		cdraw_testScDF_1S(isunsafe, 0.0, scTand, x_d);
+		cdraw_testScDF_1S(isapprox, -1.0, scTand, x_dd);
 
-		cdraw_testScDF_1S(isapprox, 0.0, scAtandD, scAtandF, 0.0);
-		cdraw_testScDF_1S(isapprox, x_dd, scAtandD, scAtandF, -1.0);
+		cdraw_testScDF_1S(isapprox, 0.0, scAtand, 0.0);
+		cdraw_testScDF_1S(isapprox, x_dd, scAtand, -1.0);
 
-		cdraw_testScDF_2S(isapprox, (x_d - sc360D), scAtan2dD, scAtan2dF, -1.0, 0.0);
-		cdraw_testScDF_2S(isapprox, x_dd, scAtan2dD, scAtan2dF, -1.0, +1.0);
-		cdraw_testScDF_2S(isunsafe, 0.0, scAtan2dD, scAtan2dF, 0.0, 0.0);
+		cdraw_testScDF_2S(isapprox, (x_d - sc360D), scAtan2d, -1.0, 0.0);
+		cdraw_testScDF_2S(isapprox, x_dd, scAtan2d, -1.0, +1.0);
+		cdraw_testScDF_2S(isunsafe, 0.0, scAtan2d, 0.0, 0.0);
 
 		{
 			fp64_t const x_num = 3.6, x_den = 2.4;

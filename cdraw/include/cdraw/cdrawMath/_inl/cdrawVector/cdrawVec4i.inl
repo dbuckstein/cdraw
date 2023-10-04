@@ -447,11 +447,13 @@ CDRAW_INL vecu_t vecDispDistSq4i(int4_t v_disp_out, int4_t const v_lh, int4_t co
 
 CDRAW_INL vecb_t vecIsZero4i(int4_t const v)
 {
+	failassert(v, true);
 	return ((vx(v) == 0) && (vy(v) == 0) && (vz(v) == 0) && (vw(v) == 0));
 }
 
 CDRAW_INL vecb_t vecIsNonZero4i(int4_t const v)
 {
+	failassert(v, false);
 	return ((vx(v) != 0) || (vy(v) != 0) || (vz(v) != 0) || (vw(v) != 0));
 }
 

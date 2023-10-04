@@ -345,11 +345,13 @@ CDRAW_INL vecu_t vecDispDistSq2i(int2_t v_disp_out, int2_t const v_lh, int2_t co
 
 CDRAW_INL vecb_t vecIsZero2i(int2_t const v)
 {
+	failassert(v, true);
 	return ((vx(v) == 0) && (vy(v) == 0));
 }
 
 CDRAW_INL vecb_t vecIsNonZero2i(int2_t const v)
 {
+	failassert(v, false);
 	return ((vx(v) != 0) || (vy(v) != 0));
 }
 

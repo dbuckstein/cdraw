@@ -26,8 +26,8 @@
 CDRAW_INL floatN_t vecZero2f(float2_t v_out)
 {
 	failassert(v_out, NULL);
-	vx(v_out) = 0;
-	vy(v_out) = 0;
+	vx(v_out) = 0.0f;
+	vy(v_out) = 0.0f;
 	return v_out;
 }
 
@@ -296,12 +296,14 @@ CDRAW_INL vecf_t vecDispDistSq2f(float2_t v_disp_out, float2_t const v_lh, float
 
 CDRAW_INL vecb_t vecIsZero2f(float2_t const v)
 {
-	return ((vx(v) == 0) && (vy(v) == 0));
+	failassert(v, true);
+	return scIsZeroApproxF(gSq(vx(v)) + gSq(vy(v)));
 }
 
 CDRAW_INL vecb_t vecIsNonZero2f(float2_t const v)
 {
-	return ((vx(v) != 0) || (vy(v) != 0));
+	failassert(v, false);
+	return scIsNonZeroApproxF(gSq(vx(v)) + gSq(vy(v)));
 }
 
 CDRAW_INL floatN_t vecMad2f(float2_t v_out, vecf_t const u, float2_t const v_origin, float2_t const v_delta)

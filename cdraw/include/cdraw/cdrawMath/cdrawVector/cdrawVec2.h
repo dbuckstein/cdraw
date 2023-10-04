@@ -27,6 +27,315 @@
 extern "C" {
 #endif // #ifdef __cplusplus
 
+	/// <summary>
+	/// Initialize vector to zero.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecZero2 cdraw_vector_base(vecZero2)
+
+	/// <summary>
+	/// Initialize vector given individual components.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="x">First component.</param>
+	/// <param name="y">Second component.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecInit2 cdraw_vector_base(vecInit2)
+
+	/// <summary>
+	/// Initialize all components of vector given single value.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="x">Value to assign to all components.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecInitS2 cdraw_vector_base(vecInitS2)
+
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy2 cdraw_vector_base(vecCopy2)
+
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy2b2 cdraw_vector_base(vecCopy2b2)
+
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy2i2 cdraw_vector_base(vecCopy2i2)
+
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy2u2 cdraw_vector_base(vecCopy2u2)
+
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy22 tokencat(tokencat(vecCopy2, vector_other), tokencat(2, vector_suffix))
+
+	/// <summary>
+	/// Test component-wise equality (left-hand input equals right-hand input).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecEq2 cdraw_vector_base(vecEq2)
+
+	/// <summary>
+	/// Test component-wise inequality (left-hand input does not equal right-hand input).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecNeq2 cdraw_vector_base(vecNeq2)
+
+	/// <summary>
+	/// Test component-wise greater-than (left-hand input is greater than right-hand input).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecGreater2 cdraw_vector_base(vecGreater2)
+
+	/// <summary>
+	/// Test component-wise greater-than-or-equal-to (left-hand input is greater than or equal to right-hand input).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecGreaterEq2 cdraw_vector_base(vecGreaterEq2)
+
+	/// <summary>
+	/// Test component-wise less-than (left-hand input is less than right-hand input).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecLess2 cdraw_vector_base(vecLess2)
+
+	/// <summary>
+	/// Test component-wise less-than-or-equal-to (left-hand input is less than or equal to right-hand input).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecLessEq2 cdraw_vector_base(vecLessEq2)
+
+	/// <summary>
+	/// Calculate component-wise negative of input vector.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecNegate2 cdraw_vector_base(vecNegate2)
+
+	/// <summary>
+	/// Calculate component-wise sum of input vectors (left-hand plus right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecAdd2 cdraw_vector_base(vecAdd2)
+
+	/// <summary>
+	/// Calculate component-wise difference of input vectors (left-hand minus right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecSub2 cdraw_vector_base(vecSub2)
+
+	/// <summary>
+	/// Calculate component-wise product of input vectors (left-hand times right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecMul2 cdraw_vector_base(vecMul2)
+
+	/// <summary>
+	/// Calculate component-wise quotient of input vectors (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecDiv2 cdraw_vector_base(vecDiv2)
+
+	/// <summary>
+	/// Calculate component-wise modulo of input vectors (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecMod2 cdraw_vector_base(vecMod2)
+
+	/// <summary>
+	/// Calculate component-wise quotient and modulo of input vectors (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector (quotient).</param>
+	/// <param name="v_mod_out">Result vector (modulo).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecDivMod2 cdraw_vector_base(vecDivMod2)
+
+	/// <summary>
+	/// Calculate component-wise sum of input vector and scalar (left-hand times right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecAddS2 cdraw_vector_base(vecAddS2)
+
+	/// <summary>
+	/// Calculate component-wise difference of input vector and scalar (left-hand times right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecSubS2 cdraw_vector_base(vecSubS2)
+
+	/// <summary>
+	/// Calculate product of input vector and scalar (left-hand times right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecMulS2 cdraw_vector_base(vecMulS2)
+
+	/// <summary>
+	/// Calculate quotient of input vector and scalar (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecDivS2 cdraw_vector_base(vecDivS2)
+
+	/// <summary>
+	/// Calculate modulo of input vector and scalar (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecModS2 cdraw_vector_base(vecModS2)
+
+	/// <summary>
+	/// Calculate quotient and modulo of input vector and scalar (left-hand over right-hand).
+	/// </summary>
+	/// <param name="v_out">Result vector (quotient).</param>
+	/// <param name="v_mod_out">Result vector (modulo).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="s_rh">Right-hand input scalar.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecDivModS2 cdraw_vector_base(vecDivModS2)
+
+	/// <summary>
+	/// Calculate dot product of input vectors (the scalar sum of component products).
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Dot product of inputs.</returns>
+#define vecDot2 cdraw_vector_base(vecDot2)
+
+	/// <summary>
+	/// Calculate cross product of input vectors (for 2D, just the singular perpendicular component).
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Cross product of inputs.</returns>
+#define vecCross2 cdraw_vector_base(vecCross2)
+
+	/// <summary>
+	/// Calculate squared length or magnitude of vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Squared length of input.</returns>
+#define vecLenSq2 cdraw_vector_base(vecLenSq2)
+
+	/// <summary>
+	/// Calculate the squared distance between two vectors.
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Squared distance between inputs.</returns>
+#define vecDistSq2 cdraw_vector_base(vecDistSq2)
+
+	/// <summary>
+	/// Calculate the squared distance between two vectors and store the displacement.
+	/// </summary>
+	/// <param name="v_disp_out">Result vector (displacement).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Squared distance between inputs.</returns>
+#define vecDispDistSq2 cdraw_vector_base(vecDispDistSq2)
+
+	/// <summary>
+	/// Determine if input is zero vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if input is considered zero vector.</returns>
+#define vecIsZero2 cdraw_vector_base(vecIsZero2)
+
+	/// <summary>
+	/// Determine if input is not zero vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if input is not considered zero vector.</returns>
+#define vecIsNonZero2 cdraw_vector_base(vecIsNonZero2)
+
+	/// <summary>
+	/// Calculate component-wise multiply-add of origin vector, delta vector and scaling parameter.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="u">Scaling parameter applied to delta.</param>
+	/// <param name="v_origin">Origin vector (value at u=0).</param>
+	/// <param name="v_delta">Delta vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecMad2 cdraw_vector_base(vecMad2)
+
+	/// <summary>
+	/// Calculate component-wise linear interprolation between origin and target given parameter.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="u">Interpolation parameter in [0,1] for interpolation, otherwise extrapolation.</param>
+	/// <param name="v_min">Minimum (origin) vector for interpolation interval (value at u=0).</param>
+	/// <param name="v_max">Maximum (target) vector for interpolation interval (value at u=1).</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecLerp2 cdraw_vector_base(vecLerp2)
 
 
 	/// <summary>
@@ -36,6 +345,38 @@ extern "C" {
 	/// <param name="v">Vector to copy.</param>
 	/// <returns><paramref name="v_out"/></returns>
 #define vecCopy22b tokencat(vecCopy2, tokencat(vector_suffix, 2b))
+
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy22i tokencat(vecCopy2, tokencat(vector_suffix, 2i))
+
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy22u tokencat(vecCopy2, tokencat(vector_suffix, 2u))
+
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy22f tokencat(vecCopy2, tokencat(vector_suffix, 2f))
+
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy22d tokencat(vecCopy2, tokencat(vector_suffix, 2d))
 
 
 #ifdef __cplusplus

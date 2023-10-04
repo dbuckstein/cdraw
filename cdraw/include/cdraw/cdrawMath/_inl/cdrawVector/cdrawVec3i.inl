@@ -396,11 +396,13 @@ CDRAW_INL vecu_t vecDispDistSq3i(int3_t v_disp_out, int3_t const v_lh, int3_t co
 
 CDRAW_INL vecb_t vecIsZero3i(int3_t const v)
 {
+	failassert(v, true);
 	return ((vx(v) == 0) && (vy(v) == 0) && (vz(v) == 0));
 }
 
 CDRAW_INL vecb_t vecIsNonZero3i(int3_t const v)
 {
+	failassert(v, false);
 	return ((vx(v) != 0) || (vy(v) != 0) || (vz(v) != 0));
 }
 
