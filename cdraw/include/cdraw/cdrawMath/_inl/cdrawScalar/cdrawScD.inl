@@ -87,6 +87,15 @@ CDRAW_INL fp64_t scModD(fp64_t const x_num, fp64_t const x_den)
 	return (x_num - x_den * floor(x_num / x_den));
 }
 
+CDRAW_INL fp64_t scDivModD(fp64_t* x_mod_out, fp64_t const x_num, fp64_t const x_den)
+{
+	failassertret(x_mod_out, sc0D);
+	failassertret(scIsNonZeroApproxD(x_den), ((*x_mod_out = x_num), sc0D));
+	fp64_t const quot = (x_num / x_den);
+	*x_mod_out = (x_num - x_den * floor(quot));
+	return quot;
+}
+
 CDRAW_INL fp64_t scMadD(fp64_t const u, fp64_t const x_origin, fp64_t const x_delta)
 {
 	return (x_origin + x_delta * u);
@@ -212,11 +221,20 @@ CDRAW_INL fp64_t scAcosrD(fp64_t const x)
 	return acos(x);
 }
 
+CDRAW_INL fp64_t scSinCosrD(fp64_t* sin_out, fp64_t* cos_out, fp64_t const x)
+{
+	failassertret(sin_out && cos_out, sc0F);
+	*sin_out = sin(x);
+	*cos_out = cos(x);
+	return x;
+}
+
 CDRAW_INL fp64_t scTanrD(fp64_t const x)
 {
-	fp64_t const c = cos(x);
+	fp64_t s, c;
+	scSinCosrD(&s, &c, x);
 	failassertret(scIsNonZeroApproxD(c), sc0D);
-	return (sin(x) / c);
+	return (s / c);
 }
 
 CDRAW_INL fp64_t scAtanrD(fp64_t const x)
@@ -252,11 +270,21 @@ CDRAW_INL fp64_t scAcosdD(fp64_t const x)
 	return scRad2DegD(acos(x));
 }
 
+CDRAW_INL fp64_t scSinCosdD(fp64_t* sin_out, fp64_t* cos_out, fp64_t const x)
+{
+	failassertret(sin_out && cos_out, sc0D);
+	fp64_t const xr = scDeg2RadD(x);
+	*sin_out = sin(xr);
+	*cos_out = cos(xr);
+	return x;
+}
+
 CDRAW_INL fp64_t scTandD(fp64_t const x)
 {
-	fp64_t const xr = scDeg2RadD(x), c = cos(xr);
+	fp64_t s, c;
+	scSinCosdD(&s, &c, x);
 	failassertret(scIsNonZeroApproxD(c), sc0D);
-	return (sin(xr) / c);
+	return (s / c);
 }
 
 CDRAW_INL fp64_t scAtandD(fp64_t const x)

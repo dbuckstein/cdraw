@@ -133,13 +133,6 @@ cdraw_scalar_const(sc360, 360.0);
 #define scBigEpsF	(FLT_EPSILON * 32.0f)
 #define scBigEps	cdraw_scalar_base(scBigEps)
 
-#define gSq(x)							((x) * (x))																				// Compute general square of input.
-#define gDivSafe(x_num,x_den)			((x_den) ? (x_num) / (x_den) : 0)														// Compute general safe quotient.
-#define gModSafe(x_num,x_den)			((x_den) ? (x_num) % (x_den) : (x_num))													// Compute general safe modulo.
-#define gDivModSafe(x_mod,x_num,x_den)	((x_den) ? ((x_mod) = (x_num) % (x_den), (x_num) / (x_den)) : ((x_mod) = (x_num), 0))	// Compute general safe quotient and modulo.
-#define gMad(x0,dx,u)					((x0) + (dx) * (u))																		// Compute general multiply-add.
-#define gLerp(x0,x1,u)					((x0) + ((x1) - (x0)) * u)																// Compute general linear interpolation.
-
 
 /******************************************************************************
 * Functions.
@@ -148,6 +141,29 @@ cdraw_scalar_const(sc360, 360.0);
 #include "cdrawScalar/cdrawScF.h"
 #include "cdrawScalar/cdrawScD.h"
 #include "cdrawScalar/cdrawSc.h"
+
+
+#define gSq(x)								((x) * (x))																					// Compute general square of input.
+#define gMad(x0,dx,u)						((x0) + (dx) * (u))																			// Compute general multiply-add.
+#define gLerp(x0,x1,u)						((x0) + ((x1) - (x0)) * u)																	// Compute general linear interpolation.
+#define gDiv(x_num,x_den)					((x_num) / (x_den))																			// Compute general quotient.
+#define gMod(x_num,x_den)					((x_num) % (x_den))																			// Compute general modulo.
+#define gModF(x_num,x_den)					((x_num) - (x_den) * floorf(gDiv(x_num, x_den)))											// Compute general modulo for single-precision float.
+#define gModD(x_num,x_den)					((x_num) - (x_den) * floor(gDiv(x_num, x_den)))												// Compute general modulo for double-precision float.
+#define gDivMod(x_mod,x_num,x_den)			(((x_mod) = gMod(x_num, x_den)), gDiv(x_num, x_den))										// Compute general quotient and modulo.
+#define gDivModF(x_mod,x_num,x_den)			(((x_mod) = gModF(x_num, x_den)), gDiv(x_num, x_den))										// Compute general quotient and modulo for single-precision float.
+#define gDivModD(x_mod,x_num,x_den)			(((x_mod) = gModD(x_num, x_den)), gDiv(x_num, x_den))										// Compute general quotient and modulo for double-precision float.
+#define gDivSafe(x_num,x_den)				((x_den) ? gDiv(x_num, x_den) : 0)															// Compute general safe quotient.
+#define gDivSafeF(x_num,x_den)				(scIsNonZeroApproxF(x_den) ? gDiv(x_num, x_den) : sc0F)										// Compute safe quotient for single-precision float.
+#define gDivSafeD(x_num,x_den)				(scIsNonZeroApproxD(x_den) ? gDiv(x_num, x_den) : sc0D)										// Compute safe quotient for double-precision float.
+#define gModSafe(x_num,x_den)				((x_den) ? gMod(x_num, x_den) : (x_num))													// Compute general safe modulo.
+#define gModSafeF(x_num,x_den)				(scIsNonZeroApproxF(x_den) ? gModF(x_num, x_den) : sc0F)									// Compute safe modulo for single-precision float.
+#define gModSafeD(x_num,x_den)				(scIsNonZeroApproxD(x_den) ? gModD(x_num, x_den) : sc0D)									// Compute safe modulo for double-precision float.
+#define gDivModSafe(x_mod,x_num,x_den)		((x_den) ? gDivMod(x_mod, x_num, x_den) : (((x_mod) = (x_num)), 0))							// Compute general safe quotient and modulo.
+#define gDivModSafeF(x_mod,x_num,x_den)		(scIsNonZeroApproxF(x_den) ? gDivModF(x_mod, x_num, x_den) : (((x_mod) = (x_num)), sc0F))	// Compute safe quotient and modulo for single-precision float.
+#define gDivModSafeD(x_mod,x_num,x_den)		(scIsNonZeroApproxD(x_den) ? gDivModD(x_mod, x_num, x_den) : (((x_mod) = (x_num)), sc0D))	// Compute safe quotient and modulo for double-precision float.
+#define gModQF(x_num,x_den,x_quo)			((x_num) - (x_den) * floorf(x_quo))															// Compute optimized modulo for single-precision float.
+#define gModQD(x_num,x_den,x_quo)			((x_num) - (x_den) * floor(x_quo))															// Compute optimized modulo for double-precision float.
 
 
 #if !CDRAW_USING_PRECOMPILE_LIBS

@@ -229,8 +229,8 @@ CDRAW_INL uintN_t vecDiv2u(uint2_t v_out, uint2_t const v_lh, uint2_t const v_rh
 	failassert(vx(v_rh) && vy(v_rh), vecInit2u(v_out,
 		gDivSafe(vx(v_lh), vx(v_rh)),
 		gDivSafe(vy(v_lh), vy(v_rh))));
-	vx(v_out) = vx(v_lh) / vx(v_rh);
-	vy(v_out) = vy(v_lh) / vy(v_rh);
+	vx(v_out) = gDiv(vx(v_lh), vx(v_rh));
+	vy(v_out) = gDiv(vy(v_lh), vy(v_rh));
 	return v_out;
 }
 
@@ -240,8 +240,8 @@ CDRAW_INL uintN_t vecMod2u(uint2_t v_out, uint2_t const v_lh, uint2_t const v_rh
 	failassert(vx(v_rh) && vy(v_rh), vecInit2u(v_out,
 		gModSafe(vx(v_lh), vx(v_rh)),
 		gModSafe(vy(v_lh), vy(v_rh))));
-	vx(v_out) = vx(v_lh) % vx(v_rh);
-	vy(v_out) = vy(v_lh) % vy(v_rh);
+	vx(v_out) = gMod(vx(v_lh), vx(v_rh));
+	vy(v_out) = gMod(vy(v_lh), vy(v_rh));
 	return v_out;
 }
 
@@ -251,10 +251,8 @@ CDRAW_INL uintN_t vecDivMod2u(uint2_t v_out, uint2_t v_mod_out, uint2_t const v_
 	failassert(vx(v_rh) && vy(v_rh), vecInit2u(v_out,
 		gDivModSafe(vx(v_mod_out), vx(v_lh), vx(v_rh)),
 		gDivModSafe(vy(v_mod_out), vy(v_lh), vy(v_rh))));
-	vx(v_out) = vx(v_lh) / vx(v_rh);
-	vx(v_mod_out) = vx(v_lh) % vx(v_rh);
-	vy(v_out) = vy(v_lh) / vy(v_rh);
-	vy(v_mod_out) = vy(v_lh) % vy(v_rh);
+	vx(v_out) = gDivMod(vx(v_mod_out), vx(v_lh), vx(v_rh));
+	vy(v_out) = gDivMod(vy(v_mod_out), vy(v_lh), vy(v_rh));
 	return v_out;
 }
 
@@ -286,8 +284,8 @@ CDRAW_INL uintN_t vecDivS2u(uint2_t v_out, uint2_t const v_lh, vecu_t const s_rh
 {
 	failassert(v_out && v_lh, NULL);
 	failassert(s_rh, vecZero2u(v_out));
-	vx(v_out) = vx(v_lh) / s_rh;
-	vy(v_out) = vy(v_lh) / s_rh;
+	vx(v_out) = gDiv(vx(v_lh), s_rh);
+	vy(v_out) = gDiv(vy(v_lh), s_rh);
 	return v_out;
 }
 
@@ -295,19 +293,17 @@ CDRAW_INL uintN_t vecModS2u(uint2_t v_out, uint2_t const v_lh, vecu_t const s_rh
 {
 	failassert(v_out && v_lh, NULL);
 	failassert(s_rh, vecCopy2u(v_out, v_lh));
-	vx(v_out) = vx(v_lh) % s_rh;
-	vy(v_out) = vy(v_lh) % s_rh;
+	vx(v_out) = gMod(vx(v_lh), s_rh);
+	vy(v_out) = gMod(vy(v_lh), s_rh);
 	return v_out;
 }
 
 CDRAW_INL uintN_t vecDivModS2u(uint2_t v_out, uint2_t v_mod_out, uint2_t const v_lh, vecu_t const s_rh)
 {
-	failassert(v_out && v_lh, NULL);
+	failassert(v_out && v_mod_out && v_lh, NULL);
 	failassert(s_rh, vecCopy2u(v_mod_out, v_lh), vecZero2u(v_out));
-	vx(v_out) = vx(v_lh) / s_rh;
-	vx(v_mod_out) = vx(v_lh) % s_rh;
-	vy(v_out) = vy(v_lh) / s_rh;
-	vy(v_mod_out) = vy(v_lh) % s_rh;
+	vx(v_out) = gDivMod(vx(v_mod_out), vx(v_lh), s_rh);
+	vy(v_out) = gDivMod(vy(v_mod_out), vy(v_lh), s_rh);
 	return v_out;
 }
 
@@ -342,8 +338,8 @@ CDRAW_INL vecu_t vecDistSq2u(uint2_t const v_lh, uint2_t const v_rh)
 CDRAW_INL vecu_t vecDispDistSq2u(int2_t v_disp_out, uint2_t const v_lh, uint2_t const v_rh)
 {
 	failassert(v_disp_out && v_lh && v_rh, 0);
-	vx(v_disp_out) = vx(v_lh) - vx(v_rh);
-	vy(v_disp_out) = vy(v_lh) - vy(v_rh);
+	vx(v_disp_out) = (vx(v_lh) - vx(v_rh));
+	vy(v_disp_out) = (vy(v_lh) - vy(v_rh));
 	return (gSq(vx(v_disp_out)) + gSq(vy(v_disp_out)));
 }
 

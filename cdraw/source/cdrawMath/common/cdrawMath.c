@@ -422,6 +422,41 @@ result_t cdrawScalarTest()
 		cdraw_testScDF_2S(isapprox, (x_d - sc360D), scAtan2dD, scAtan2dF, -1.0, 0.0);
 		cdraw_testScDF_2S(isapprox, x_dd, scAtan2dD, scAtan2dF, -1.0, +1.0);
 		cdraw_testScDF_2S(isunsafe, 0.0, scAtan2dD, scAtan2dF, 0.0, 0.0);
+
+		{
+			fp64_t const x_num = 3.6, x_den = 2.4;
+			fp64_t r_modD;
+			fp32_t r_modF;
+			cdraw_testSc(cdraw_isapprox_d, scBigEpsD, 1.5, scDivModD, &r_modD, x_num, x_den);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsD, 1.2, r_modD);
+			cdraw_testSc(cdraw_isunsafe_d, sc0D, sc0D, scDivModD, &r_modD, x_num, sc0D);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isexact, sc0D, x_num, r_modD);
+			cdraw_testSc(cdraw_isapprox_f, scBigEpsF, 1.5f, scDivModF, &r_modF, (fp32_t)x_num, (fp32_t)x_den);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsF, 1.2f, r_modF);
+			cdraw_testSc(cdraw_isunsafe_f, sc0F, sc0F, scDivModF, &r_modF, (fp32_t)x_num, sc0F);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isexact, sc0F, (fp32_t)x_num, r_modF);
+		}
+
+		{
+			fp32_t rF, sF, cF;
+			fp64_t rD, sD, cD;
+			rD = scSinCosrD(&sD, &cD, x_r);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsD, rD, +x_r);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsD, sD, -sc1D);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsD, cD, -sc0D);
+			rD = scSinCosrD(&sD, &cD, x_rr);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsD, rD, +x_rr);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsD, sD, -scSqrt1_2D);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsD, cD, +scSqrt1_2D);
+			rF = scSinCosrF(&sF, &cF, (fp32_t)x_r);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsF, rF, +(fp32_t)x_r);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsF, sF, -sc1F);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsF, cF, -sc0F);
+			rF = scSinCosrF(&sF, &cF, (fp32_t)x_rr);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsF, rF, +(fp32_t)x_rr);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsF, sF, -scSqrt1_2F);
+			cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsF, cF, +scSqrt1_2F);
+		}
 	}
 
 	{

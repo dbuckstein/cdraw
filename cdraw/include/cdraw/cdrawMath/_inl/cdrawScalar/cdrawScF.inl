@@ -87,6 +87,15 @@ CDRAW_INL fp32_t scModF(fp32_t const x_num, fp32_t const x_den)
 	return (x_num - x_den * floorf(x_num / x_den));
 }
 
+CDRAW_INL fp32_t scDivModF(fp32_t* x_mod_out, fp32_t const x_num, fp32_t const x_den)
+{
+	failassertret(x_mod_out, sc0F);
+	failassertret(scIsNonZeroApproxF(x_den), ((*x_mod_out = x_num), sc0F));
+	fp32_t const quot = (x_num / x_den);
+	*x_mod_out = (x_num - x_den * floorf(quot));
+	return quot;
+}
+
 CDRAW_INL fp32_t scMadF(fp32_t const u, fp32_t const x_origin, fp32_t const x_delta)
 {
 	return (x_origin + x_delta * u);
@@ -212,11 +221,20 @@ CDRAW_INL fp32_t scAcosrF(fp32_t const x)
 	return acosf(x);
 }
 
+CDRAW_INL fp32_t scSinCosrF(fp32_t* sin_out, fp32_t* cos_out, fp32_t const x)
+{
+	failassertret(sin_out && cos_out, sc0F);
+	*sin_out = sinf(x);
+	*cos_out = cosf(x);
+	return x;
+}
+
 CDRAW_INL fp32_t scTanrF(fp32_t const x)
 {
-	fp32_t const c = cosf(x);
+	fp32_t s, c;
+	scSinCosrF(&s, &c, x);
 	failassertret(scIsNonZeroApproxF(c), sc0F);
-	return (sinf(x) / c);
+	return (s / c);
 }
 
 CDRAW_INL fp32_t scAtanrF(fp32_t const x)
@@ -252,11 +270,21 @@ CDRAW_INL fp32_t scAcosdF(fp32_t const x)
 	return scRad2DegF(acosf(x));
 }
 
+CDRAW_INL fp32_t scSinCosdF(fp32_t* sin_out, fp32_t* cos_out, fp32_t const x)
+{
+	failassertret(sin_out && cos_out, sc0F);
+	fp32_t const xr = scDeg2RadF(x);
+	*sin_out = sinf(xr);
+	*cos_out = cosf(xr);
+	return x;
+}
+
 CDRAW_INL fp32_t scTandF(fp32_t const x)
 {
-	fp32_t const xr = scDeg2RadF(x), c = cosf(xr);
+	fp32_t s, c;
+	scSinCosdF(&s, &c, x);
 	failassertret(scIsNonZeroApproxF(c), sc0F);
-	return (sinf(xr) / c);
+	return (s / c);
 }
 
 CDRAW_INL fp32_t scAtandF(fp32_t const x)

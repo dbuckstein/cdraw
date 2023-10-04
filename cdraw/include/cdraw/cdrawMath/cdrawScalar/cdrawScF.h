@@ -115,6 +115,15 @@ extern "C" {
 	fp32_t scModF(fp32_t const x_num, fp32_t const x_den);
 
 	/// <summary>
+	/// Safely calculate quotient and modulo of inputs.
+	/// </summary>
+	/// <param name="x_mod_out">Pointer to resulting modulo if denominator is non-zero, otherwise numerator.</param>
+	/// <param name="x_num">Input numerator.</param>
+	/// <param name="x_den">Input denominator.</param>
+	/// <returns>Quotient of inputs if denominator is non-zero, otherwise zero.</returns>
+	fp32_t scDivModF(fp32_t* x_mod_out, fp32_t const x_num, fp32_t const x_den);
+
+	/// <summary>
 	/// Calculate multiply-add given origin and delta to scale by some parameter.
 	/// </summary>
 	/// <param name="u">Scaling parameter, in [0,1] for some result in [x_origin,x_origin+x_delta].</param>
@@ -293,6 +302,15 @@ extern "C" {
 	fp32_t scAcosrF(fp32_t const x);
 
 	/// <summary>
+	/// Calculate simultaneous sine and cosine of angle in radians.
+	/// </summary>
+	/// <param name="sin_out">Pointer to sine result storage.</param>
+	/// <param name="cos_out">Pointer to cosine result storage.</param>
+	/// <param name="x">Angle in radians.</param>
+	/// <returns><paramref name="x"/></returns>
+	fp32_t scSinCosrF(fp32_t* sin_out, fp32_t* cos_out, fp32_t const x);
+
+	/// <summary>
 	/// Calculate tangent of angle in radians.
 	/// </summary>
 	/// <param name="x">Angle in radians.</param>
@@ -341,6 +359,15 @@ extern "C" {
 	/// <param name="x">Cosine of angle.</param>
 	/// <returns>Angle in degrees.</returns>
 	fp32_t scAcosdF(fp32_t const x);
+
+	/// <summary>
+	/// Calculate simultaneous sine and cosine of angle in degrees.
+	/// </summary>
+	/// <param name="sin_out">Pointer to sine result storage.</param>
+	/// <param name="cos_out">Pointer to cosine result storage.</param>
+	/// <param name="x">Angle in degrees.</param>
+	/// <returns><paramref name="x"/></returns>
+	fp32_t scSinCosdF(fp32_t* sin_out, fp32_t* cos_out, fp32_t const x);
 
 	/// <summary>
 	/// Calculate tangent of angle in degrees.

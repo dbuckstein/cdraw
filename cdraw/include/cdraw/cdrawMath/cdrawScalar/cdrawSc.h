@@ -113,6 +113,15 @@ extern "C" {
 	/// <param name="x_den">Input denominator.</param>
 	/// <returns>Remainder of inputs if denominator is non-zero, otherwise numerator.</returns>
 #define scMod cdraw_scalar_base(scMod)
+	
+	/// <summary>
+	/// Safely calculate quotient and modulo of inputs.
+	/// </summary>
+	/// <param name="x_mod_out">Pointer to resulting modulo if denominator is non-zero, otherwise numerator.</param>
+	/// <param name="x_num">Input numerator.</param>
+	/// <param name="x_den">Input denominator.</param>
+	/// <returns>Quotient of inputs if denominator is non-zero, otherwise zero.</returns>
+#define scDivMod cdraw_scalar_base(scDivMod)
 
 	/// <summary>
 	/// Calculate multiply-add given origin and delta to scale by some parameter.
@@ -293,6 +302,15 @@ extern "C" {
 #define scAcosr cdraw_scalar_base(scAcosr)
 
 	/// <summary>
+	/// Calculate simultaneous sine and cosine of angle in radians.
+	/// </summary>
+	/// <param name="sin_out">Pointer to sine result storage.</param>
+	/// <param name="cos_out">Pointer to cosine result storage.</param>
+	/// <param name="x">Angle in radians.</param>
+	/// <returns><paramref name="x"/></returns>
+#define scSinCosr cdraw_scalar_base(scSinCosr)
+
+	/// <summary>
 	/// Calculate tangent of angle in radians.
 	/// </summary>
 	/// <param name="x">Angle in radians.</param>
@@ -341,6 +359,15 @@ extern "C" {
 	/// <param name="x">Cosine of angle.</param>
 	/// <returns>Angle in degrees.</returns>
 #define scAcosd cdraw_scalar_base(scAcosd)
+
+	/// <summary>
+	/// Calculate simultaneous sine and cosine of angle in degrees.
+	/// </summary>
+	/// <param name="sin_out">Pointer to sine result storage.</param>
+	/// <param name="cos_out">Pointer to cosine result storage.</param>
+	/// <param name="x">Angle in degrees.</param>
+	/// <returns><paramref name="x"/></returns>
+#define scSinCosd cdraw_scalar_base(scSinCosd)
 
 	/// <summary>
 	/// Calculate tangent of angle in degrees.
