@@ -373,7 +373,7 @@ CDRAW_INL vecd_t vecDistSq4d(double4_t const v_lh, double4_t const v_rh)
 		(vz(v_lh) - vz(v_rh)),
 		(vw(v_lh) - vw(v_rh)),
 	};
-	return (gSq(vx(disp)) + gSq(vy(disp)) + gSq(vz(disp)) + gSq(vw(disp)));
+	return vecLenSq4d(disp);
 }
 
 CDRAW_INL vecd_t vecDispDistSq4d(double4_t v_disp_out, double4_t const v_lh, double4_t const v_rh)
@@ -383,19 +383,19 @@ CDRAW_INL vecd_t vecDispDistSq4d(double4_t v_disp_out, double4_t const v_lh, dou
 	vy(v_disp_out) = (vy(v_lh) - vy(v_rh));
 	vz(v_disp_out) = (vz(v_lh) - vz(v_rh));
 	vw(v_disp_out) = (vw(v_lh) - vw(v_rh));
-	return (gSq(vx(v_disp_out)) + gSq(vy(v_disp_out)) + gSq(vz(v_disp_out)) + gSq(vw(v_disp_out)));
+	return vecLenSq4d(v_disp_out);
 }
 
 CDRAW_INL vecb_t vecIsZero4d(double4_t const v)
 {
 	failassert(v, true);
-	return scIsZeroApproxD(gSq(vx(v)) + gSq(vy(v)) + gSq(vz(v)) + gSq(vw(v)));
+	return scIsNonPositiveApproxD(vecLenSq4d(v));
 }
 
 CDRAW_INL vecb_t vecIsNonZero4d(double4_t const v)
 {
 	failassert(v, false);
-	return scIsNonZeroApproxD(gSq(vx(v)) + gSq(vy(v)) + gSq(vz(v)) + gSq(vw(v)));
+	return scIsPositiveApproxD(vecLenSq4d(v));
 }
 
 CDRAW_INL doubleN_t vecMad4d(double4_t v_out, vecd_t const u, double4_t const v_origin, double4_t const v_delta)

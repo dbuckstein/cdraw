@@ -149,24 +149,24 @@ CDRAW_INL bool scIsInSymmRangeF(fp32_t const x)
 CDRAW_INL fp32_t scSqrtF(fp32_t const x)
 {
 	failassertret(x >= sc0F, sc0F);
-	return (scIsPositiveApproxF(x) ? sqrtf(x) : sc0F);
+	return (scIsPositiveApproxF(x) ? gSafeSqrtF(x) : sc0F);
 }
 
 CDRAW_INL fp32_t scSqrtInvF(fp32_t const x)
 {
 	failassertret(scIsPositiveApproxF(x), sc0F);
-	return (sc1F / sqrtf(x));
+	return (sc1F / gSafeSqrtF(x));
 }
 
 CDRAW_INL fp32_t scCbrtF(fp32_t const x)
 {
-	return (scIsNonZeroApproxF(x) ? cbrtf(x) : sc0F);
+	return (scIsNonZeroApproxF(x) ? gSafeCbrtF(x) : sc0F);
 }
 
 CDRAW_INL fp32_t scCbrtInvF(fp32_t const x)
 {
 	failassertret(scIsNonZeroApproxF(x), sc0F);
-	return (sc1F / cbrtf(x));
+	return (sc1F / gSafeCbrtF(x));
 }
 
 CDRAW_INL fp32_t scDeg2RadF(fp32_t const x)

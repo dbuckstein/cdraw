@@ -359,6 +359,117 @@ extern "C" {
 	/// <returns><paramref name="v_out"/></returns>
 	floatN_t vecLerp4f(float4_t v_out, vecf_t const u, float4_t const v_min, float4_t const v_max);
 
+	/// <summary>
+	/// Calculate the length or magnitude of the vector (analogous to scalar absolute value).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Length of vector.</returns>
+	vecf_t vecLen4f(float4_t const v);
+
+	/// <summary>
+	/// Calculate the inverse (reciprocal) length or magnitude of the vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Inverse length of vector.</returns>
+	vecf_t vecLenInv4f(float4_t const v);
+
+	/// <summary>
+	/// Calculate the distance between two vectors.
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Distance between inputs.</returns>
+	vecf_t vecDist4f(float4_t const v_lh, float4_t const v_rh);
+
+	/// <summary>
+	/// Calculate the distance between two vectors and store the displacement.
+	/// </summary>
+	/// <param name="v_disp_out">Result vector (displacement).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Distance between inputs.</returns>
+	vecf_t vecDispDist4f(float4_t v_disp_out, float4_t const v_lh, float4_t const v_rh);
+
+	/// <summary>
+	/// Calculate the unit-length direction of the vector (analogous to scalar sign).
+	/// </summary>
+	/// <param name="v_out">Result vector (unit direction).</param>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Length of input vector.</returns>
+	vecf_t vecNormalize4f(float4_t v_out, float4_t const v);
+
+	/// <summary>
+	/// Calculate a resized vector in the same direction as the input.
+	/// </summary>
+	/// <param name="v_out">Result vector (same direction, new length).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="newLen">Desired length of vector.</param>
+	/// <returns>Length of input vector.</returns>
+	vecf_t vecResize4f(float4_t v_out, float4_t const v, vecf_t const newLen);
+
+	/// <summary>
+	/// Determine if vector is unit length (normalized).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if vector is considered unit length.</returns>
+	vecb_t vecIsUnit4f(float4_t const v);
+
+	/// <summary>
+	/// Determine if vector is non-unit length (normalized).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if vector is not considered unit length.</returns>
+	vecb_t vecIsNonUnit4f(float4_t const v);
+
+	/// <summary>
+	/// Calculate projection factor of base vector required to project input onto base.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector (direction of projected vector).</param>
+	/// <returns>Factor of base for projection.</returns>
+	vecf_t vecProjS4f(float4_t const v, float4_t const v_base);
+
+	/// <summary>
+	/// Calculate projection of input vector onto base.
+	/// </summary>
+	/// <param name="v_out">Result vector (input projected onto base).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector (direction of projected vector).</param>
+	/// <returns>Factor of base for projection.</returns>
+	vecf_t vecProj4f(float4_t v_out, float4_t const v, float4_t const v_base);
+
+	/// <summary>
+	/// Calculate interpolation parameter given potential interpolation result and ends of range.
+	/// </summary>
+	/// <param name="v"></param>
+	/// <param name="v_min"></param>
+	/// <param name="v_max"></param>
+	/// <returns></returns>
+	vecf_t vecLerpInv4f(float4_t const v, float4_t const v_min, float4_t const v_max);
+
+	/// <summary>
+	/// Calculate orthogonalized vector given input and base using Gram-Schmidt process.
+	/// </summary>
+	/// <param name="v_out">Result vector (input orthogonalized relative to base).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector.</param>
+	/// <returns>Factor of base for projection.</returns>
+	vecf_t vecOrtho4f(float4_t v_out, float4_t const v, float4_t const v_base);
+
+	/// <summary>
+	/// Calculate orthogonized basis given two inputs and base using Gram-Schmidt process.
+	/// </summary>
+	/// <param name="v2_out">Second result vector (second input orthogonalized relative to base and first input).</param>
+	/// <param name="v1_out">First result vector (first input orthogonalized relative to base).</param>
+	/// <param name="v_base_out">Corrected base vector for 4D.</param>
+	/// <param name="v2_basefactor_out_opt">Factor of base for projection of second input (optional).</param>
+	/// <param name="v1_basefactor_out_opt">Factor of base for projection of first input (optional).</param>
+	/// <param name="v2">Second input vector.</param>
+	/// <param name="v1">First input vector.</param>
+	/// <param name="v_base">Base vector.</param>
+	/// <returns>Factor of first input for projection.</returns>
+	vecf_t vecOrthoBasis4f(float4_t v2_out, float4_t v1_out, float4_t v_base_out, vecf_t* v2_basefactor_out_opt, vecf_t* v1_basefactor_out_opt, float4_t const v2, float4_t const v1, float4_t const v_base);
+
 
 #ifdef __cplusplus
 }

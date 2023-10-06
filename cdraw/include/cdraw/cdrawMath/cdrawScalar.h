@@ -62,9 +62,17 @@
 		uint32_t tokencat(name, U) = tokencat(value_int, u)
 
 #define scEpsD		(DBL_EPSILON)				// Standard epsilon ("smallest value") for double-precision.
-#define scEpsF		(FLT_EPSILON)				// Standard epsilon ("smallest value") for single-precision.
 #define scBigEpsD	(DBL_EPSILON * 64.0)		// Bigger epsilon for double-precision (32x covers inverse trigonometry).
+#define scEpsG1D	(scEpsD + 1.0)				// Smallest value greater than 1.
+#define scEpsL1D	(scEpsD - 1.0)				// Smallest value less than 1.
+#define scBigEpsG1D	(scBigEpsD + 1.0)			// Smallest bigger value greater than 1.
+#define scBigEpsL1D	(scBigEpsD - 1.0)			// Smallest bigger value less than 1.
+#define scEpsF		(FLT_EPSILON)				// Standard epsilon ("smallest value") for single-precision.
 #define scBigEpsF	(FLT_EPSILON * 64.0f)		// Bigger epsilon for single-precision (32x covers inverse trigonometry).
+#define scEpsG1F	(scEpsF + 1.0)				// Smallest value greater than 1.
+#define scEpsL1F	(scEpsF - 1.0)				// Smallest value less than 1.
+#define scBigEpsG1F	(scBigEpsF + 1.0)			// Smallest bigger value greater than 1.
+#define scBigEpsL1F	(scBigEpsF - 1.0)			// Smallest bigger value less than 1.
 
 
 #if CDRAW_USING_SCALAR_PREF
@@ -82,8 +90,12 @@ typedef fp32_t			scalar_t;	// Global scalar number representation (single-precis
 #define cdraw_scalar_decl(name,value_fp64)					\
 		cdraw_scalar_declDF(name, value_fp64);				\
 		scalar_t name = tokencat(value_fp64, const_suffix)
-#define scEps		cdraw_scalar_base(scEps)	// Standard epsilon ("smallest value") for preferred precision.
-#define scBigEps	cdraw_scalar_base(scBigEps)	// Bigger epsilon for preferred precision (32x covers inverse trigonometry).
+#define scEps		cdraw_scalar_base(scEps)		// Standard epsilon ("smallest value") for preferred precision.
+#define scBigEps	cdraw_scalar_base(scBigEps)		// Bigger epsilon for preferred precision (32x covers inverse trigonometry).
+#define scEpsG1		cdraw_scalar_base(scEpsG1)		// Smallest value greater than 1.
+#define scEpsL1		cdraw_scalar_base(scEpsL1)		// Smallest value less than 1.
+#define scBigEpsG1	cdraw_scalar_base(scBigEpsG1)	// Smallest bigger value greater than 1.
+#define scBigEpsL1	cdraw_scalar_base(scBigEpsL1)	// Smallest bigger value less than 1.
 #else // #if CDRAW_USING_SCALAR_PREF
 #define cdraw_scalar_decl(name,value_fp64)					\
 		cdraw_scalar_declDF(name, value_fp64)
@@ -184,6 +196,10 @@ cdraw_scalar_const(sc360, 360.0);
 #define gDivModSafeD(x_mod,x_num,x_den)		(scIsNonZeroApproxD(x_den) ? gDivModD(x_mod, x_num, x_den) : (((x_mod) = (x_num)), sc0D))	// Compute safe quotient and modulo for double-precision float.
 #define gModQF(x_num,x_den,x_quo)			((x_num) - (x_den) * floorf(x_quo))															// Compute optimized modulo for single-precision float.
 #define gModQD(x_num,x_den,x_quo)			((x_num) - (x_den) * floor(x_quo))															// Compute optimized modulo for double-precision float.
+#define gSafeSqrtF(x)						(sqrtf(x))																					// Compute safe (non-negative input) square root for single-precision float.
+#define gSafeSqrtD(x)						(sqrt(x))																					// Compute safe (non-negative input) square root for double-precision float.
+#define gSafeCbrtF(x)						(cbrtf(x))																					// Compute safe (any input) cube root for single-precision float.
+#define gSafeCbrtD(x)						(cbrt(x))																					// Compute safe (any input) cube root for double-precision float.
 
 
 #if !CDRAW_USING_PRECOMPILE_LIBS

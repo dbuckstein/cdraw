@@ -328,7 +328,7 @@ CDRAW_INL vecf_t vecDistSq3f(float3_t const v_lh, float3_t const v_rh)
 		(vy(v_lh) - vy(v_rh)),
 		(vz(v_lh) - vz(v_rh)),
 	};
-	return (gSq(vx(disp)) + gSq(vy(disp)) + gSq(vz(disp)));
+	return vecLenSq3f(disp);
 }
 
 CDRAW_INL vecf_t vecDispDistSq3f(float3_t v_disp_out, float3_t const v_lh, float3_t const v_rh)
@@ -337,19 +337,19 @@ CDRAW_INL vecf_t vecDispDistSq3f(float3_t v_disp_out, float3_t const v_lh, float
 	vx(v_disp_out) = (vx(v_lh) - vx(v_rh));
 	vy(v_disp_out) = (vy(v_lh) - vy(v_rh));
 	vz(v_disp_out) = (vz(v_lh) - vz(v_rh));
-	return (gSq(vx(v_disp_out)) + gSq(vy(v_disp_out)) + gSq(vz(v_disp_out)));
+	return vecLenSq3f(v_disp_out);
 }
 
 CDRAW_INL vecb_t vecIsZero3f(float3_t const v)
 {
 	failassert(v, true);
-	return scIsZeroApproxF(gSq(vx(v)) + gSq(vy(v)) + gSq(vz(v)));
+	return scIsNonPositiveApproxF(vecLenSq3f(v));
 }
 
 CDRAW_INL vecb_t vecIsNonZero3f(float3_t const v)
 {
 	failassert(v, false);
-	return scIsNonZeroApproxF(gSq(vx(v)) + gSq(vy(v)) + gSq(vz(v)));
+	return scIsPositiveApproxF(vecLenSq3f(v));
 }
 
 CDRAW_INL floatN_t vecMad3f(float3_t v_out, vecf_t const u, float3_t const v_origin, float3_t const v_delta)

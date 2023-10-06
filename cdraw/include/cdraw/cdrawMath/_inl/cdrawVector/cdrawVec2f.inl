@@ -283,7 +283,7 @@ CDRAW_INL vecf_t vecDistSq2f(float2_t const v_lh, float2_t const v_rh)
 		(vx(v_lh) - vx(v_rh)),
 		(vy(v_lh) - vy(v_rh)),
 	};
-	return (gSq(vx(disp)) + gSq(vy(disp)));
+	return vecLenSq2f(disp);
 }
 
 CDRAW_INL vecf_t vecDispDistSq2f(float2_t v_disp_out, float2_t const v_lh, float2_t const v_rh)
@@ -291,19 +291,19 @@ CDRAW_INL vecf_t vecDispDistSq2f(float2_t v_disp_out, float2_t const v_lh, float
 	failassert(v_disp_out && v_lh && v_rh, 0);
 	vx(v_disp_out) = (vx(v_lh) - vx(v_rh));
 	vy(v_disp_out) = (vy(v_lh) - vy(v_rh));
-	return (gSq(vx(v_disp_out)) + gSq(vy(v_disp_out)));
+	return vecLenSq2f(v_disp_out);
 }
 
 CDRAW_INL vecb_t vecIsZero2f(float2_t const v)
 {
 	failassert(v, true);
-	return scIsZeroApproxF(gSq(vx(v)) + gSq(vy(v)));
+	return scIsNonPositiveApproxF(vecLenSq2f(v));
 }
 
 CDRAW_INL vecb_t vecIsNonZero2f(float2_t const v)
 {
 	failassert(v, false);
-	return scIsNonZeroApproxF(gSq(vx(v)) + gSq(vy(v)));
+	return scIsPositiveApproxF(vecLenSq2f(v));
 }
 
 CDRAW_INL floatN_t vecMad2f(float2_t v_out, vecf_t const u, float2_t const v_origin, float2_t const v_delta)
@@ -320,6 +320,117 @@ CDRAW_INL floatN_t vecLerp2f(float2_t v_out, vecf_t const u, float2_t const v_mi
 	vx(v_out) = gLerp(vx(v_min), vx(v_max), u);
 	vy(v_out) = gLerp(vy(v_min), vy(v_max), u);
 	return v_out;
+}
+
+CDRAW_INL vecf_t vecLen2f(float2_t const v)
+{
+	failassert(v, sc0F);
+	vecf_t const lenSq = vecLenSq2f(v);
+	return scSqrtF(lenSq);
+}
+
+CDRAW_INL vecf_t vecLenInv2f(float2_t const v)
+{
+	failassert(v, sc0F);
+	vecf_t const lenSq = vecLenSq2f(v);
+	failassert(scIsPositiveApproxF(lenSq), sc0F);
+	return (sc1F / gSafeSqrtF(lenSq));
+}
+
+CDRAW_INL vecf_t vecDist2f(float2_t const v_lh, float2_t const v_rh)
+{
+	failassert(v_lh && v_rh, sc0F);
+	return scSqrtF(vecDistSq2f(v_lh, v_rh));
+}
+
+CDRAW_INL vecf_t vecDispDist2f(float2_t v_disp_out, float2_t const v_lh, float2_t const v_rh)
+{
+	failassert(v_disp_out && v_lh && v_rh, sc0F);
+	return scSqrtF(vecDispDistSq2f(v_disp_out, v_lh, v_rh));
+}
+
+CDRAW_INL vecf_t vecNormalize2f(float2_t v_out, float2_t const v)
+{
+	failassert(v_out && v, sc0F);
+	vecf_t len = vecLenSq2f(v), ratio;
+	if (scIsNonPositiveApproxF(len))
+		return (vecZero2f(v_out), sc0F);
+	len = gSafeSqrtF(len);
+	ratio = sc1F / len;
+	vx(v_out) = vx(v) * ratio;
+	vy(v_out) = vy(v) * ratio;
+	return len;
+}
+
+CDRAW_INL vecf_t vecResize2f(float2_t v_out, float2_t const v, vecf_t const newLen)
+{
+	failassert(v_out && v, sc0F);
+	vecf_t len = vecLenSq2f(v), ratio;
+	if (scIsNonPositiveApproxF(len))
+		return (vecZero2f(v_out), sc0F);
+	len = gSafeSqrtF(len);
+	ratio = newLen / len;
+	vx(v_out) = vx(v) * ratio;
+	vy(v_out) = vy(v) * ratio;
+	return len;
+}
+
+CDRAW_INL vecb_t vecIsUnit2f(float2_t const v)
+{
+	failassert(v, false);
+	vecf_t const lenSq = vecLenSq2f(v);
+	return ((lenSq >= scEpsL1F) && (lenSq <= scEpsG1F));
+}
+
+CDRAW_INL vecb_t vecIsNonUnit2f(float2_t const v)
+{
+	failassert(v, true);
+	vecf_t const lenSq = vecLenSq2f(v);
+	return ((lenSq < scEpsL1F) || (lenSq > scEpsG1F));
+}
+
+CDRAW_INL vecf_t vecProjS2f(float2_t const v, float2_t const v_base)
+{
+	failassert(v && v_base, sc0F);
+	vecf_t const lenSq = vecLenSq2f(v);
+	if (scIsNonPositiveApproxF(lenSq))
+		return sc0F;
+	return (vecDot2f(v, v_base) / lenSq);
+}
+
+CDRAW_INL vecf_t vecProj2f(float2_t v_out, float2_t const v, float2_t const v_base)
+{
+	failassert(v_out && v && v_base, sc0F);
+	failassert(v && v_base, sc0F);
+	vecf_t ratio = vecLenSq2f(v);
+	if (scIsNonPositiveApproxF(ratio))
+		return sc0F;
+	ratio = vecDot2f(v, v_base) / ratio;
+	vx(v_out) = vx(v_base) * ratio;
+	vy(v_out) = vy(v_base) * ratio;
+	return ratio;
+}
+
+CDRAW_INL vecf_t vecLerpInv2f(float2_t const v, float2_t const v_min, float2_t const v_max)
+{
+	failassert(v && v_min && v_max, sc0F);
+	float2_t v_delta;
+	vecf_t const distSq = vecDispDistSq2f(v_delta, v_max, v_min);
+	if (scIsNonPositiveApproxF(distSq))
+		return sc0F;
+	return ((vx(v) - vx(v_min)) * vx(v_delta) + (vy(v) - vy(v_min)) * vy(v_delta)) / distSq;
+}
+
+CDRAW_INL vecf_t vecOrtho2f(float2_t v_out, float2_t const v, float2_t const v_base)
+{
+	failassert(v_out && v && v_base, sc0F);
+	vecf_t ratio = vecLenSq2f(v_base);
+	if (scIsNonPositiveApproxF(ratio))
+		return (vecZero2f(v_out), sc0F);
+	ratio = vecDot2f(v, v_base) / ratio;
+	vx(v_out) = (vx(v) - vx(v_base) * ratio);
+	vy(v_out) = (vy(v) - vy(v_base) * ratio);
+	return ratio;
 }
 
 

@@ -149,24 +149,24 @@ CDRAW_INL bool scIsInSymmRangeD(fp64_t const x)
 CDRAW_INL fp64_t scSqrtD(fp64_t const x)
 {
 	failassertret(x >= sc0D, sc0D);
-	return (scIsPositiveApproxD(x) ? sqrt(x) : sc0D);
+	return (scIsPositiveApproxD(x) ? gSafeSqrtD(x) : sc0D);
 }
 
 CDRAW_INL fp64_t scSqrtInvD(fp64_t const x)
 {
 	failassertret(scIsPositiveApproxD(x), sc0D);
-	return (sc1D / sqrt(x));
+	return (sc1D / gSafeSqrtD(x));
 }
 
 CDRAW_INL fp64_t scCbrtD(fp64_t const x)
 {
-	return (scIsNonZeroApproxD(x) ? cbrt(x) : sc0D);
+	return (scIsNonZeroApproxD(x) ? gSafeCbrtD(x) : sc0D);
 }
 
 CDRAW_INL fp64_t scCbrtInvD(fp64_t const x)
 {
 	failassertret(scIsNonZeroApproxD(x), sc0D);
-	return (sc1D / cbrt(x));
+	return (sc1D / gSafeCbrtD(x));
 }
 
 CDRAW_INL fp64_t scDeg2RadD(fp64_t const x)
