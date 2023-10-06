@@ -15,17 +15,22 @@
 */
 
 /*
-* cdrawMath.h
-* Global root header for math library.
+* cdrawMat3d.h
+* Declaration of double-precision 3D matrix functions.
 */
 
-#ifndef _CDRAW_MATH_H_
-#define _CDRAW_MATH_H_
+#if (!(defined _CDRAW_MAT3D_H_) && (defined _CDRAW_MATRIX_H_))
+#define _CDRAW_MAT3D_H_
 
 
-#include "cdrawMath/cdrawScalar.h"
-#include "cdrawMath/cdrawVector.h"
-#include "cdrawMath/cdrawMatrix.h"
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
 
 
-#endif // #ifndef _CDRAW_MATH_H_
+#ifdef __cplusplus
+}
+#endif // #ifdef __cplusplus
+
+
+#endif // #if (!(defined _CDRAW_MAT3D_H_) && (defined _CDRAW_MATRIX_H_))

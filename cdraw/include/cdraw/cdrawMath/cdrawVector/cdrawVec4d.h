@@ -470,6 +470,14 @@ extern "C" {
 	/// <returns>Factor of first input for projection.</returns>
 	vecd_t vecOrthoBasis4d(double4_t v2_out, double4_t v1_out, double4_t v_base_out, vecd_t* v2_basefactor_out_opt, vecd_t* v1_basefactor_out_opt, double4_t const v2, double4_t const v1, double4_t const v_base);
 
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy4d4d vecCopy4d
+
 
 #ifdef __cplusplus
 }

@@ -458,6 +458,14 @@ extern "C" {
 	/// <returns>Factor of first input for projection.</returns>
 	vecf_t vecOrthoBasis3f(float3_t v2_out, float3_t v1_out, vecf_t* v2_basefactor_out_opt, vecf_t* v1_basefactor_out_opt, float3_t const v2, float3_t const v1, float3_t const v_base);
 
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy3f3f vecCopy3f
+
 
 #ifdef __cplusplus
 }

@@ -15,17 +15,12 @@
 */
 
 /*
-* cdrawMath.h
-* Global root header for math library.
+* cdrawMat2d.inl
+* Definitions of double-precision 2D matrix functions.
 */
 
-#ifndef _CDRAW_MATH_H_
-#define _CDRAW_MATH_H_
+#if (!(defined _CDRAW_MAT2D_INL_) && (defined _CDRAW_MATRIX_INL_))
+#define _CDRAW_MAT2D_INL_
 
 
-#include "cdrawMath/cdrawScalar.h"
-#include "cdrawMath/cdrawVector.h"
-#include "cdrawMath/cdrawMatrix.h"
-
-
-#endif // #ifndef _CDRAW_MATH_H_
+#endif // #if (!(defined _CDRAW_MAT2D_INL_) && (defined _CDRAW_MATRIX_INL_))

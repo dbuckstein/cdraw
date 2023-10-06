@@ -192,6 +192,7 @@ CDRAW_INL doubleN_t vecMod2d(double2_t v_out, double2_t const v_lh, double2_t co
 CDRAW_INL doubleN_t vecDivMod2d(double2_t v_out, double2_t v_mod_out, double2_t const v_lh, double2_t const v_rh)
 {
 	failassert(v_out && v_mod_out && v_lh && v_rh, NULL);
+	failassert((v_mod_out != v_out) && (v_mod_out != v_lh) && (v_mod_out != v_rh), NULL);
 	failassert(scIsNonZeroApproxD(vx(v_rh)) && scIsNonZeroApproxD(vy(v_rh)), vecInit2d(v_out,
 		gDivModSafeD(vx(v_mod_out), vx(v_lh), vx(v_rh)),
 		gDivModSafeD(vy(v_mod_out), vy(v_lh), vy(v_rh))));
@@ -249,6 +250,7 @@ CDRAW_INL doubleN_t vecModS2d(double2_t v_out, double2_t const v_lh, vecd_t cons
 CDRAW_INL doubleN_t vecDivModS2d(double2_t v_out, double2_t v_mod_out, double2_t const v_lh, vecd_t const s_rh)
 {
 	failassert(v_out && v_mod_out && v_lh, NULL);
+	failassert((v_mod_out != v_out) && (v_mod_out != v_lh), NULL);
 	failassert(s_rh, vecCopy2d(v_mod_out, v_lh), vecZero2d(v_out));
 	vecd_t const recip = sc1F / s_rh;
 	vx(v_out) = vx(v_lh) * recip;

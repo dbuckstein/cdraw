@@ -223,6 +223,7 @@ CDRAW_INL doubleN_t vecMod3d(double3_t v_out, double3_t const v_lh, double3_t co
 CDRAW_INL doubleN_t vecDivMod3d(double3_t v_out, double3_t v_mod_out, double3_t const v_lh, double3_t const v_rh)
 {
 	failassert(v_out && v_mod_out && v_lh && v_rh, NULL);
+	failassert((v_mod_out != v_out) && (v_mod_out != v_lh) && (v_mod_out != v_rh), NULL);
 	failassert(scIsNonZeroApproxD(vx(v_rh)) && scIsNonZeroApproxD(vy(v_rh)) && scIsNonZeroApproxD(vz(v_rh)), vecInit3d(v_out,
 		gDivModSafeD(vx(v_mod_out), vx(v_lh), vx(v_rh)),
 		gDivModSafeD(vy(v_mod_out), vy(v_lh), vy(v_rh)),
@@ -288,6 +289,7 @@ CDRAW_INL doubleN_t vecModS3d(double3_t v_out, double3_t const v_lh, vecd_t cons
 CDRAW_INL doubleN_t vecDivModS3d(double3_t v_out, double3_t v_mod_out, double3_t const v_lh, vecd_t const s_rh)
 {
 	failassert(v_out && v_mod_out && v_lh, NULL);
+	failassert((v_mod_out != v_out) && (v_mod_out != v_lh), NULL);
 	failassert(scIsNonZeroApproxD(s_rh), vecCopy3d(v_mod_out, v_lh), vecZero3d(v_out));
 	vecd_t const recip = sc1F / s_rh;
 	vx(v_out) = vx(v_lh) * recip;
@@ -488,6 +490,9 @@ CDRAW_INL vecd_t vecOrtho3d(double3_t v_out, double3_t const v, double3_t const 
 CDRAW_INL vecd_t vecOrthoBasis3d(double3_t v2_out, double3_t v1_out, vecd_t* v2_basefactor_out_opt, vecd_t* v1_basefactor_out_opt, double3_t const v2, double3_t const v1, double3_t const v_base)
 {
 	failassert(v2_out && v1_out && v2 && v1 && v_base, sc0D);
+	failassert((v1_out != v2_out) && (v1_out != v_base) && (v1_out != v2), sc0D);
+	failassert((!v2_basefactor_out_opt) || (v2_basefactor_out_opt != v2_out) && (v2_basefactor_out_opt != v1_out) && (v2_basefactor_out_opt != v2) && (v2_basefactor_out_opt != v1) && (v2_basefactor_out_opt != v_base) && (v2_basefactor_out_opt != v1_basefactor_out_opt), sc0D);
+	failassert((!v1_basefactor_out_opt) || (v1_basefactor_out_opt != v2_out) && (v1_basefactor_out_opt != v1_out) && (v1_basefactor_out_opt != v2) && (v1_basefactor_out_opt != v1) && (v1_basefactor_out_opt != v_base), sc0D);
 	vecd_t ratio = vecLenSq3d(v_base), ratio1, ratio2;
 	if (scIsNonPositiveApproxD(ratio))
 		return (vecZero3d(v2_out), vecZero3d(v1_out), sc0D);

@@ -15,17 +15,22 @@
 */
 
 /*
-* cdrawMath.h
-* Global root header for math library.
+* cdrawMatrix.inl
+* Definitions of matrix functions.
 */
 
-#ifndef _CDRAW_MATH_H_
-#define _CDRAW_MATH_H_
+#if (!(defined _CDRAW_MATRIX_INL_) && (defined _CDRAW_MATRIX_H_))
+#define _CDRAW_MATRIX_INL_
 
 
-#include "cdrawMath/cdrawScalar.h"
-#include "cdrawMath/cdrawVector.h"
-#include "cdrawMath/cdrawMatrix.h"
+#include "cdrawMatrix/cdrawMat2f.inl"
+#include "cdrawMatrix/cdrawMat2d.inl"
+
+#include "cdrawMatrix/cdrawMat3f.inl"
+#include "cdrawMatrix/cdrawMat3d.inl"
+
+#include "cdrawMatrix/cdrawMat4f.inl"
+#include "cdrawMatrix/cdrawMat4d.inl"
 
 
-#endif // #ifndef _CDRAW_MATH_H_
+#endif // #if (!(defined _CDRAW_MATRIX_INL_) && (defined _CDRAW_MATRIX_H_))

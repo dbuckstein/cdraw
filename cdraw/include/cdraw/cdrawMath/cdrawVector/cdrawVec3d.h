@@ -458,6 +458,14 @@ extern "C" {
 	/// <returns>Factor of first input for projection.</returns>
 	vecd_t vecOrthoBasis3d(double3_t v2_out, double3_t v1_out, vecd_t* v2_basefactor_out_opt, vecd_t* v1_basefactor_out_opt, double3_t const v2, double3_t const v1, double3_t const v_base);
 
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy3d3d vecCopy3d
+
 
 #ifdef __cplusplus
 }

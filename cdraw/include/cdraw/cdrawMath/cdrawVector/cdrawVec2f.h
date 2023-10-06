@@ -434,6 +434,14 @@ extern "C" {
 	/// <returns>Factor of base for projection.</returns>
 	vecf_t vecOrtho2f(float2_t v_out, float2_t const v, float2_t const v_base);
 
+	/// <summary>
+	/// Initialize vector by copying the leading components of another.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="v">Vector to copy.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define vecCopy2f2f vecCopy2f
+
 
 #ifdef __cplusplus
 }

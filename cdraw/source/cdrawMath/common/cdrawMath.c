@@ -1273,11 +1273,20 @@ result_t cdrawVectorTest()
 }
 
 
+result_t cdrawMatrixTest()
+{
+	result_init();
+
+	result_return();
+}
+
+
 result_t cdrawMathTest()
 {
 	result_init();
 	cdrawScalarTest();
 	cdrawVectorTest();
+	cdrawMatrixTest();
 	result_return();
 }
 

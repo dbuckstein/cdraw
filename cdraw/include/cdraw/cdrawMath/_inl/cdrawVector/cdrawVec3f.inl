@@ -223,6 +223,7 @@ CDRAW_INL floatN_t vecMod3f(float3_t v_out, float3_t const v_lh, float3_t const 
 CDRAW_INL floatN_t vecDivMod3f(float3_t v_out, float3_t v_mod_out, float3_t const v_lh, float3_t const v_rh)
 {
 	failassert(v_out && v_mod_out && v_lh && v_rh, NULL);
+	failassert((v_mod_out != v_out) && (v_mod_out != v_lh) && (v_mod_out != v_rh), NULL);
 	failassert(scIsNonZeroApproxF(vx(v_rh)) && scIsNonZeroApproxF(vy(v_rh)) && scIsNonZeroApproxF(vz(v_rh)), vecInit3f(v_out,
 		gDivModSafeF(vx(v_mod_out), vx(v_lh), vx(v_rh)),
 		gDivModSafeF(vy(v_mod_out), vy(v_lh), vy(v_rh)),
@@ -288,6 +289,7 @@ CDRAW_INL floatN_t vecModS3f(float3_t v_out, float3_t const v_lh, vecf_t const s
 CDRAW_INL floatN_t vecDivModS3f(float3_t v_out, float3_t v_mod_out, float3_t const v_lh, vecf_t const s_rh)
 {
 	failassert(v_out && v_mod_out && v_lh, NULL);
+	failassert((v_mod_out != v_out) && (v_mod_out != v_lh), NULL);
 	failassert(scIsNonZeroApproxF(s_rh), vecCopy3f(v_mod_out, v_lh), vecZero3f(v_out));
 	vecf_t const recip = sc1F / s_rh;
 	vx(v_out) = vx(v_lh) * recip;
@@ -488,6 +490,9 @@ CDRAW_INL vecf_t vecOrtho3f(float3_t v_out, float3_t const v, float3_t const v_b
 CDRAW_INL vecf_t vecOrthoBasis3f(float3_t v2_out, float3_t v1_out, vecf_t* v2_basefactor_out_opt, vecf_t* v1_basefactor_out_opt, float3_t const v2, float3_t const v1, float3_t const v_base)
 {
 	failassert(v2_out && v1_out && v2 && v1 && v_base, sc0F);
+	failassert((v1_out != v2_out) && (v1_out != v_base) && (v1_out != v2), sc0F);
+	failassert((!v2_basefactor_out_opt) || (v2_basefactor_out_opt != v2_out) && (v2_basefactor_out_opt != v1_out) && (v2_basefactor_out_opt != v2) && (v2_basefactor_out_opt != v1) && (v2_basefactor_out_opt != v_base) && (v2_basefactor_out_opt != v1_basefactor_out_opt), sc0F);
+	failassert((!v1_basefactor_out_opt) || (v1_basefactor_out_opt != v2_out) && (v1_basefactor_out_opt != v1_out) && (v1_basefactor_out_opt != v2) && (v1_basefactor_out_opt != v1) && (v1_basefactor_out_opt != v_base), sc0F);
 	vecf_t ratio = vecLenSq3f(v_base), ratio1, ratio2;
 	if (scIsNonPositiveApproxF(ratio))
 		return (vecZero3f(v2_out), vecZero3f(v1_out), sc0F);

@@ -159,6 +159,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat2.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat2d.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat2f.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat3.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat3d.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat3f.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat4.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat4d.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat4f.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawSc.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawScD.h" />
@@ -184,6 +194,13 @@
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4u.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat2d.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat2f.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat3d.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat3f.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat4d.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat4f.inl" />
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar.inl" />
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar\cdrawScD.inl" />
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar\cdrawScF.inl" />
