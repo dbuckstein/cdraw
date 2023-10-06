@@ -392,7 +392,7 @@ CDRAW_INL vecb_t vecIsNonUnit2d(double2_t const v)
 CDRAW_INL vecd_t vecProjS2d(double2_t const v, double2_t const v_base)
 {
 	failassert(v && v_base, sc0D);
-	vecd_t const lenSq = vecLenSq2d(v);
+	vecd_t const lenSq = vecLenSq2d(v_base);
 	if (scIsNonPositiveApproxD(lenSq))
 		return sc0D;
 	return (vecDot2d(v, v_base) / lenSq);
@@ -401,8 +401,7 @@ CDRAW_INL vecd_t vecProjS2d(double2_t const v, double2_t const v_base)
 CDRAW_INL vecd_t vecProj2d(double2_t v_out, double2_t const v, double2_t const v_base)
 {
 	failassert(v_out && v && v_base, sc0D);
-	failassert(v && v_base, sc0D);
-	vecd_t ratio = vecLenSq2d(v);
+	vecd_t ratio = vecLenSq2d(v_base);
 	if (scIsNonPositiveApproxD(ratio))
 		return sc0D;
 	ratio = vecDot2d(v, v_base) / ratio;

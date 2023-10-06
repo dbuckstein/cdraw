@@ -229,6 +229,9 @@ static bool cdraw_isunsafe_d(fp64_t tolerance_unused, fp64_t const expect, fp64_
 #define cdraw_testVecDF_rS2V(testname,expect,funcname,arg0name,arg1name)																				\
 		cdraw_testVec_rS(cdraw_testname(testname, _d), (scBigEpsD), expect, tokencat(funcname, d), tokencat(arg0name, d).v, tokencat(arg1name, d).v);	\
 		cdraw_testVec_rS(cdraw_testname(testname, _f), (scBigEpsF), tokencat(expect, f), tokencat(funcname, f), vecCopy4d4f(tokencat(arg0name, f).v, tokencat(arg0name, d).v), vecCopy4d4f(tokencat(arg1name, f).v, tokencat(arg1name, d).v))
+#define cdraw_testVecDF_rS3V(testname,expect,funcname,arg0name,arg1name,arg2name)																								\
+		cdraw_testVec_rS(cdraw_testname(testname, _d), (scBigEpsD), expect, tokencat(funcname, d), tokencat(arg0name, d).v, tokencat(arg1name, d).v, tokencat(arg2name, d).v);	\
+		cdraw_testVec_rS(cdraw_testname(testname, _f), (scBigEpsF), tokencat(expect, f), tokencat(funcname, f), vecCopy4d4f(tokencat(arg0name, f).v, tokencat(arg0name, d).v), vecCopy4d4f(tokencat(arg1name, f).v, tokencat(arg1name, d).v), vecCopy4d4f(tokencat(arg2name, f).v, tokencat(arg2name, d).v))
 #define cdraw_testVec2DF_rSV2V(testname,testname_x,testname_y,expect,expectname,funcname,resultname,arg0name,arg1name)																																							\
 		cdraw_testVec2_rSV(cdraw_testname(testname, _d), cdraw_testname(testname_x, _d), cdraw_testname(testname_y, _d), (scBigEpsD), expect, tokencat(expectname, d).v, tokencat(funcname, d), tokencat(resultname, d).v, tokencat(arg0name, d).v, tokencat(arg1name, d).v);	\
 		cdraw_testVec2_rSV(cdraw_testname(testname, _f), cdraw_testname(testname_x, _f), cdraw_testname(testname_y, _f), (scBigEpsF), expect, vecCopy4d4f(tokencat(expectname, f).v, tokencat(expectname, d).v), tokencat(funcname, f), tokencat(resultname, f).v, vecCopy4d4f(tokencat(arg0name, f).v, tokencat(arg0name, d).v), vecCopy4d4f(tokencat(arg1name, f).v, tokencat(arg1name, d).v))
@@ -301,6 +304,24 @@ static bool cdraw_isunsafe_d(fp64_t tolerance_unused, fp64_t const expect, fp64_
 #define cdraw_testVec4DF_rr1V1S(testname_x,testname_y,testname_z,testname_w,expect0name,expect1name,funcname,result0name,result1name,arg0name,arg1)																																																\
 		cdraw_testVec4_rr(cdraw_testname(testname_x, _d), cdraw_testname(testname_y, _d), cdraw_testname(testname_z, _d), cdraw_testname(testname_w, _d), (scBigEpsD), tokencat(expect0name, d).v, tokencat(expect1name, d).v, tokencat(funcname, d), tokencat(result0name, d).v, tokencat(result1name, d).v, tokencat(arg0name, d).v, arg1);	\
 		cdraw_testVec4_rr(cdraw_testname(testname_x, _f), cdraw_testname(testname_y, _f), cdraw_testname(testname_z, _f), cdraw_testname(testname_w, _f), (scBigEpsF), vecCopy4d4f(tokencat(expect0name, f).v, tokencat(expect0name, d).v), vecCopy4d4f(tokencat(expect1name, f).v, tokencat(expect1name, d).v), tokencat(funcname, f), tokencat(result0name, f).v, tokencat(result1name, f).v, vecCopy4d4f(tokencat(arg0name, f).v, tokencat(arg0name, d).v), tokencat(arg1, f))
+#define cdraw_testVec2DF_rSV1V(testname,testname_x,testname_y,expect,expectname,funcname,resultname,arg0name)																																			\
+		cdraw_testVec2_rSV(cdraw_testname(testname, _d), cdraw_testname(testname_x, _d), cdraw_testname(testname_y, _d), (scBigEpsD), expect, tokencat(expectname, d).v, tokencat(funcname, d), tokencat(resultname, d).v, tokencat(arg0name, d).v);	\
+		cdraw_testVec2_rSV(cdraw_testname(testname, _f), cdraw_testname(testname_x, _f), cdraw_testname(testname_y, _f), (scBigEpsF), expect, vecCopy4d4f(tokencat(expectname, f).v, tokencat(expectname, d).v), tokencat(funcname, f), tokencat(resultname, f).v, vecCopy4d4f(tokencat(arg0name, f).v, tokencat(arg0name, d).v))
+#define cdraw_testVec3DF_rSV1V(testname,testname_x,testname_y,testname_z,expect,expectname,funcname,resultname,arg0name)																																								\
+		cdraw_testVec3_rSV(cdraw_testname(testname, _d), cdraw_testname(testname_x, _d), cdraw_testname(testname_y, _d), cdraw_testname(testname_z, _d), (scBigEpsD), expect, tokencat(expectname, d).v, tokencat(funcname, d), tokencat(resultname, d).v, tokencat(arg0name, d).v);	\
+		cdraw_testVec3_rSV(cdraw_testname(testname, _f), cdraw_testname(testname_x, _f), cdraw_testname(testname_y, _f), cdraw_testname(testname_z, _f), (scBigEpsF), expect, vecCopy4d4f(tokencat(expectname, f).v, tokencat(expectname, d).v), tokencat(funcname, f), tokencat(resultname, f).v, vecCopy4d4f(tokencat(arg0name, f).v, tokencat(arg0name, d).v))
+#define cdraw_testVec4DF_rSV1V(testname,testname_x,testname_y,testname_z,testname_w,expect,expectname,funcname,resultname,arg0name)																																														\
+		cdraw_testVec4_rSV(cdraw_testname(testname, _d), cdraw_testname(testname_x, _d), cdraw_testname(testname_y, _d), cdraw_testname(testname_z, _d), cdraw_testname(testname_w, _d), (scBigEpsD), expect, tokencat(expectname, d).v, tokencat(funcname, d), tokencat(resultname, d).v, tokencat(arg0name, d).v);	\
+		cdraw_testVec4_rSV(cdraw_testname(testname, _f), cdraw_testname(testname_x, _f), cdraw_testname(testname_y, _f), cdraw_testname(testname_z, _f), cdraw_testname(testname_w, _f), (scBigEpsF), expect, vecCopy4d4f(tokencat(expectname, f).v, tokencat(expectname, d).v), tokencat(funcname, f), tokencat(resultname, f).v, vecCopy4d4f(tokencat(arg0name, f).v, tokencat(arg0name, d).v))
+#define cdraw_testVec2DF_rSV1V1S(testname,testname_x,testname_y,expect,expectname,funcname,resultname,arg0name,arg1name)																																			\
+		cdraw_testVec2_rSV(cdraw_testname(testname, _d), cdraw_testname(testname_x, _d), cdraw_testname(testname_y, _d), (scBigEpsD), expect, tokencat(expectname, d).v, tokencat(funcname, d), tokencat(resultname, d).v, tokencat(arg0name, d).v, arg1name);		\
+		cdraw_testVec2_rSV(cdraw_testname(testname, _f), cdraw_testname(testname_x, _f), cdraw_testname(testname_y, _f), (scBigEpsF), expect, vecCopy4d4f(tokencat(expectname, f).v, tokencat(expectname, d).v), tokencat(funcname, f), tokencat(resultname, f).v, vecCopy4d4f(tokencat(arg0name, f).v, tokencat(arg0name, d).v), tokencat(arg1name, f))
+#define cdraw_testVec3DF_rSV1V1S(testname,testname_x,testname_y,testname_z,expect,expectname,funcname,resultname,arg0name,arg1name)																																								\
+		cdraw_testVec3_rSV(cdraw_testname(testname, _d), cdraw_testname(testname_x, _d), cdraw_testname(testname_y, _d), cdraw_testname(testname_z, _d), (scBigEpsD), expect, tokencat(expectname, d).v, tokencat(funcname, d), tokencat(resultname, d).v, tokencat(arg0name, d).v, arg1name);	\
+		cdraw_testVec3_rSV(cdraw_testname(testname, _f), cdraw_testname(testname_x, _f), cdraw_testname(testname_y, _f), cdraw_testname(testname_z, _f), (scBigEpsF), expect, vecCopy4d4f(tokencat(expectname, f).v, tokencat(expectname, d).v), tokencat(funcname, f), tokencat(resultname, f).v, vecCopy4d4f(tokencat(arg0name, f).v, tokencat(arg0name, d).v), tokencat(arg1name, f))
+#define cdraw_testVec4DF_rSV1V1S(testname,testname_x,testname_y,testname_z,testname_w,expect,expectname,funcname,resultname,arg0name,arg1name)																																													\
+		cdraw_testVec4_rSV(cdraw_testname(testname, _d), cdraw_testname(testname_x, _d), cdraw_testname(testname_y, _d), cdraw_testname(testname_z, _d), cdraw_testname(testname_w, _d), (scBigEpsD), expect, tokencat(expectname, d).v, tokencat(funcname, d), tokencat(resultname, d).v, tokencat(arg0name, d).v, arg1name);	\
+		cdraw_testVec4_rSV(cdraw_testname(testname, _f), cdraw_testname(testname_x, _f), cdraw_testname(testname_y, _f), cdraw_testname(testname_z, _f), cdraw_testname(testname_w, _f), (scBigEpsF), expect, vecCopy4d4f(tokencat(expectname, f).v, tokencat(expectname, d).v), tokencat(funcname, f), tokencat(resultname, f).v, vecCopy4d4f(tokencat(arg0name, f).v, tokencat(arg0name, d).v), tokencat(arg1name, f))
 
 
 /******************************************************************************
@@ -1153,6 +1174,98 @@ result_t cdrawVectorTest()
 			cdraw_testVecDF_rB1V(istrue, vecIsZero4, param1);
 			cdraw_testVecDF_rB1V(istrue, vecIsNonZero4, param0);
 			cdraw_testVecDF_rB1V(isfalse, vecIsNonZero4, param1);
+
+			vecInit4d(param0d.v, 27.0, 36.0, 60.0, 100.0);
+			cdraw_testVecDF_rS1V(isapprox, 45.0, vecLen2, param0);
+			cdraw_testVecDF_rS1V(isapprox, 75.0, vecLen3, param0);
+			cdraw_testVecDF_rS1V(isapprox, 125.0, vecLen4, param0);
+
+			cdraw_testVecDF_rS1V(isapprox, 0.02222222222222222222222222222222, vecLenInv2, param0);
+			cdraw_testVecDF_rS1V(isapprox, 0.01333333333333333333333333333333, vecLenInv3, param0);
+			cdraw_testVecDF_rS1V(isapprox, 0.008, vecLenInv4, param0);
+
+			vecInit4d(param1d.v, 54.0, 72.0, 120.0, 200.0);
+			cdraw_testVecDF_rS2V(isapprox, 45.0, vecDist2, param0, param1);
+			cdraw_testVecDF_rS2V(isapprox, 75.0, vecDist3, param0, param1);
+			cdraw_testVecDF_rS2V(isapprox, 125.0, vecDist4, param0, param1);
+
+			cdraw_testVec2DF_rSV2V(isapprox, isapprox, isapprox, 45.0, param0, vecDispDist2, result, param1, param0);
+			cdraw_testVec3DF_rSV2V(isapprox, isapprox, isapprox, isapprox, 75.0, param0, vecDispDist3, result, param1, param0);
+			cdraw_testVec4DF_rSV2V(isapprox, isapprox, isapprox, isapprox, isapprox, 125.0, param0, vecDispDist4, result, param1, param0);
+
+			vecInit4d(expect0d.v, (27.0 / 45.0), (36.0 / 45.0), (60.0 / 75.0), (100.0 / 125.0));
+			cdraw_testVec2DF_rSV1V(isapprox, isapprox, isapprox, 45.0, expect0, vecNormalize2, result, param0);
+			vecInit2d(expect0d.v, (27.0 / 75.0), (36.0 / 75.0));
+			cdraw_testVec3DF_rSV1V(isapprox, isapprox, isapprox, isapprox, 75.0, expect0, vecNormalize3, result, param0);
+			vecInit3d(expect0d.v, (27.0 / 125.0), (36.0 / 125.0), (60.0 / 125.0));
+			cdraw_testVec4DF_rSV1V(isapprox, isapprox, isapprox, isapprox, isapprox, 125.0, expect0, vecNormalize4, result, param0);
+
+			cdraw_testVec2DF_rSV1V1S(isapprox, isapprox, isapprox, 45.0, param1, vecResize2, result, param0, 90.0);
+			cdraw_testVec3DF_rSV1V1S(isapprox, isapprox, isapprox, isapprox, 75.0, param1, vecResize3, result, param0, 150.0);
+			cdraw_testVec4DF_rSV1V1S(isapprox, isapprox, isapprox, isapprox, isapprox, 125.0, param1, vecResize4, result, param0, 250.0);
+
+			cdraw_testVecDF_rS2V(isapprox, 0.5, vecProjS2, param0, param1);
+			cdraw_testVecDF_rS2V(isapprox, 0.5, vecProjS3, param0, param1);
+			cdraw_testVecDF_rS2V(isapprox, 0.5, vecProjS4, param0, param1);
+
+			cdraw_testVec2DF_rSV2V(isapprox, isapprox, isapprox, 0.5, param0, vecProj2, result, param0, param1);
+			cdraw_testVec3DF_rSV2V(isapprox, isapprox, isapprox, isapprox, 0.5, param0, vecProj3, result, param0, param1);
+			cdraw_testVec4DF_rSV2V(isapprox, isapprox, isapprox, isapprox, isapprox, 0.5, param0, vecProj4, result, param0, param1);
+
+			vecInit4d(expect0d.v, 47.25, 63.00, 105.00, 175.00);
+			cdraw_testVecDF_rS3V(isapprox, 0.75, vecLerpInv2, expect0, param0, param1);
+			cdraw_testVecDF_rS3V(isapprox, 0.75, vecLerpInv3, expect0, param0, param1);
+			cdraw_testVecDF_rS3V(isapprox, 0.75, vecLerpInv4, expect0, param0, param1);
+
+			{
+
+				vec4d_t param2d, expect2d, resultBd;
+				vec4f_t param2f, expect2f, resultBf;
+				vecd_t resultSc0d, resultSc1d;
+				vecf_t resultSc0f, resultSc1f;
+
+				vecCopy4d4f(param0f.v, vecInit4d(param0d.v, 2.0, 0.0, 0.0, 1.0));
+				vecCopy4d4f(param1f.v, vecInit4d(param1d.v, 3.0, 3.0, 0.0, 1.0));
+				vecCopy4d4f(param2f.v, vecInit4d(param2d.v, 6.0, 6.0, 6.0, 1.0));
+				vecCopy4d4f(expect0f.v, vecInit4d(expect0d.v, 2.0, 0.0, 0.0, 0.0));
+				vecCopy4d4f(expect1f.v, vecInit4d(expect1d.v, 0.0, 3.0, 0.0, 0.0));
+				vecCopy4d4f(expect2f.v, vecInit4d(expect2d.v, 0.0, 0.0, 6.0, 0.0));
+				cdraw_testSc(cdraw_isapprox_d, (scBigEpsD), 1.5, vecOrtho2d, resultd.v, param1d.v, param0d.v);
+				cdraw_testSc(cdraw_isapprox_d, (scBigEpsD), 1.5, vecOrtho3d, resultd.v, param1d.v, param0d.v);
+				cdraw_testSc(cdraw_isapprox_d, (scBigEpsD), 1.5, vecOrtho4d, resultd.v, param1d.v, param0d.v);
+				cdraw_testSc(cdraw_isapprox_f, (scBigEpsF), 1.5f, vecOrtho2f, resultf.v, param1f.v, param0f.v);
+				cdraw_testSc(cdraw_isapprox_f, (scBigEpsF), 1.5f, vecOrtho3f, resultf.v, param1f.v, param0f.v);
+				cdraw_testSc(cdraw_isapprox_f, (scBigEpsF), 1.5f, vecOrtho4f, resultf.v, param1f.v, param0f.v);
+				cdraw_testSc(cdraw_isapprox_d, (scBigEpsD), 2.0, vecOrthoBasis3d, resultd.v, resultAd.v, &resultSc1d, &resultSc0d, param2d.v, param1d.v, param0d.v);
+				cdraw_testSc(cdraw_isapprox_d, (scBigEpsD), 2.0, vecOrthoBasis4d, resultd.v, resultAd.v, resultBd.v, &resultSc1d, &resultSc0d, param2d.v, param1d.v, param0d.v);
+				cdraw_testSc(cdraw_isapprox_f, (scBigEpsF), 2.0f, vecOrthoBasis3f, resultf.v, resultAf.v, &resultSc1f, &resultSc0f, param2f.v, param1f.v, param0f.v);
+				cdraw_testSc(cdraw_isapprox_f, (scBigEpsF), 2.0f, vecOrthoBasis4f, resultf.v, resultAf.v, resultBf.v, &resultSc1f, &resultSc0f, param2f.v, param1f.v, param0f.v);
+				cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsD, 3.0, resultSc1d);
+				cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsD, 1.5, resultSc0d);
+				cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsF, 3.0f, resultSc1f);
+				cdraw_testSc_rB(cdraw_istrue_b, cdraw_isapprox, scBigEpsF, 1.5f, resultSc0f);
+				vecSub4d(resultd.v, resultd.v, expect2d.v);
+				vecSub4d(resultAd.v, resultAd.v, expect1d.v);
+				vecSub4d(resultBd.v, resultBd.v, expect0d.v);
+				vecSub4f(resultf.v, resultf.v, expect2f.v);
+				vecSub4f(resultAf.v, resultAf.v, expect1f.v);
+				vecSub4f(resultBf.v, resultBf.v, expect0f.v);
+				cdraw_testVecDF_rB1V(istrue, vecIsZero4, result);
+				cdraw_testVecDF_rB1V(istrue, vecIsZero4, resultA);
+				cdraw_testVecDF_rB1V(istrue, vecIsZero4, resultB);
+			}
+
+			{
+				vecInit4d(param0d.v, scSqrt1_2D, scSqrt1_2D, scSqrt1_3D, 0.5);
+				cdraw_testVecDF_rB1V(istrue, vecIsUnit2, param0);
+				cdraw_testVecDF_rB1V(isfalse, vecIsNonUnit2, param0);
+				vecInit2d(param0d.v, scSqrt1_3D, scSqrt1_3D);
+				cdraw_testVecDF_rB1V(istrue, vecIsUnit3, param0);
+				cdraw_testVecDF_rB1V(isfalse, vecIsNonUnit3, param0);
+				vecInit3d(param0d.v, 0.5, 0.5, 0.5);
+				cdraw_testVecDF_rB1V(istrue, vecIsUnit4, param0);
+				cdraw_testVecDF_rB1V(isfalse, vecIsNonUnit4, param0);
+			}
 		}
 	}
 

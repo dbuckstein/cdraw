@@ -442,7 +442,7 @@ CDRAW_INL vecb_t vecIsNonUnit3f(float3_t const v)
 CDRAW_INL vecf_t vecProjS3f(float3_t const v, float3_t const v_base)
 {
 	failassert(v && v_base, sc0F);
-	vecf_t const lenSq = vecLenSq3f(v);
+	vecf_t const lenSq = vecLenSq3f(v_base);
 	if (scIsNonPositiveApproxF(lenSq))
 		return sc0F;
 	return (vecDot3f(v, v_base) / lenSq);
@@ -451,8 +451,7 @@ CDRAW_INL vecf_t vecProjS3f(float3_t const v, float3_t const v_base)
 CDRAW_INL vecf_t vecProj3f(float3_t v_out, float3_t const v, float3_t const v_base)
 {
 	failassert(v_out && v && v_base, sc0F);
-	failassert(v && v_base, sc0F);
-	vecf_t ratio = vecLenSq3f(v);
+	vecf_t ratio = vecLenSq3f(v_base);
 	if (scIsNonPositiveApproxF(ratio))
 		return sc0F;
 	ratio = vecDot3f(v, v_base) / ratio;

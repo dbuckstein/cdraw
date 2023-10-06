@@ -492,7 +492,7 @@ CDRAW_INL vecb_t vecIsNonUnit4f(float4_t const v)
 CDRAW_INL vecf_t vecProjS4f(float4_t const v, float4_t const v_base)
 {
 	failassert(v && v_base, sc0F);
-	vecf_t const lenSq = vecLenSq4f(v);
+	vecf_t const lenSq = vecLenSq4f(v_base);
 	if (scIsNonPositiveApproxF(lenSq))
 		return sc0F;
 	return (vecDot4f(v, v_base) / lenSq);
@@ -501,8 +501,7 @@ CDRAW_INL vecf_t vecProjS4f(float4_t const v, float4_t const v_base)
 CDRAW_INL vecf_t vecProj4f(float4_t v_out, float4_t const v, float4_t const v_base)
 {
 	failassert(v_out && v && v_base, sc0F);
-	failassert(v && v_base, sc0F);
-	vecf_t ratio = vecLenSq4f(v);
+	vecf_t ratio = vecLenSq4f(v_base);
 	if (scIsNonPositiveApproxF(ratio))
 		return sc0F;
 	ratio = vecDot4f(v, v_base) / ratio;
@@ -526,40 +525,18 @@ CDRAW_INL vecf_t vecLerpInv4f(float4_t const v, float4_t const v_min, float4_t c
 CDRAW_INL vecf_t vecOrtho4f(float4_t v_out, float4_t const v, float4_t const v_base)
 {
 	failassert(v_out && v && v_base, sc0F);
-	vecf_t ratio = vecLenSq4f(v_base);
-	if (scIsNonPositiveApproxF(ratio))
-		return (vecZero4f(v_out), ratio);
-	ratio = vecDot4f(v, v_base) / ratio;
-	vx(v_out) = (vx(v) - vx(v_base) * ratio);
-	vy(v_out) = (vy(v) - vy(v_base) * ratio);
-	vz(v_out) = (vz(v) - vz(v_base) * ratio);
-	vw(v_out) = (vw(v) - vw(v_base) * ratio);
-	return ratio;
+	vw(v_out) = sc0F;
+	return vecOrtho3f(v_out, v, v_base);
 }
 
 
 CDRAW_INL vecf_t vecOrthoBasis4f(float4_t v2_out, float4_t v1_out, float4_t v_base_out, vecf_t* v2_basefactor_out_opt, vecf_t* v1_basefactor_out_opt, float4_t const v2, float4_t const v1, float4_t const v_base)
 {
 	failassert(v2_out && v1_out && v2 && v1 && v_base, sc0F);
-	vecf_t ratio = vecLenSq4f(v_base), ratio1, ratio2;
 	vecCopy3w4f(v_base_out, v_base, sc0F);
-	if (scIsNonPositiveApproxF(ratio))
-		return (vecZero4f(v2_out), vecZero4f(v1_out), sc0F);
-	ratio = sc1F / ratio;
-	ratio1 = vecDot4f(v1, v_base) * ratio;
-	ratio2 = vecDot4f(v2, v_base) * ratio;
-	vx(v1_out) = (vx(v1) - vx(v_base) * ratio1);
-	vy(v1_out) = (vy(v1) - vy(v_base) * ratio1);
-	vz(v1_out) = (vz(v1) - vz(v_base) * ratio1);
 	vw(v1_out) = sc0F;
-	ratio = vecDot4f(v2, v1_out) / vecLenSq4f(v1_out);
-	vx(v2_out) = (vx(v2) - vx(v_base) * ratio2 - vx(v1_out) * ratio);
-	vy(v2_out) = (vy(v2) - vy(v_base) * ratio2 - vy(v1_out) * ratio);
-	vz(v2_out) = (vz(v2) - vz(v_base) * ratio2 - vz(v1_out) * ratio);
 	vw(v2_out) = sc0F;
-	if (v1_basefactor_out_opt) *v1_basefactor_out_opt = ratio1;
-	if (v2_basefactor_out_opt) *v2_basefactor_out_opt = ratio2;
-	return ratio;
+	return vecOrthoBasis3f(v2_out, v1_out, v2_basefactor_out_opt, v1_basefactor_out_opt, v2, v1, v_base);
 }
 
 
