@@ -337,6 +337,102 @@ extern "C" {
 	/// <returns><paramref name="v_out"/></returns>
 #define vecLerp2 cdraw_vector_base(vecLerp2)
 
+	/// <summary>
+	/// Calculate the length or magnitude of the vector (analogous to scalar absolute value).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Length of vector.</returns>
+#define vecLen2 cdraw_vector_base(vecLen2)
+
+	/// <summary>
+	/// Calculate the inverse (reciprocal) length or magnitude of the vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Inverse length of vector.</returns>
+#define vecLenInv2 cdraw_vector_base(vecLenInv2)
+
+	/// <summary>
+	/// Calculate the distance between two vectors.
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Distance between inputs.</returns>
+#define vecDist2 cdraw_vector_base(vecDist2)
+
+	/// <summary>
+	/// Calculate the distance between two vectors and store the displacement.
+	/// </summary>
+	/// <param name="v_disp_out">Result vector (displacement).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Distance between inputs.</returns>
+#define vecDispDist2 cdraw_vector_base(vecDispDist2)
+
+	/// <summary>
+	/// Calculate the unit-length direction of the vector (analogous to scalar sign).
+	/// </summary>
+	/// <param name="v_out">Result vector (unit direction).</param>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Length of input vector.</returns>
+#define vecNormalize2 cdraw_vector_base(vecNormalize2)
+
+	/// <summary>
+	/// Calculate a resized vector in the same direction as the input.
+	/// </summary>
+	/// <param name="v_out">Result vector (same direction, new length).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="newLen">Desired length of vector.</param>
+	/// <returns>Length of input vector.</returns>
+#define vecResize2 cdraw_vector_base(vecResize2)
+
+	/// <summary>
+	/// Determine if vector is unit length (normalized).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if vector is considered unit length.</returns>
+#define vecIsUnit2 cdraw_vector_base(vecIsUnit2)
+
+	/// <summary>
+	/// Determine if vector is non-unit length (normalized).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if vector is not considered unit length.</returns>
+#define vecIsNonUnit2 cdraw_vector_base(vecIsNonUnit2)
+
+	/// <summary>
+	/// Calculate projection factor of base vector required to project input onto base.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector (direction of projected vector).</param>
+	/// <returns>Factor of base for projection.</returns>
+#define vecProjS2 cdraw_vector_base(vecProjS2)
+
+	/// <summary>
+	/// Calculate projection of input vector onto base.
+	/// </summary>
+	/// <param name="v_out">Result vector (input projected onto base).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector (direction of projected vector).</param>
+	/// <returns>Factor of base for projection.</returns>
+#define vecProj2 cdraw_vector_base(vecProj2)
+
+	/// <summary>
+	/// Calculate interpolation parameter given potential interpolation result and ends of range.
+	/// </summary>
+	/// <param name="v"></param>
+	/// <param name="v_min"></param>
+	/// <param name="v_max"></param>
+	/// <returns></returns>
+#define vecLerpInv2 cdraw_vector_base(vecLerpInv2)
+
+	/// <summary>
+	/// Calculate orthogonalized vector given input and base using Gram-Schmidt process.
+	/// </summary>
+	/// <param name="v_out">Result vector (input orthogonalized relative to base).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector.</param>
+	/// <returns>Factor of base for projection.</returns>
+#define vecOrtho2 cdraw_vector_base(vecOrtho2)
 
 	/// <summary>
 	/// Initialize vector by copying the leading components of another.

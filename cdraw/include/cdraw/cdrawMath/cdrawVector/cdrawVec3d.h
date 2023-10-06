@@ -348,6 +348,116 @@ extern "C" {
 	/// <returns><paramref name="v_out"/></returns>
 	doubleN_t vecLerp3d(double3_t v_out, vecd_t const u, double3_t const v_min, double3_t const v_max);
 
+	/// <summary>
+	/// Calculate the length or magnitude of the vector (analogous to scalar absolute value).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Length of vector.</returns>
+	vecd_t vecLen3d(double3_t const v);
+
+	/// <summary>
+	/// Calculate the inverse (reciprocal) length or magnitude of the vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Inverse length of vector.</returns>
+	vecd_t vecLenInv3d(double3_t const v);
+
+	/// <summary>
+	/// Calculate the distance between two vectors.
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Distance between inputs.</returns>
+	vecd_t vecDist3d(double3_t const v_lh, double3_t const v_rh);
+
+	/// <summary>
+	/// Calculate the distance between two vectors and store the displacement.
+	/// </summary>
+	/// <param name="v_disp_out">Result vector (displacement).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Distance between inputs.</returns>
+	vecd_t vecDispDist3d(double3_t v_disp_out, double3_t const v_lh, double3_t const v_rh);
+
+	/// <summary>
+	/// Calculate the unit-length direction of the vector (analogous to scalar sign).
+	/// </summary>
+	/// <param name="v_out">Result vector (unit direction).</param>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Length of input vector.</returns>
+	vecd_t vecNormalize3d(double3_t v_out, double3_t const v);
+
+	/// <summary>
+	/// Calculate a resized vector in the same direction as the input.
+	/// </summary>
+	/// <param name="v_out">Result vector (same direction, new length).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="newLen">Desired length of vector.</param>
+	/// <returns>Length of input vector.</returns>
+	vecd_t vecResize3d(double3_t v_out, double3_t const v, vecd_t const newLen);
+
+	/// <summary>
+	/// Determine if vector is unit length (normalized).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if vector is considered unit length.</returns>
+	vecb_t vecIsUnit3d(double3_t const v);
+
+	/// <summary>
+	/// Determine if vector is non-unit length (normalized).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if vector is not considered unit length.</returns>
+	vecb_t vecIsNonUnit3d(double3_t const v);
+
+	/// <summary>
+	/// Calculate projection factor of base vector required to project input onto base.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector (direction of projected vector).</param>
+	/// <returns>Factor of base for projection.</returns>
+	vecd_t vecProjS3d(double3_t const v, double3_t const v_base);
+
+	/// <summary>
+	/// Calculate projection of input vector onto base.
+	/// </summary>
+	/// <param name="v_out">Result vector (input projected onto base).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector (direction of projected vector).</param>
+	/// <returns>Factor of base for projection.</returns>
+	vecd_t vecProj3d(double3_t v_out, double3_t const v, double3_t const v_base);
+
+	/// <summary>
+	/// Calculate interpolation parameter given potential interpolation result and ends of range.
+	/// </summary>
+	/// <param name="v"></param>
+	/// <param name="v_min"></param>
+	/// <param name="v_max"></param>
+	/// <returns></returns>
+	vecd_t vecLerpInv3d(double3_t const v, double3_t const v_min, double3_t const v_max);
+
+	/// <summary>
+	/// Calculate orthogonalized vector given input and base using Gram-Schmidt process.
+	/// </summary>
+	/// <param name="v_out">Result vector (input orthogonalized relative to base).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector.</param>
+	/// <returns>Factor of base for projection.</returns>
+	vecd_t vecOrtho3d(double3_t v_out, double3_t const v, double3_t const v_base);
+
+	/// <summary>
+	/// Calculate orthogonized basis given two inputs and base using Gram-Schmidt process.
+	/// </summary>
+	/// <param name="v2_out">Second result vector (second input orthogonalized relative to base and first input).</param>
+	/// <param name="v1_out">First result vector (first input orthogonalized relative to base).</param>
+	/// <param name="v2_basefactor_out_opt">Factor of base for projection of second input (optional).</param>
+	/// <param name="v1_basefactor_out_opt">Factor of base for projection of first input (optional).</param>
+	/// <param name="v2">Second input vector.</param>
+	/// <param name="v1">First input vector.</param>
+	/// <param name="v_base">Base vector.</param>
+	/// <returns>Factor of first input for projection.</returns>
+	vecd_t vecOrthoBasis3d(double3_t v2_out, double3_t v1_out, vecd_t* v2_basefactor_out_opt, vecd_t* v1_basefactor_out_opt, double3_t const v2, double3_t const v1, double3_t const v_base);
+
 
 #ifdef __cplusplus
 }

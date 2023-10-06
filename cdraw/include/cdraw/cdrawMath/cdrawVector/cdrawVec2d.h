@@ -337,6 +337,103 @@ extern "C" {
 	/// <returns><paramref name="v_out"/></returns>
 	doubleN_t vecLerp2d(double2_t v_out, vecd_t const u, double2_t const v_min, double2_t const v_max);
 
+	/// <summary>
+	/// Calculate the length or magnitude of the vector (analogous to scalar absolute value).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Length of vector.</returns>
+	vecd_t vecLen2d(double2_t const v);
+
+	/// <summary>
+	/// Calculate the inverse (reciprocal) length or magnitude of the vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Inverse length of vector.</returns>
+	vecd_t vecLenInv2d(double2_t const v);
+
+	/// <summary>
+	/// Calculate the distance between two vectors.
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Distance between inputs.</returns>
+	vecd_t vecDist2d(double2_t const v_lh, double2_t const v_rh);
+
+	/// <summary>
+	/// Calculate the distance between two vectors and store the displacement.
+	/// </summary>
+	/// <param name="v_disp_out">Result vector (displacement).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Distance between inputs.</returns>
+	vecd_t vecDispDist2d(double2_t v_disp_out, double2_t const v_lh, double2_t const v_rh);
+
+	/// <summary>
+	/// Calculate the unit-length direction of the vector (analogous to scalar sign).
+	/// </summary>
+	/// <param name="v_out">Result vector (unit direction).</param>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Length of input vector.</returns>
+	vecd_t vecNormalize2d(double2_t v_out, double2_t const v);
+
+	/// <summary>
+	/// Calculate a resized vector in the same direction as the input.
+	/// </summary>
+	/// <param name="v_out">Result vector (same direction, new length).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="newLen">Desired length of vector.</param>
+	/// <returns>Length of input vector.</returns>
+	vecd_t vecResize2d(double2_t v_out, double2_t const v, vecd_t const newLen);
+
+	/// <summary>
+	/// Determine if vector is unit length (normalized).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if vector is considered unit length.</returns>
+	vecb_t vecIsUnit2d(double2_t const v);
+
+	/// <summary>
+	/// Determine if vector is non-unit length (normalized).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if vector is not considered unit length.</returns>
+	vecb_t vecIsNonUnit2d(double2_t const v);
+
+	/// <summary>
+	/// Calculate projection factor of base vector required to project input onto base.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector (direction of projected vector).</param>
+	/// <returns>Factor of base for projection.</returns>
+	vecd_t vecProjS2d(double2_t const v, double2_t const v_base);
+
+	/// <summary>
+	/// Calculate projection of input vector onto base.
+	/// </summary>
+	/// <param name="v_out">Result vector (input projected onto base).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector (direction of projected vector).</param>
+	/// <returns>Factor of base for projection.</returns>
+	vecd_t vecProj2d(double2_t v_out, double2_t const v, double2_t const v_base);
+
+	/// <summary>
+	/// Calculate interpolation parameter given potential interpolation result and ends of range.
+	/// </summary>
+	/// <param name="v"></param>
+	/// <param name="v_min"></param>
+	/// <param name="v_max"></param>
+	/// <returns></returns>
+	vecd_t vecLerpInv2d(double2_t const v, double2_t const v_min, double2_t const v_max);
+
+	/// <summary>
+	/// Calculate orthogonalized vector given input and base using Gram-Schmidt process.
+	/// </summary>
+	/// <param name="v_out">Result vector (input orthogonalized relative to base).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector.</param>
+	/// <returns>Factor of base for projection.</returns>
+	vecd_t vecOrtho2d(double2_t v_out, double2_t const v, double2_t const v_base);
+
 
 #ifdef __cplusplus
 }

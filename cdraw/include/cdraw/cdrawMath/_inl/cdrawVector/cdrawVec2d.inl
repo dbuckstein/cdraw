@@ -322,5 +322,116 @@ CDRAW_INL doubleN_t vecLerp2d(double2_t v_out, vecd_t const u, double2_t const v
 	return v_out;
 }
 
+CDRAW_INL vecd_t vecLen2d(double2_t const v)
+{
+	failassert(v, sc0D);
+	vecd_t const lenSq = vecLenSq2d(v);
+	return scSqrtD(lenSq);
+}
+
+CDRAW_INL vecd_t vecLenInv2d(double2_t const v)
+{
+	failassert(v, sc0D);
+	vecd_t const lenSq = vecLenSq2d(v);
+	failassert(scIsPositiveApproxD(lenSq), sc0D);
+	return (sc1F / gSafeSqrtD(lenSq));
+}
+
+CDRAW_INL vecd_t vecDist2d(double2_t const v_lh, double2_t const v_rh)
+{
+	failassert(v_lh && v_rh, sc0D);
+	return scSqrtD(vecDistSq2d(v_lh, v_rh));
+}
+
+CDRAW_INL vecd_t vecDispDist2d(double2_t v_disp_out, double2_t const v_lh, double2_t const v_rh)
+{
+	failassert(v_disp_out && v_lh && v_rh, sc0D);
+	return scSqrtD(vecDispDistSq2d(v_disp_out, v_lh, v_rh));
+}
+
+CDRAW_INL vecd_t vecNormalize2d(double2_t v_out, double2_t const v)
+{
+	failassert(v_out && v, sc0D);
+	vecd_t len = vecLenSq2d(v), ratio;
+	if (scIsNonPositiveApproxD(len))
+		return (vecZero2d(v_out), sc0D);
+	len = gSafeSqrtD(len);
+	ratio = sc1F / len;
+	vx(v_out) = vx(v) * ratio;
+	vy(v_out) = vy(v) * ratio;
+	return len;
+}
+
+CDRAW_INL vecd_t vecResize2d(double2_t v_out, double2_t const v, vecd_t const newLen)
+{
+	failassert(v_out && v, sc0D);
+	vecd_t len = vecLenSq2d(v), ratio;
+	if (scIsNonPositiveApproxD(len))
+		return (vecZero2d(v_out), sc0D);
+	len = gSafeSqrtD(len);
+	ratio = newLen / len;
+	vx(v_out) = vx(v) * ratio;
+	vy(v_out) = vy(v) * ratio;
+	return len;
+}
+
+CDRAW_INL vecb_t vecIsUnit2d(double2_t const v)
+{
+	failassert(v, false);
+	vecd_t const lenSq = vecLenSq2d(v);
+	return ((lenSq >= scEpsL1F) && (lenSq <= scEpsG1F));
+}
+
+CDRAW_INL vecb_t vecIsNonUnit2d(double2_t const v)
+{
+	failassert(v, true);
+	vecd_t const lenSq = vecLenSq2d(v);
+	return ((lenSq < scEpsL1F) || (lenSq > scEpsG1F));
+}
+
+CDRAW_INL vecd_t vecProjS2d(double2_t const v, double2_t const v_base)
+{
+	failassert(v && v_base, sc0D);
+	vecd_t const lenSq = vecLenSq2d(v);
+	if (scIsNonPositiveApproxD(lenSq))
+		return sc0D;
+	return (vecDot2d(v, v_base) / lenSq);
+}
+
+CDRAW_INL vecd_t vecProj2d(double2_t v_out, double2_t const v, double2_t const v_base)
+{
+	failassert(v_out && v && v_base, sc0D);
+	failassert(v && v_base, sc0D);
+	vecd_t ratio = vecLenSq2d(v);
+	if (scIsNonPositiveApproxD(ratio))
+		return sc0D;
+	ratio = vecDot2d(v, v_base) / ratio;
+	vx(v_out) = vx(v_base) * ratio;
+	vy(v_out) = vy(v_base) * ratio;
+	return ratio;
+}
+
+CDRAW_INL vecd_t vecLerpInv2d(double2_t const v, double2_t const v_min, double2_t const v_max)
+{
+	failassert(v && v_min && v_max, sc0D);
+	double2_t v_delta;
+	vecd_t const distSq = vecDispDistSq2d(v_delta, v_max, v_min);
+	if (scIsNonPositiveApproxD(distSq))
+		return sc0D;
+	return ((vx(v) - vx(v_min)) * vx(v_delta) + (vy(v) - vy(v_min)) * vy(v_delta)) / distSq;
+}
+
+CDRAW_INL vecd_t vecOrtho2d(double2_t v_out, double2_t const v, double2_t const v_base)
+{
+	failassert(v_out && v && v_base, sc0D);
+	vecd_t ratio = vecLenSq2d(v_base);
+	if (scIsNonPositiveApproxD(ratio))
+		return (vecZero2d(v_out), sc0D);
+	ratio = vecDot2d(v, v_base) / ratio;
+	vx(v_out) = (vx(v) - vx(v_base) * ratio);
+	vy(v_out) = (vy(v) - vy(v_base) * ratio);
+	return ratio;
+}
+
 
 #endif // #if (!(defined _CDRAW_VEC2D_INL_) && (defined _CDRAW_VECTOR_INL_))

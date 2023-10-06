@@ -359,6 +359,116 @@ extern "C" {
 	/// <returns><paramref name="v_out"/></returns>
 #define vecLerp4 cdraw_vector_base(vecLerp4)
 
+	/// <summary>
+	/// Calculate the length or magnitude of the vector (analogous to scalar absolute value).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Length of vector.</returns>
+#define vecLen4 cdraw_vector_base(vecLen4)
+
+	/// <summary>
+	/// Calculate the inverse (reciprocal) length or magnitude of the vector.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Inverse length of vector.</returns>
+#define vecLenInv4 cdraw_vector_base(vecLenInv4)
+
+	/// <summary>
+	/// Calculate the distance between two vectors.
+	/// </summary>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Distance between inputs.</returns>
+#define vecDist4 cdraw_vector_base(vecDist4)
+
+	/// <summary>
+	/// Calculate the distance between two vectors and store the displacement.
+	/// </summary>
+	/// <param name="v_disp_out">Result vector (displacement).</param>
+	/// <param name="v_lh">Left-hand input vector.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Distance between inputs.</returns>
+#define vecDispDist4 cdraw_vector_base(vecDispDist4)
+
+	/// <summary>
+	/// Calculate the unit-length direction of the vector (analogous to scalar sign).
+	/// </summary>
+	/// <param name="v_out">Result vector (unit direction).</param>
+	/// <param name="v">Input vector.</param>
+	/// <returns>Length of input vector.</returns>
+#define vecNormalize4 cdraw_vector_base(vecNormalize4)
+
+	/// <summary>
+	/// Calculate a resized vector in the same direction as the input.
+	/// </summary>
+	/// <param name="v_out">Result vector (same direction, new length).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="newLen">Desired length of vector.</param>
+	/// <returns>Length of input vector.</returns>
+#define vecResize4 cdraw_vector_base(vecResize4)
+
+	/// <summary>
+	/// Determine if vector is unit length (normalized).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if vector is considered unit length.</returns>
+#define vecIsUnit4 cdraw_vector_base(vecIsUnit4)
+
+	/// <summary>
+	/// Determine if vector is non-unit length (normalized).
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <returns>True if vector is not considered unit length.</returns>
+#define vecIsNonUnit4 cdraw_vector_base(vecIsNonUnit4)
+
+	/// <summary>
+	/// Calculate projection factor of base vector required to project input onto base.
+	/// </summary>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector (direction of projected vector).</param>
+	/// <returns>Factor of base for projection.</returns>
+#define vecProjS4 cdraw_vector_base(vecProjS4)
+
+	/// <summary>
+	/// Calculate projection of input vector onto base.
+	/// </summary>
+	/// <param name="v_out">Result vector (input projected onto base).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector (direction of projected vector).</param>
+	/// <returns>Factor of base for projection.</returns>
+#define vecProj4 cdraw_vector_base(vecProj4)
+
+	/// <summary>
+	/// Calculate interpolation parameter given potential interpolation result and ends of range.
+	/// </summary>
+	/// <param name="v"></param>
+	/// <param name="v_min"></param>
+	/// <param name="v_max"></param>
+	/// <returns></returns>
+#define vecLerpInv4 cdraw_vector_base(vecLerpInv4)
+
+	/// <summary>
+	/// Calculate orthogonalized vector given input and base using Gram-Schmidt process.
+	/// </summary>
+	/// <param name="v_out">Result vector (input orthogonalized relative to base).</param>
+	/// <param name="v">Input vector.</param>
+	/// <param name="v_base">Base vector.</param>
+	/// <returns>Factor of base for projection.</returns>
+#define vecOrtho4 cdraw_vector_base(vecOrtho4)
+
+	/// <summary>
+	/// Calculate orthogonized basis given two inputs and base using Gram-Schmidt process.
+	/// </summary>
+	/// <param name="v2_out">Second result vector (second input orthogonalized relative to base and first input).</param>
+	/// <param name="v1_out">First result vector (first input orthogonalized relative to base).</param>
+	/// <param name="v_base_out">Corrected base vector for 4D.</param>
+	/// <param name="v2_basefactor_out_opt">Factor of base for projection of second input (optional).</param>
+	/// <param name="v1_basefactor_out_opt">Factor of base for projection of first input (optional).</param>
+	/// <param name="v2">Second input vector.</param>
+	/// <param name="v1">First input vector.</param>
+	/// <param name="v_base">Base vector.</param>
+	/// <returns>Factor of first input for projection.</returns>
+#define vecOrthoBasis4 cdraw_vector_base(vecOrthoBasis4)
 
 	/// <summary>
 	/// Initialize vector by copying the leading components of another.
