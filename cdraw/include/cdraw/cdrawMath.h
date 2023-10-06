@@ -24,6 +24,7 @@
 
 
 #include "cdrawMath/cdrawScalar.h"
+#include "cdrawMath/cdrawVector.h"
 
 
 #endif // #ifndef _CDRAW_MATH_H_

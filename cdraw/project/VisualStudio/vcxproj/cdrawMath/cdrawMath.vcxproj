@@ -160,9 +160,49 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawSc.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawScD.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawScF.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2b.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2d.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2f.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2i.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2u.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3b.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3d.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3f.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3i.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3u.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4b.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4d.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4f.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4i.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4u.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar\cdrawScD.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar\cdrawScF.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2b.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2d.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2f.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2i.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2u.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec3b.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec3d.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec3f.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec3i.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec3u.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4b.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4d.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4f.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4i.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4u.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
