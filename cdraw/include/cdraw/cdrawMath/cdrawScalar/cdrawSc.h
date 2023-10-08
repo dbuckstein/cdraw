@@ -69,6 +69,20 @@ extern "C" {
 	/// <returns>True if value is approximately non-negative.</returns>
 #define scIsNonNegativeApprox cdraw_scalar_base(scIsNonNegativeApprox)
 
+	/// <summary>
+	/// Test if value is approximately unity (+1).
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <returns>True if value is approximately unity.</returns>
+#define scIsUnityApprox cdraw_scalar_base(scIsUnityApprox)
+
+	/// <summary>
+	/// Test if value is approximately non-unity (+1).
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <returns>True if value is approximately non-unity.</returns>
+#define scIsNonUnityApprox cdraw_scalar_base(scIsNonUnityApprox)
+
 
 	/// <summary>
 	/// Determine sign of input.

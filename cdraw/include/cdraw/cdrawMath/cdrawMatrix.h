@@ -334,22 +334,22 @@ typedef union mat4d_t
 										tokencat(zx_value_fp64, f), tokencat(zy_value_fp64, f), tokencat(zz_value_fp64, f), tokencat(zw_value_fp64, f),																												\
 										tokencat(wx_value_fp64, f), tokencat(wy_value_fp64, f), tokencat(wz_value_fp64, f), tokencat(ww_value_fp64, f)	}
 
-#define mxx(v) ((m)[0][0])	// Access first component of first column of matrix for read/write ('cx.x').
-#define mxy(v) ((m)[0][1])	// Access second component of first column of matrix for read/write ('cx.y').
-#define mxz(v) ((m)[0][2])	// Access third component of first column of matrix for read/write ('cx.z').
-#define mxw(v) ((m)[0][3])	// Access fourth component of first column of matrix for read/write ('cx.w').
-#define myx(v) ((m)[1][0])	// Access first component of second column of matrix for read/write ('cy.x').
-#define myy(v) ((m)[1][1])	// Access second component of second column of matrix for read/write ('cy.y').
-#define myz(v) ((m)[1][2])	// Access third component of second column of matrix for read/write ('cy.z').
-#define myw(v) ((m)[1][3])	// Access fourth component of second column of matrix for read/write ('cy.w').
-#define mzx(v) ((m)[2][0])	// Access first component of third column of matrix for read/write ('cz.x').
-#define mzy(v) ((m)[2][1])	// Access second component of third column of matrix for read/write ('cz.y').
-#define mzz(v) ((m)[2][2])	// Access third component of third column of matrix for read/write ('cz.z').
-#define mzw(v) ((m)[2][3])	// Access fourth component of third column of matrix for read/write ('cz.w').
-#define mwx(v) ((m)[3][0])	// Access first component of fourth column of matrix for read/write ('cw.x').
-#define mwy(v) ((m)[3][1])	// Access second component of fourth column of matrix for read/write ('cw.y').
-#define mwz(v) ((m)[3][2])	// Access third component of fourth column of matrix for read/write ('cw.z').
-#define mww(v) ((m)[3][3])	// Access fourth component of fourth column of matrix for read/write ('cw.w').
+#define mxx(m) ((m)[0][0])	// Access first component of first column of matrix for read/write ('cx.x').
+#define mxy(m) ((m)[0][1])	// Access second component of first column of matrix for read/write ('cx.y').
+#define mxz(m) ((m)[0][2])	// Access third component of first column of matrix for read/write ('cx.z').
+#define mxw(m) ((m)[0][3])	// Access fourth component of first column of matrix for read/write ('cx.w').
+#define myx(m) ((m)[1][0])	// Access first component of second column of matrix for read/write ('cy.x').
+#define myy(m) ((m)[1][1])	// Access second component of second column of matrix for read/write ('cy.y').
+#define myz(m) ((m)[1][2])	// Access third component of second column of matrix for read/write ('cy.z').
+#define myw(m) ((m)[1][3])	// Access fourth component of second column of matrix for read/write ('cy.w').
+#define mzx(m) ((m)[2][0])	// Access first component of third column of matrix for read/write ('cz.x').
+#define mzy(m) ((m)[2][1])	// Access second component of third column of matrix for read/write ('cz.y').
+#define mzz(m) ((m)[2][2])	// Access third component of third column of matrix for read/write ('cz.z').
+#define mzw(m) ((m)[2][3])	// Access fourth component of third column of matrix for read/write ('cz.w').
+#define mwx(m) ((m)[3][0])	// Access first component of fourth column of matrix for read/write ('cw.x').
+#define mwy(m) ((m)[3][1])	// Access second component of fourth column of matrix for read/write ('cw.y').
+#define mwz(m) ((m)[3][2])	// Access third component of fourth column of matrix for read/write ('cw.z').
+#define mww(m) ((m)[3][3])	// Access fourth component of fourth column of matrix for read/write ('cw.w').
 
 
 #if CDRAW_USING_SCALAR_PREF

@@ -364,6 +364,12 @@ result_t cdrawScalarTest()
 		cdraw_testSc_rB(cdraw_istrue_f, scIsNonNegativeApproxF, scEpsF);
 		cdraw_testScDF_rB1S(istrue, scIsNonNegativeApprox, x_B);
 		cdraw_testScDF_rB1S(isfalse, scIsNonNegativeApprox, x_C);
+
+		cdraw_testScDF_rB1S(istrue, scIsUnityApprox, sc1D);
+		cdraw_testScDF_rB1S(isfalse, scIsUnityApprox, sc2D);
+
+		cdraw_testScDF_rB1S(isfalse, scIsNonUnityApprox, sc1D);
+		cdraw_testScDF_rB1S(istrue, scIsNonUnityApprox, sc2D);
 	}
 	
 	{
@@ -1276,6 +1282,28 @@ result_t cdrawVectorTest()
 result_t cdrawMatrixTest()
 {
 	result_init();
+
+	mat4d_t test4 = {
+		1.0, -1.0, 1.0, -1.0,
+		1.0,  1.0, 1.0,  1.0,
+		3.0, -3.0, 2.0, -2.0,
+		3.0,  3.0, 2.0,  2.0,
+		//1.0, 2.0,-0.125,-0.250,
+		//8.0, 4.0,-1.000,-0.500,
+		//256.0, -128.0, -0.03125000, 0.01562500,
+		//32.00, -64.00, -0.00390625, 0.00781250,
+	}, test4inv, testId, testL = {
+		1.0, 2.0, 3.0, 4.0,
+		5.0, 6.0, 7.0, 8.0,
+		9.0, 10.0, 11.0, 12.0,
+		13.0, 14.0, 15.0, 16.0,
+	};
+	matMul4d(testId.m, testL.m, testL.m);
+
+	//matInverse4d(test4inv.m, matID4d.m);
+
+	matInverse4d(test4inv.m, test4.m);
+	matMul4d(testId.m, test4.m, test4inv.m);
 
 	result_return();
 }

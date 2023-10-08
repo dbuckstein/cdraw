@@ -97,6 +97,86 @@ extern "C" {
 #define matNegate4 cdraw_matrix_base(matNegate4)
 
 	/// <summary>
+	/// Calculate the determinant of input matrix.
+	/// </summary>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>Determinant of matrix.</returns>
+#define matDet4 cdraw_matrix_base(matDet4)
+
+	/// <summary>
+	/// Calculate the inverse determinant of input matrix.
+	/// </summary>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>Inverse determinant of matrix.</returns>
+#define matDetInv4 cdraw_matrix_base(matDetInv4)
+
+	/// <summary>
+	/// Test if input matrix is considered identity (I).
+	/// </summary>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>True if matrix is considered identity.</returns>
+#define matIsIdentity4 cdraw_matrix_base(matIsIdentity4)
+
+	/// <summary>
+	/// Test if input matrix contains orthogonal basis (for 4D, upper 3x3 only).
+	/// </summary>
+	/// <param name="isMirrored_out_opt">Resulting mirrored test flag (optional).</param>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>True if input matrix is considered orthogonal basis.</returns>
+#define matIsOrtho4 cdraw_matrix_base(matIsOrtho4)
+
+	/// <summary>
+	/// Calculate the inverse of the input matrix, such that the product of the inverse and the input is identity.
+	/// </summary>
+	/// <param name="m_out">Result matrix.</param>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>Determinant of matrix.</returns>
+#define matInverse4 cdraw_matrix_base(matInverse4)
+
+	/// <summary>
+	/// Calculate the transpose of a matrix (flip elements along diagonal).
+	/// </summary>
+	/// <param name="m_out">Result matrix.</param>
+	/// <param name="m">Input matrix.</param>
+	/// <returns><paramref name="m_out"/></returns>
+#define matTranspose4 cdraw_matrix_base(matTranspose4)
+
+	/// <summary>
+	/// Calculate the inverse transpose of the input matrix (transpose of inverse).
+	/// </summary>
+	/// <param name="m_out">Result matrix.</param>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>Determinant of matrix.</returns>
+#define matInverseTranspose4 cdraw_matrix_base(matInverseTranspose4)
+
+	/// <summary>
+	/// Calculate the product of a vector multiplied by a matrix.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="m_lh">Left-hand input matrix.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define matMulVec4 cdraw_matrix_base(matMulVec4)
+
+	/// <summary>
+	/// Calculate the product of a vector multiplied by a transposed matrix (this is more optimized if ever needed).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="m_lh">Left-hand input matrix (original, transpose used for product).</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+#define matTransposeMulVec4 cdraw_matrix_base(matTransposeMulVec4)
+
+	/// <summary>
+	/// Calculate the matrix product with the left-hand transpose (this is more optimized if ever needed).
+	/// </summary>
+	/// <param name="m_out">Result matrix.</param>
+	/// <param name="m_lh">Left-hand input matrix (original, transpose used for product).</param>
+	/// <param name="m_rh">Right-hand input matrix.</param>
+	/// <returns><paramref name="m_out"/></returns>
+#define matTransposeMul4 cdraw_matrix_base(matTransposeMul4)
+
+	/// <summary>
 	/// Calculate column-wise sum of input matrices (left-hand plus right-hand).
 	/// </summary>
 	/// <param name="m_out">Result matrix.</param>

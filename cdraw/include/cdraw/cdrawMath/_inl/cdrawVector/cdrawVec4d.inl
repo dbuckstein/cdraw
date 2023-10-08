@@ -307,7 +307,7 @@ CDRAW_INL doubleN_t vecDivS4d(double4_t v_out, double4_t const v_lh, vecd_t cons
 {
 	failassert(v_out && v_lh, NULL);
 	failassert(scIsNonZeroApproxD(s_rh), vecZero4d(v_out));
-	vecd_t const recip = sc1F / s_rh;
+	vecd_t const recip = sc1D / s_rh;
 	vx(v_out) = vx(v_lh) * recip;
 	vy(v_out) = vy(v_lh) * recip;
 	vz(v_out) = vz(v_lh) * recip;
@@ -319,7 +319,7 @@ CDRAW_INL doubleN_t vecModS4d(double4_t v_out, double4_t const v_lh, vecd_t cons
 {
 	failassert(v_out && v_lh, NULL);
 	failassert(scIsNonZeroApproxD(s_rh), vecCopy4d(v_out, v_lh));
-	vecd_t const recip = sc1F / s_rh;
+	vecd_t const recip = sc1D / s_rh;
 	vx(v_out) = gModQD(vx(v_lh), s_rh, vx(v_lh) * recip);
 	vy(v_out) = gModQD(vy(v_lh), s_rh, vy(v_lh) * recip);
 	vz(v_out) = gModQD(vz(v_lh), s_rh, vz(v_lh) * recip);
@@ -332,7 +332,7 @@ CDRAW_INL doubleN_t vecDivModS4d(double4_t v_out, double4_t v_mod_out, double4_t
 	failassert(v_out && v_mod_out && v_lh, NULL);
 	failassert((v_mod_out != v_out) && (v_mod_out != v_lh), NULL);
 	failassert(scIsNonZeroApproxD(s_rh), vecCopy4d(v_mod_out, v_lh), vecZero4d(v_out));
-	vecd_t const recip = sc1F / s_rh;
+	vecd_t const recip = sc1D / s_rh;
 	vx(v_out) = vx(v_lh) * recip;
 	vy(v_out) = vy(v_lh) * recip;
 	vz(v_out) = vz(v_lh) * recip;
@@ -432,7 +432,7 @@ CDRAW_INL vecd_t vecLenInv4d(double4_t const v)
 	failassert(v, sc0D);
 	vecd_t const lenSq = vecLenSq4d(v);
 	failassert(scIsPositiveApproxD(lenSq), sc0D);
-	return (sc1F / gSafeSqrtD(lenSq));
+	return (sc1D / gSafeSqrtD(lenSq));
 }
 
 CDRAW_INL vecd_t vecDist4d(double4_t const v_lh, double4_t const v_rh)
@@ -454,7 +454,7 @@ CDRAW_INL vecd_t vecNormalize4d(double4_t v_out, double4_t const v)
 	if (scIsNonPositiveApproxD(len))
 		return (vecZero4d(v_out), sc0D);
 	len = gSafeSqrtD(len);
-	ratio = sc1F / len;
+	ratio = sc1D / len;
 	vx(v_out) = vx(v) * ratio;
 	vy(v_out) = vy(v) * ratio;
 	vz(v_out) = vz(v) * ratio;
@@ -481,14 +481,14 @@ CDRAW_INL vecb_t vecIsUnit4d(double4_t const v)
 {
 	failassert(v, false);
 	vecd_t const lenSq = vecLenSq4d(v);
-	return ((lenSq >= scEpsL1F) && (lenSq <= scEpsG1F));
+	return scIsUnityApproxD(lenSq);
 }
 
 CDRAW_INL vecb_t vecIsNonUnit4d(double4_t const v)
 {
 	failassert(v, true);
 	vecd_t const lenSq = vecLenSq4d(v);
-	return ((lenSq < scEpsL1F) || (lenSq > scEpsG1F));
+	return scIsNonUnityApproxD(lenSq);
 }
 
 CDRAW_INL vecd_t vecProjS4d(double4_t const v, double4_t const v_base)

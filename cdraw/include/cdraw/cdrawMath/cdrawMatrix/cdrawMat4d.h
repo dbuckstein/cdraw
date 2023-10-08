@@ -43,7 +43,7 @@ extern "C" {
 	/// <param name="z">Third column.</param>
 	/// <param name="w">Fourth column.</param>
 	/// <returns><paramref name="m_out"/></returns>
-	doubleNx4_t matInit4d(double4x4_t m_out, vecd_t const x, vecd_t const y, vecd_t const z, vecd_t const w);
+	doubleNx4_t matInit4d(double4x4_t m_out, double4_t const x, double4_t const y, double4_t const z, double4_t const w);
 
 	/// <summary>
 	/// Initialize diagonal of matrix given single value.
@@ -61,7 +61,7 @@ extern "C" {
 	/// <param name="z">Third column.</param>
 	/// <param name="w">Fourth column.</param>
 	/// <returns><paramref name="m_out"/></returns>
-	doubleNx4_t matCopy2zw4d(double4x4_t m_out, double2x2_t const xy, vecd_t const z, vecd_t const w);
+	doubleNx4_t matCopy2zw4d(double4x4_t m_out, double2x2_t const xy, double4_t const z, double4_t const w);
 
 	/// <summary>
 	/// Initialize matrix by copying another and additional columns.
@@ -70,7 +70,7 @@ extern "C" {
 	/// <param name="xyz">Matrix to copy.</param>
 	/// <param name="w">Fourth column.</param>
 	/// <returns><paramref name="m_out"/></returns>
-	doubleNx4_t matCopy3w4d(double4x4_t m_out, double3x3_t const xyz, vecd_t const w);
+	doubleNx4_t matCopy3w4d(double4x4_t m_out, double3x3_t const xyz, double4_t const w);
 
 	/// <summary>
 	/// Initialize matrix by copying the leading columns of another.
@@ -95,6 +95,86 @@ extern "C" {
 	/// <param name="m">Input matrix.</param>
 	/// <returns><paramref name="m_out"/></returns>
 	doubleNx4_t matNegate4d(double4x4_t m_out, double4x4_t const m);
+
+	/// <summary>
+	/// Calculate the determinant of input matrix.
+	/// </summary>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>Determinant of matrix.</returns>
+	vecd_t matDet4d(double4x4_t const m);
+
+	/// <summary>
+	/// Calculate the inverse determinant of input matrix.
+	/// </summary>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>Inverse determinant of matrix.</returns>
+	vecd_t matDetInv4d(double4x4_t const m);
+
+	/// <summary>
+	/// Test if input matrix is considered identity (I).
+	/// </summary>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>True if matrix is considered identity.</returns>
+	vecb_t matIsIdentity4d(double4x4_t const m);
+
+	/// <summary>
+	/// Test if input matrix contains orthogonal basis (for 4D, upper 3x3 only).
+	/// </summary>
+	/// <param name="isMirrored_out_opt">Resulting mirrored test flag (optional).</param>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>True if input matrix is considered orthogonal basis.</returns>
+	vecb_t matIsOrtho4d(vecb_t* isMirrored_out_opt, double4x4_t const m);
+
+	/// <summary>
+	/// Calculate the inverse of the input matrix, such that the product of the inverse and the input is identity.
+	/// </summary>
+	/// <param name="m_out">Result matrix.</param>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>Determinant of matrix.</returns>
+	vecd_t matInverse4d(double4x4_t m_out, double4x4_t const m);
+
+	/// <summary>
+	/// Calculate the transpose of a matrix (flip elements along diagonal).
+	/// </summary>
+	/// <param name="m_out">Result matrix.</param>
+	/// <param name="m">Input matrix.</param>
+	/// <returns><paramref name="m_out"/></returns>
+	doubleNx4_t matTranspose4d(double4x4_t m_out, double4x4_t const m);
+
+	/// <summary>
+	/// Calculate the inverse transpose of the input matrix (transpose of inverse).
+	/// </summary>
+	/// <param name="m_out">Result matrix.</param>
+	/// <param name="m">Input matrix.</param>
+	/// <returns>Determinant of matrix.</returns>
+	vecd_t matInverseTranspose4d(double4x4_t m_out, double4x4_t const m);
+
+	/// <summary>
+	/// Calculate the product of a vector multiplied by a matrix.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="m_lh">Left-hand input matrix.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	doubleN_t matMulVec4d(double4_t v_out, double4x4_t const m_lh, double4_t const v_rh);
+
+	/// <summary>
+	/// Calculate the product of a vector multiplied by a transposed matrix (this is more optimized if ever needed).
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="m_lh">Left-hand input matrix (original, transpose used for product).</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	doubleN_t matTransposeMulVec4d(double4_t v_out, double4x4_t const m_lh, double4_t const v_rh);
+
+	/// <summary>
+	/// Calculate the matrix product with the left-hand transpose (this is more optimized if ever needed).
+	/// </summary>
+	/// <param name="m_out">Result matrix.</param>
+	/// <param name="m_lh">Left-hand input matrix (original, transpose used for product).</param>
+	/// <param name="m_rh">Right-hand input matrix.</param>
+	/// <returns><paramref name="m_out"/></returns>
+	doubleNx4_t matTransposeMul4d(double4x4_t m_out, double4x4_t const m_lh, double4x4_t const m_rh);
 
 	/// <summary>
 	/// Calculate column-wise sum of input matrices (left-hand plus right-hand).

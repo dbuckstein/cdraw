@@ -481,14 +481,14 @@ CDRAW_INL vecb_t vecIsUnit4f(float4_t const v)
 {
 	failassert(v, false);
 	vecf_t const lenSq = vecLenSq4f(v);
-	return ((lenSq >= scEpsL1F) && (lenSq <= scEpsG1F));
+	return scIsUnityApproxF(lenSq);
 }
 
 CDRAW_INL vecb_t vecIsNonUnit4f(float4_t const v)
 {
 	failassert(v, true);
 	vecf_t const lenSq = vecLenSq4f(v);
-	return ((lenSq < scEpsL1F) || (lenSq > scEpsG1F));
+	return scIsNonUnityApproxF(lenSq);
 }
 
 CDRAW_INL vecf_t vecProjS4f(float4_t const v, float4_t const v_base)

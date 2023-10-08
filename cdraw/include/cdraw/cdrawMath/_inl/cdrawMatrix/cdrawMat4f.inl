@@ -30,7 +30,7 @@ CDRAW_INL floatNx4_t matIdentity4f(float4x4_t m_out)
 	return m_out;
 }
 
-CDRAW_INL floatNx4_t matInit4f(float4x4_t m_out, vecf_t const x, vecf_t const y, vecf_t const z, vecf_t const w)
+CDRAW_INL floatNx4_t matInit4f(float4x4_t m_out, float4_t const x, float4_t const y, float4_t const z, float4_t const w)
 {
 	failassert(m_out, NULL);
 
@@ -44,14 +44,14 @@ CDRAW_INL floatNx4_t matInitS4f(float4x4_t m_out, vecf_t const x)
 	return m_out;
 }
 
-CDRAW_INL floatNx4_t matCopy2zw4f(float4x4_t m_out, float2x2_t const xy, vecf_t const z, vecf_t const w)
+CDRAW_INL floatNx4_t matCopy2zw4f(float4x4_t m_out, float2x2_t const xy, float4_t const z, float4_t const w)
 {
 	failassert(m_out && xy, NULL);
 
 	return m_out;
 }
 
-CDRAW_INL floatNx4_t matCopy3w4f(float4x4_t m_out, float3x3_t const xyz, vecf_t const w)
+CDRAW_INL floatNx4_t matCopy3w4f(float4x4_t m_out, float3x3_t const xyz, float4_t const w)
 {
 	failassert(m_out && xyz, NULL);
 
