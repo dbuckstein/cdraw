@@ -249,6 +249,24 @@ extern "C" {
 #define matDivS4 cdraw_matrix_base(matDivS4)
 
 	/// <summary>
+	/// Calculate optimized product of left-hand matrix inverse and right-hand vector.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="m_lh">Left-hand input matrix.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Determinant of left-hand input matrix.</returns>
+#define matInvMulVec4 cdraw_matrix_base(matInvMulVec4)
+
+	/// <summary>
+	/// Calculate optimized product of left-hand matrix inverse and right-hand matrix.
+	/// </summary>
+	/// <param name="m_out"></param>
+	/// <param name="m_lh">Left-hand input matrix.</param>
+	/// <param name="m_rh">Right-hand input matrix.</param>
+	/// <returns>Determinant of left-hand input matrix.</returns>
+#define matInvMul4 cdraw_matrix_base(matInvMul4)
+
+	/// <summary>
 	/// Initialize matrix by copying the leading columns of another.
 	/// </summary>
 	/// <param name="m_out">Result matrix.</param>

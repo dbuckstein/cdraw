@@ -249,6 +249,24 @@ extern "C" {
 	floatNx4_t matDivS4f(float4x4_t m_out, float4x4_t const m_lh, vecf_t const s_rh);
 
 	/// <summary>
+	/// Calculate optimized product of left-hand matrix inverse and right-hand vector.
+	/// </summary>
+	/// <param name="v_out">Result vector.</param>
+	/// <param name="m_lh">Left-hand input matrix.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns>Determinant of left-hand input matrix.</returns>
+	vecf_t matInvMulVec4f(float4_t v_out, float4x4_t const m_lh, float4_t const v_rh);
+
+	/// <summary>
+	/// Calculate optimized product of left-hand matrix inverse and right-hand matrix.
+	/// </summary>
+	/// <param name="m_out">Result matrix.</param>
+	/// <param name="m_lh">Left-hand input matrix.</param>
+	/// <param name="m_rh">Right-hand input matrix.</param>
+	/// <returns>Determinant of left-hand input matrix.</returns>
+	vecf_t matInvMul4f(float4x4_t m_out, float4x4_t const m_lh, float4x4_t const m_rh);
+
+	/// <summary>
 	/// Initialize matrix by copying the leading columns of another.
 	/// </summary>
 	/// <param name="m_out">Result matrix.</param>

@@ -333,5 +333,25 @@ CDRAW_INL doubleNx4_t matDivS4d(double4x4_t m_out, double4x4_t const m_lh, vecd_
 	return m_out;
 }
 
+CDRAW_INL vecd_t matInvMulVec4d(double4_t v_out, double4x4_t const m_lh, double4_t const v_rh)
+{
+	failassert(v_out && m_lh && v_rh, sc0D);
+	double4x4_t m_lh_inv;
+	vecd_t const det = matInverse4d(m_lh_inv, m_lh);
+	failassert(scIsNonZeroApproxD(det), vecZero4d(v_out), sc0D);
+	matMulVec4d(v_out, m_lh_inv, v_rh);
+	return det;
+}
+
+CDRAW_INL vecd_t matInvMul4d(double4x4_t m_out, double4x4_t const m_lh, double4x4_t const m_rh)
+{
+	failassert(m_out && m_lh && m_rh, sc0D);
+	double4x4_t m_lh_inv;
+	vecd_t const det = matInverse4d(m_lh_inv, m_lh);
+	failassert(scIsNonZeroApproxD(det), matIdentity4d(m_out), sc0D);
+	matMul4d(m_out, m_lh_inv, m_rh);
+	return det;
+}
+
 
 #endif // #if (!(defined _CDRAW_MAT4D_INL_) && (defined _CDRAW_MATRIX_INL_))
