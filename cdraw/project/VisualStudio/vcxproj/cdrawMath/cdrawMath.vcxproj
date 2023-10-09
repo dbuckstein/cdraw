@@ -173,6 +173,13 @@
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawSc.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawScD.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawScF.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform2.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform2d.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform2f.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform3.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform3d.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform3f.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2b.h" />
@@ -204,6 +211,11 @@
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar.inl" />
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar\cdrawScD.inl" />
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar\cdrawScF.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform2d.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform2f.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform3d.inl" />
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform3f.inl" />
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector.inl" />
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2b.inl" />
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2d.inl" />

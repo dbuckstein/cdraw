@@ -15,18 +15,22 @@
 */
 
 /*
-* cdrawMath.h
-* Global root header for math library.
+* cdrawTransform3f.h
+* Declaration of single-precision 3D transform functions.
 */
 
-#ifndef _CDRAW_MATH_H_
-#define _CDRAW_MATH_H_
+#if (!(defined _CDRAW_TRANSFORM3F_H_) && (defined _CDRAW_TRANSFORM_H_))
+#define _CDRAW_TRANSFORM3F_H_
 
 
-#include "cdrawMath/cdrawScalar.h"
-#include "cdrawMath/cdrawVector.h"
-#include "cdrawMath/cdrawMatrix.h"
-#include "cdrawMath/cdrawTransform.h"
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
 
 
-#endif // #ifndef _CDRAW_MATH_H_
+#ifdef __cplusplus
+}
+#endif // #ifdef __cplusplus
+
+
+#endif // #if (!(defined _CDRAW_TRANSFORM3F_H_) && (defined _CDRAW_TRANSFORM_H_))

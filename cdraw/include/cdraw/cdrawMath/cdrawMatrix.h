@@ -38,7 +38,6 @@ typedef float2_t							float2x2_t[2], * floatNx2_t;
 /// <summary>
 /// Array-based single-precision matrices, faster and more explicit than objects: 3D or pointer.
 /// </summary>
-
 typedef float3_t							float3x3_t[3], * floatNx3_t;
 
 /// <summary>

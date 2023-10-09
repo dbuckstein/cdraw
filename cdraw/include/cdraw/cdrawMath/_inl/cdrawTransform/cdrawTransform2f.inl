@@ -15,18 +15,12 @@
 */
 
 /*
-* cdrawMath.h
-* Global root header for math library.
+* cdrawTransform2f.inl
+* Definitions of single-precision 2D transform functions.
 */
 
-#ifndef _CDRAW_MATH_H_
-#define _CDRAW_MATH_H_
+#if (!(defined _CDRAW_TRANSFORM2F_INL_) && (defined _CDRAW_TRANSFORM_INL_))
+#define _CDRAW_TRANSFORM2F_INL_
 
 
-#include "cdrawMath/cdrawScalar.h"
-#include "cdrawMath/cdrawVector.h"
-#include "cdrawMath/cdrawMatrix.h"
-#include "cdrawMath/cdrawTransform.h"
-
-
-#endif // #ifndef _CDRAW_MATH_H_
+#endif // #if (!(defined _CDRAW_TRANSFORM2F_INL_) && (defined _CDRAW_TRANSFORM_INL_))

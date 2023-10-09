@@ -1414,12 +1414,21 @@ result_t cdrawMatrixTest()
 }
 
 
+result_t cdrawTransformTest()
+{
+	result_init();
+
+	result_return();
+}
+
+
 result_t cdrawMathTest()
 {
 	result_init();
 	cdrawScalarTest();
 	cdrawVectorTest();
 	cdrawMatrixTest();
+	cdrawTransformTest();
 	result_return();
 }
 
