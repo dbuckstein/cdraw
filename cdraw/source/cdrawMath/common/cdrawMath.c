@@ -1297,36 +1297,118 @@ result_t cdrawMatrixTest()
 		5.0, 6.0, 7.0, 8.0,
 		9.0, 10.0, 11.0, 12.0,
 		13.0, 14.0, 15.0, 16.0,
+	}, test4R = {
+		90.0, 100.0, 110.0, 120.0,
+		202.0, 228.0, 254.0, 280.0,
+		314.0, 356.0, 398.0, 440.0,
+		426.0, 484.0, 542.0, 600.0,
 	};
 
 	mat3d_t test3, test3inv, test3Id, test3L = {
 		1.0, 2.0, 3.0,
 		4.0, 5.0, 6.0,
 		7.0, 8.0, 9.0,
+	}, test3R = {
+		30.0, 36.0, 42.0,
+		66.0, 81.0, 96.0,
+		102.0, 126.0, 150.0,
 	};
 
 	mat2d_t test2, test2inv, test2Id, test2L = {
 		1.0, 2.0,
 		3.0, 4.0,
+	}, test2R = {
+		7.0, 10.0,
+		15.0, 22.0,
 	};
+
+	mat4f_t test4f, test4invf, test4Idf, test4Lf, test4Rf;
+	mat3f_t test3f, test3invf, test3Idf, test3Lf, test3Rf;
+	mat2f_t test2f, test2invf, test2Idf, test2Lf, test2Rf;
 
 	matCopy43d(test3.m, test4.m);
 	matCopy32d(test2.m, test3.m);
+	matCopy4d4f(test4f.m, test4.m);
+	matCopy4d4f(test4Lf.m, test4L.m);
+	matCopy4d4f(test4Rf.m, test4R.m);
+	matCopy3d3f(test3f.m, test3.m);
+	matCopy3d3f(test3Lf.m, test3L.m);
+	matCopy3d3f(test3Rf.m, test3R.m);
+	matCopy2d2f(test2f.m, test2.m);
+	matCopy2d2f(test2Lf.m, test2L.m);
+	matCopy2d2f(test2Rf.m, test2R.m);
 
 	matMul4d(test4Id.m, test4L.m, test4L.m);
+	asserterr((vecDistSq4d(test4Id.m[0], test4R.m[0]) == sc0D)
+		&& (vecDistSq4d(test4Id.m[1], test4R.m[1]) == sc0D)
+		&& (vecDistSq4d(test4Id.m[2], test4R.m[2]) == sc0D)
+		&& (vecDistSq4d(test4Id.m[3], test4R.m[3]) == sc0D), errcode_CUSTOM_BEGIN);
 	matMul3d(test3Id.m, test3L.m, test3L.m);
+	asserterr((vecDistSq3d(test3Id.m[0], test3R.m[0]) == sc0D)
+		&& (vecDistSq3d(test3Id.m[1], test3R.m[1]) == sc0D)
+		&& (vecDistSq3d(test3Id.m[2], test3R.m[2]) == sc0D), errcode_CUSTOM_BEGIN);
 	matMul2d(test2Id.m, test2L.m, test2L.m);
+	asserterr((vecDistSq2d(test2Id.m[0], test2R.m[0]) == sc0D)
+		&& (vecDistSq2d(test2Id.m[1], test2R.m[1]) == sc0D), errcode_CUSTOM_BEGIN);
+
+	matMul4f(test4Idf.m, test4Lf.m, test4Lf.m);
+	asserterr((vecDistSq4f(test4Idf.m[0], test4Rf.m[0]) == sc0F)
+		&& (vecDistSq4f(test4Idf.m[1], test4Rf.m[1]) == sc0F)
+		&& (vecDistSq4f(test4Idf.m[2], test4Rf.m[2]) == sc0F)
+		&& (vecDistSq4f(test4Idf.m[3], test4Rf.m[3]) == sc0F), errcode_CUSTOM_BEGIN);
+	matMul3f(test3Idf.m, test3Lf.m, test3Lf.m);
+	asserterr((vecDistSq3f(test3Idf.m[0], test3Rf.m[0]) == sc0F)
+		&& (vecDistSq3f(test3Idf.m[1], test3Rf.m[1]) == sc0F)
+		&& (vecDistSq3f(test3Idf.m[2], test3Rf.m[2]) == sc0F), errcode_CUSTOM_BEGIN);
+	matMul2f(test2Idf.m, test2Lf.m, test2Lf.m);
+	asserterr((vecDistSq2f(test2Idf.m[0], test2Rf.m[0]) == sc0F)
+		&& (vecDistSq2f(test2Idf.m[1], test2Rf.m[1]) == sc0F), errcode_CUSTOM_BEGIN);
 
 	matInverse4d(test4inv.m, matID4d.m);
+	asserterr(matIsIdentity4d(test4inv.m), errcode_CUSTOM_BEGIN);
 	matInverse3d(test3inv.m, matID3d.m);
+	asserterr(matIsIdentity3d(test3inv.m), errcode_CUSTOM_BEGIN);
 	matInverse2d(test2inv.m, matID2d.m);
+	asserterr(matIsIdentity2d(test2inv.m), errcode_CUSTOM_BEGIN);
+
+	matInverse4f(test4invf.m, matID4f.m);
+	asserterr(matIsIdentity4f(test4invf.m), errcode_CUSTOM_BEGIN);
+	matInverse3f(test3invf.m, matID3f.m);
+	asserterr(matIsIdentity3f(test3invf.m), errcode_CUSTOM_BEGIN);
+	matInverse2f(test2invf.m, matID2f.m);
+	asserterr(matIsIdentity2f(test2invf.m), errcode_CUSTOM_BEGIN);
 
 	matInverse4d(test4inv.m, test4.m);
 	matInverse3d(test3inv.m, test3.m);
 	matInverse2d(test2inv.m, test2.m);
 	matMul4d(test4Id.m, test4.m, test4inv.m);
+	asserterr(matIsIdentity4d(test4Id.m), errcode_CUSTOM_BEGIN);
 	matMul3d(test3Id.m, test3.m, test3inv.m);
+	asserterr(matIsIdentity3d(test3Id.m), errcode_CUSTOM_BEGIN);
 	matMul2d(test2Id.m, test2.m, test2inv.m);
+	asserterr(matIsIdentity2d(test2Id.m), errcode_CUSTOM_BEGIN);
+	matMul4d(test4Id.m, test4inv.m, test4.m);
+	asserterr(matIsIdentity4d(test4Id.m), errcode_CUSTOM_BEGIN);
+	matMul3d(test3Id.m, test3inv.m, test3.m);
+	asserterr(matIsIdentity3d(test3Id.m), errcode_CUSTOM_BEGIN);
+	matMul2d(test2Id.m, test2inv.m, test2.m);
+	asserterr(matIsIdentity2d(test2Id.m), errcode_CUSTOM_BEGIN);
+
+	matInverse4f(test4invf.m, test4f.m);
+	matInverse3f(test3invf.m, test3f.m);
+	matInverse2f(test2invf.m, test2f.m);
+	matMul4f(test4Idf.m, test4f.m, test4invf.m);
+	asserterr(matIsIdentity4f(test4Idf.m), errcode_CUSTOM_BEGIN);
+	matMul3f(test3Idf.m, test3f.m, test3invf.m);
+	asserterr(matIsIdentity3f(test3Idf.m), errcode_CUSTOM_BEGIN);
+	matMul2f(test2Idf.m, test2f.m, test2invf.m);
+	asserterr(matIsIdentity2f(test2Idf.m), errcode_CUSTOM_BEGIN);
+	matMul4f(test4Idf.m, test4invf.m, test4f.m);
+	asserterr(matIsIdentity4f(test4Idf.m), errcode_CUSTOM_BEGIN);
+	matMul3f(test3Idf.m, test3invf.m, test3f.m);
+	asserterr(matIsIdentity3f(test3Idf.m), errcode_CUSTOM_BEGIN);
+	matMul2f(test2Idf.m, test2invf.m, test2f.m);
+	asserterr(matIsIdentity2f(test2Idf.m), errcode_CUSTOM_BEGIN);
 
 	result_return();
 }
