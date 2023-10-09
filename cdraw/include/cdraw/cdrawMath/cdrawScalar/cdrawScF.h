@@ -69,6 +69,20 @@ extern "C" {
 	/// <returns>True if value is approximately non-negative.</returns>
 	bool scIsNonNegativeApproxF(fp32_t const x);
 
+	/// <summary>
+	/// Test if value is approximately unity (+1).
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <returns>True if value is approximately unity.</returns>
+	bool scIsUnityApproxF(fp32_t const x);
+
+	/// <summary>
+	/// Test if value is approximately non-unity (+1).
+	/// </summary>
+	/// <param name="x">Value to test.</param>
+	/// <returns>True if value is approximately non-unity.</returns>
+	bool scIsNonUnityApproxF(fp32_t const x);
+
 
 	/// <summary>
 	/// Determine sign of input.

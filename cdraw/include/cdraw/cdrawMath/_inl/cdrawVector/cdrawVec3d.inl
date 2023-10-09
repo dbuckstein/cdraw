@@ -223,6 +223,7 @@ CDRAW_INL doubleN_t vecMod3d(double3_t v_out, double3_t const v_lh, double3_t co
 CDRAW_INL doubleN_t vecDivMod3d(double3_t v_out, double3_t v_mod_out, double3_t const v_lh, double3_t const v_rh)
 {
 	failassert(v_out && v_mod_out && v_lh && v_rh, NULL);
+	failassert((v_mod_out != v_out) && (v_mod_out != v_lh) && (v_mod_out != v_rh), NULL);
 	failassert(scIsNonZeroApproxD(vx(v_rh)) && scIsNonZeroApproxD(vy(v_rh)) && scIsNonZeroApproxD(vz(v_rh)), vecInit3d(v_out,
 		gDivModSafeD(vx(v_mod_out), vx(v_lh), vx(v_rh)),
 		gDivModSafeD(vy(v_mod_out), vy(v_lh), vy(v_rh)),
@@ -267,7 +268,7 @@ CDRAW_INL doubleN_t vecDivS3d(double3_t v_out, double3_t const v_lh, vecd_t cons
 {
 	failassert(v_out && v_lh, NULL);
 	failassert(scIsNonZeroApproxD(s_rh), vecZero3d(v_out));
-	vecd_t const recip = sc1F / s_rh;
+	vecd_t const recip = sc1D / s_rh;
 	vx(v_out) = vx(v_lh) * recip;
 	vy(v_out) = vy(v_lh) * recip;
 	vz(v_out) = vz(v_lh) * recip;
@@ -278,7 +279,7 @@ CDRAW_INL doubleN_t vecModS3d(double3_t v_out, double3_t const v_lh, vecd_t cons
 {
 	failassert(v_out && v_lh, NULL);
 	failassert(scIsNonZeroApproxD(s_rh), vecCopy3d(v_out, v_lh));
-	vecd_t const recip = sc1F / s_rh;
+	vecd_t const recip = sc1D / s_rh;
 	vx(v_out) = gModQD(vx(v_lh), s_rh, vx(v_lh) * recip);
 	vy(v_out) = gModQD(vy(v_lh), s_rh, vy(v_lh) * recip);
 	vz(v_out) = gModQD(vz(v_lh), s_rh, vz(v_lh) * recip);
@@ -288,8 +289,9 @@ CDRAW_INL doubleN_t vecModS3d(double3_t v_out, double3_t const v_lh, vecd_t cons
 CDRAW_INL doubleN_t vecDivModS3d(double3_t v_out, double3_t v_mod_out, double3_t const v_lh, vecd_t const s_rh)
 {
 	failassert(v_out && v_mod_out && v_lh, NULL);
+	failassert((v_mod_out != v_out) && (v_mod_out != v_lh), NULL);
 	failassert(scIsNonZeroApproxD(s_rh), vecCopy3d(v_mod_out, v_lh), vecZero3d(v_out));
-	vecd_t const recip = sc1F / s_rh;
+	vecd_t const recip = sc1D / s_rh;
 	vx(v_out) = vx(v_lh) * recip;
 	vy(v_out) = vy(v_lh) * recip;
 	vz(v_out) = vz(v_lh) * recip;
@@ -382,7 +384,7 @@ CDRAW_INL vecd_t vecLenInv3d(double3_t const v)
 	failassert(v, sc0D);
 	vecd_t const lenSq = vecLenSq3d(v);
 	failassert(scIsPositiveApproxD(lenSq), sc0D);
-	return (sc1F / gSafeSqrtD(lenSq));
+	return (sc1D / gSafeSqrtD(lenSq));
 }
 
 CDRAW_INL vecd_t vecDist3d(double3_t const v_lh, double3_t const v_rh)
@@ -404,7 +406,7 @@ CDRAW_INL vecd_t vecNormalize3d(double3_t v_out, double3_t const v)
 	if (scIsNonPositiveApproxD(len))
 		return (vecZero3d(v_out), sc0D);
 	len = gSafeSqrtD(len);
-	ratio = sc1F / len;
+	ratio = sc1D / len;
 	vx(v_out) = vx(v) * ratio;
 	vy(v_out) = vy(v) * ratio;
 	vz(v_out) = vz(v) * ratio;
@@ -429,14 +431,14 @@ CDRAW_INL vecb_t vecIsUnit3d(double3_t const v)
 {
 	failassert(v, false);
 	vecd_t const lenSq = vecLenSq3d(v);
-	return ((lenSq >= scEpsL1F) && (lenSq <= scEpsG1F));
+	return scIsUnityApproxD(lenSq);
 }
 
 CDRAW_INL vecb_t vecIsNonUnit3d(double3_t const v)
 {
 	failassert(v, true);
 	vecd_t const lenSq = vecLenSq3d(v);
-	return ((lenSq < scEpsL1F) || (lenSq > scEpsG1F));
+	return scIsNonUnityApproxD(lenSq);
 }
 
 CDRAW_INL vecd_t vecProjS3d(double3_t const v, double3_t const v_base)
@@ -488,10 +490,13 @@ CDRAW_INL vecd_t vecOrtho3d(double3_t v_out, double3_t const v, double3_t const 
 CDRAW_INL vecd_t vecOrthoBasis3d(double3_t v2_out, double3_t v1_out, vecd_t* v2_basefactor_out_opt, vecd_t* v1_basefactor_out_opt, double3_t const v2, double3_t const v1, double3_t const v_base)
 {
 	failassert(v2_out && v1_out && v2 && v1 && v_base, sc0D);
+	failassert((v1_out != v2_out) && (v1_out != v_base) && (v1_out != v2), sc0D);
+	failassert((!v2_basefactor_out_opt) || (v2_basefactor_out_opt != v2_out) && (v2_basefactor_out_opt != v1_out) && (v2_basefactor_out_opt != v2) && (v2_basefactor_out_opt != v1) && (v2_basefactor_out_opt != v_base) && (v2_basefactor_out_opt != v1_basefactor_out_opt), sc0D);
+	failassert((!v1_basefactor_out_opt) || (v1_basefactor_out_opt != v2_out) && (v1_basefactor_out_opt != v1_out) && (v1_basefactor_out_opt != v2) && (v1_basefactor_out_opt != v1) && (v1_basefactor_out_opt != v_base), sc0D);
 	vecd_t ratio = vecLenSq3d(v_base), ratio1, ratio2;
 	if (scIsNonPositiveApproxD(ratio))
 		return (vecZero3d(v2_out), vecZero3d(v1_out), sc0D);
-	ratio = sc1F / ratio;
+	ratio = sc1D / ratio;
 	ratio1 = vecDot3d(v1, v_base) * ratio;
 	ratio2 = vecDot3d(v2, v_base) * ratio;
 	vx(v1_out) = (vx(v1) - vx(v_base) * ratio1);

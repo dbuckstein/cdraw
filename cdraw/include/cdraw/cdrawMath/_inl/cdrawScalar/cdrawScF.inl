@@ -53,6 +53,16 @@ CDRAW_INL bool scIsNonNegativeApproxF(fp32_t const x)
 	return (x >= -scEpsF);
 }
 
+CDRAW_INL bool scIsUnityApproxF(fp32_t const x)
+{
+	return (x >= scEpsL1F && x <= scEpsG1F);
+}
+
+CDRAW_INL bool scIsNonUnityApproxF(fp32_t const x)
+{
+	return (x < scEpsL1F || x > scEpsG1F);
+}
+
 
 CDRAW_INL fp32_t scSgnF(fp32_t const x)
 {

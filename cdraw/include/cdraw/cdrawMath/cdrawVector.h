@@ -71,12 +71,12 @@ typedef union vec2i_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { veci_t x, r, s; };
+		union { veci_t x, r, s, v0; };
 
 		/// <summary>
 		/// Named second component.
 		/// </summary>
-		union { veci_t y, g, t; };
+		union { veci_t y, g, t, v1; };
 	};
 } vec2i_t;
 
@@ -100,7 +100,7 @@ typedef union vec3i_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { veci_t x, r, s; };
+		union { veci_t x, r, s, v0; };
 
 		union
 		{
@@ -114,12 +114,12 @@ typedef union vec3i_t
 				/// <summary>
 				/// Named second component.
 				/// </summary>
-				union { veci_t y, g, t; };
+				union { veci_t y, g, t, v1; };
 
 				/// <summary>
 				/// Named third component.
 				/// </summary>
-				union { veci_t z, b, p; };
+				union { veci_t z, b, p, v2; };
 			};
 		};
 	};
@@ -150,7 +150,7 @@ typedef union vec4i_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { veci_t x, r, s; };
+		union { veci_t x, r, s, v0; };
 
 		union
 		{
@@ -169,7 +169,7 @@ typedef union vec4i_t
 				/// <summary>
 				/// Named second component.
 				/// </summary>
-				union { veci_t y, g, t; };
+				union { veci_t y, g, t, v1; };
 
 				union
 				{
@@ -183,12 +183,12 @@ typedef union vec4i_t
 						/// <summary>
 						/// Named third component.
 						/// </summary>
-						union { veci_t z, b, p; };
+						union { veci_t z, b, p, v2; };
 
 						/// <summary>
 						/// Named fourth component.
 						/// </summary>
-						union { veci_t w, a, q; };
+						union { veci_t w, a, q, v3; };
 					};
 				};
 			};
@@ -212,12 +212,12 @@ typedef union vec2u_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecu_t x, r, s; };
+		union { vecu_t x, r, s, v0; };
 
 		/// <summary>
 		/// Named second component.
 		/// </summary>
-		union { vecu_t y, g, t; };
+		union { vecu_t y, g, t, v1; };
 	};
 } vec2u_t;
 
@@ -241,7 +241,7 @@ typedef union vec3u_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecu_t x, r, s; };
+		union { vecu_t x, r, s, v0; };
 
 		union
 		{
@@ -255,12 +255,12 @@ typedef union vec3u_t
 				/// <summary>
 				/// Named second component.
 				/// </summary>
-				union { vecu_t y, g, t; };
+				union { vecu_t y, g, t, v1; };
 
 				/// <summary>
 				/// Named third component.
 				/// </summary>
-				union { vecu_t z, b, p; };
+				union { vecu_t z, b, p, v2; };
 			};
 		};
 	};
@@ -291,7 +291,7 @@ typedef union vec4u_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecu_t x, r, s; };
+		union { vecu_t x, r, s, v0; };
 
 		union
 		{
@@ -310,7 +310,7 @@ typedef union vec4u_t
 				/// <summary>
 				/// Named second component.
 				/// </summary>
-				union { vecu_t y, g, t; };
+				union { vecu_t y, g, t, v1; };
 
 				union
 				{
@@ -324,12 +324,12 @@ typedef union vec4u_t
 						/// <summary>
 						/// Named third component.
 						/// </summary>
-						union { vecu_t z, b, p; };
+						union { vecu_t z, b, p, v2; };
 
 						/// <summary>
 						/// Named fourth component.
 						/// </summary>
-						union { vecu_t w, a, q; };
+						union { vecu_t w, a, q, v3; };
 					};
 				};
 			};
@@ -353,12 +353,12 @@ typedef union vec2b_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecb_t x, r, s; };
+		union { vecb_t x, r, s, v0; };
 
 		/// <summary>
 		/// Named second component.
 		/// </summary>
-		union { vecb_t y, g, t; };
+		union { vecb_t y, g, t, v1; };
 	};
 } vec2b_t;
 
@@ -382,7 +382,7 @@ typedef union vec3b_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecb_t x, r, s; };
+		union { vecb_t x, r, s, v0; };
 
 		union
 		{
@@ -396,12 +396,12 @@ typedef union vec3b_t
 				/// <summary>
 				/// Named second component.
 				/// </summary>
-				union { vecb_t y, g, t; };
+				union { vecb_t y, g, t, v1; };
 
 				/// <summary>
 				/// Named third component.
 				/// </summary>
-				union { vecb_t z, b, p; };
+				union { vecb_t z, b, p, v2; };
 			};
 		};
 	};
@@ -432,7 +432,7 @@ typedef union vec4b_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecb_t x, r, s; };
+		union { vecb_t x, r, s, v0; };
 
 		union
 		{
@@ -451,7 +451,7 @@ typedef union vec4b_t
 				/// <summary>
 				/// Named second component.
 				/// </summary>
-				union { vecb_t y, g, t; };
+				union { vecb_t y, g, t, v1; };
 
 				union
 				{
@@ -465,12 +465,12 @@ typedef union vec4b_t
 						/// <summary>
 						/// Named third component.
 						/// </summary>
-						union { vecb_t z, b, p; };
+						union { vecb_t z, b, p, v2; };
 
 						/// <summary>
 						/// Named fourth component.
 						/// </summary>
-						union { vecb_t w, a, q; };
+						union { vecb_t w, a, q, v3; };
 					};
 				};
 			};
@@ -494,12 +494,12 @@ typedef union vec2f_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecf_t x, r, s; };
+		union { vecf_t x, r, s, v0; };
 
 		/// <summary>
 		/// Named second component.
 		/// </summary>
-		union { vecf_t y, g, t; };
+		union { vecf_t y, g, t, v1; };
 	};
 } vec2f_t;
 
@@ -523,7 +523,7 @@ typedef union vec3f_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecf_t x, r, s; };
+		union { vecf_t x, r, s, v0; };
 
 		union
 		{
@@ -537,12 +537,12 @@ typedef union vec3f_t
 				/// <summary>
 				/// Named second component.
 				/// </summary>
-				union { vecf_t y, g, t; };
+				union { vecf_t y, g, t, v1; };
 
 				/// <summary>
 				/// Named third component.
 				/// </summary>
-				union { vecf_t z, b, p; };
+				union { vecf_t z, b, p, v2; };
 			};
 		};
 	};
@@ -573,7 +573,7 @@ typedef union vec4f_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecf_t x, r, s; };
+		union { vecf_t x, r, s, v0; };
 
 		union
 		{
@@ -592,7 +592,7 @@ typedef union vec4f_t
 				/// <summary>
 				/// Named second component.
 				/// </summary>
-				union { vecf_t y, g, t; };
+				union { vecf_t y, g, t, v1; };
 
 				union
 				{
@@ -606,12 +606,12 @@ typedef union vec4f_t
 						/// <summary>
 						/// Named third component.
 						/// </summary>
-						union { vecf_t z, b, p; };
+						union { vecf_t z, b, p, v2; };
 
 						/// <summary>
 						/// Named fourth component.
 						/// </summary>
-						union { vecf_t w, a, q; };
+						union { vecf_t w, a, q, v3; };
 					};
 				};
 			};
@@ -635,12 +635,12 @@ typedef union vec2d_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecd_t x, r, s; };
+		union { vecd_t x, r, s, v0; };
 
 		/// <summary>
 		/// Named second component.
 		/// </summary>
-		union { vecd_t y, g, t; };
+		union { vecd_t y, g, t, v1; };
 	};
 } vec2d_t;
 
@@ -664,7 +664,7 @@ typedef union vec3d_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecd_t x, r, s; };
+		union { vecd_t x, r, s, v0; };
 
 		union
 		{
@@ -678,12 +678,12 @@ typedef union vec3d_t
 				/// <summary>
 				/// Named second component.
 				/// </summary>
-				union { vecd_t y, g, t; };
+				union { vecd_t y, g, t, v1; };
 
 				/// <summary>
 				/// Named third component.
 				/// </summary>
-				union { vecd_t z, b, p; };
+				union { vecd_t z, b, p, v2; };
 			};
 		};
 	};
@@ -714,7 +714,7 @@ typedef union vec4d_t
 		/// <summary>
 		/// Named first component.
 		/// </summary>
-		union { vecd_t x, r, s; };
+		union { vecd_t x, r, s, v0; };
 
 		union
 		{
@@ -733,7 +733,7 @@ typedef union vec4d_t
 				/// <summary>
 				/// Named second component.
 				/// </summary>
-				union { vecd_t y, g, t; };
+				union { vecd_t y, g, t, v1; };
 
 				union
 				{
@@ -747,12 +747,12 @@ typedef union vec4d_t
 						/// <summary>
 						/// Named third component.
 						/// </summary>
-						union { vecd_t z, b, p; };
+						union { vecd_t z, b, p, v2; };
 
 						/// <summary>
 						/// Named fourth component.
 						/// </summary>
-						union { vecd_t w, a, q; };
+						union { vecd_t w, a, q, v3; };
 					};
 				};
 			};
@@ -892,15 +892,6 @@ cdraw_vector_const(vecXYZW4, 4, 1, 1, 1, 1);
 #include "cdrawVector/cdrawVec3.h"
 #include "cdrawVector/cdrawVec4.h"
 #endif // #if CDRAW_USING_SCALAR_PREF
-
-
-// ****TO-DO: matrix base types - move to matrix
-typedef float2_t							float2x2_t[2], * floatNx2;
-typedef float3_t							float3x3_t[3], * floatNx3;
-typedef float4_t							float4x4_t[4], * floatNx4;
-typedef double2_t							double2x2_t[2], * doubleNx2;
-typedef double3_t							double3x3_t[3], * doubleNx3;
-typedef double4_t							double4x4_t[4], * doubleNx4;
 
 
 #if !CDRAW_USING_PRECOMPILE_LIBS

@@ -192,6 +192,7 @@ CDRAW_INL floatN_t vecMod2f(float2_t v_out, float2_t const v_lh, float2_t const 
 CDRAW_INL floatN_t vecDivMod2f(float2_t v_out, float2_t v_mod_out, float2_t const v_lh, float2_t const v_rh)
 {
 	failassert(v_out && v_mod_out && v_lh && v_rh, NULL);
+	failassert((v_mod_out != v_out) && (v_mod_out != v_lh) && (v_mod_out != v_rh), NULL);
 	failassert(scIsNonZeroApproxF(vx(v_rh)) && scIsNonZeroApproxF(vy(v_rh)), vecInit2f(v_out,
 		gDivModSafeF(vx(v_mod_out), vx(v_lh), vx(v_rh)),
 		gDivModSafeF(vy(v_mod_out), vy(v_lh), vy(v_rh))));
@@ -249,6 +250,7 @@ CDRAW_INL floatN_t vecModS2f(float2_t v_out, float2_t const v_lh, vecf_t const s
 CDRAW_INL floatN_t vecDivModS2f(float2_t v_out, float2_t v_mod_out, float2_t const v_lh, vecf_t const s_rh)
 {
 	failassert(v_out && v_mod_out && v_lh, NULL);
+	failassert((v_mod_out != v_out) && (v_mod_out != v_lh), NULL);
 	failassert(s_rh, vecCopy2f(v_mod_out, v_lh), vecZero2f(v_out));
 	vecf_t const recip = sc1F / s_rh;
 	vx(v_out) = vx(v_lh) * recip;
@@ -379,14 +381,14 @@ CDRAW_INL vecb_t vecIsUnit2f(float2_t const v)
 {
 	failassert(v, false);
 	vecf_t const lenSq = vecLenSq2f(v);
-	return ((lenSq >= scEpsL1F) && (lenSq <= scEpsG1F));
+	return scIsUnityApproxF(lenSq);
 }
 
 CDRAW_INL vecb_t vecIsNonUnit2f(float2_t const v)
 {
 	failassert(v, true);
 	vecf_t const lenSq = vecLenSq2f(v);
-	return ((lenSq < scEpsL1F) || (lenSq > scEpsG1F));
+	return scIsNonUnityApproxF(lenSq);
 }
 
 CDRAW_INL vecf_t vecProjS2f(float2_t const v, float2_t const v_base)
