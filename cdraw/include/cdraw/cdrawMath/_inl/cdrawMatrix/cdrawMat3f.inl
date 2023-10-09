@@ -26,9 +26,9 @@
 CDRAW_INL floatNx3_t matIdentity3f(float3x3_t m_out)
 {
 	failassert(m_out, NULL);
-	vecCopy3f(vx(m_out), vecX4f.v);
-	vecCopy3f(vy(m_out), vecY4f.v);
-	vecCopy3f(vz(m_out), vecZ4f.v);
+	vecCopy3f(vx(m_out), vecX3f.v);
+	vecCopy3f(vy(m_out), vecY3f.v);
+	vecCopy3f(vz(m_out), vecZ3f.v);
 	return m_out;
 }
 

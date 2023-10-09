@@ -1304,18 +1304,29 @@ result_t cdrawMatrixTest()
 		4.0, 5.0, 6.0,
 		7.0, 8.0, 9.0,
 	};
+
+	mat2d_t test2, test2inv, test2Id, test2L = {
+		1.0, 2.0,
+		3.0, 4.0,
+	};
+
 	matCopy43d(test3.m, test4.m);
+	matCopy32d(test2.m, test3.m);
 
 	matMul4d(test4Id.m, test4L.m, test4L.m);
 	matMul3d(test3Id.m, test3L.m, test3L.m);
+	matMul2d(test2Id.m, test2L.m, test2L.m);
 
 	matInverse4d(test4inv.m, matID4d.m);
 	matInverse3d(test3inv.m, matID3d.m);
+	matInverse2d(test2inv.m, matID2d.m);
 
 	matInverse4d(test4inv.m, test4.m);
 	matInverse3d(test3inv.m, test3.m);
+	matInverse2d(test2inv.m, test2.m);
 	matMul4d(test4Id.m, test4.m, test4inv.m);
 	matMul3d(test3Id.m, test3.m, test3inv.m);
+	matMul2d(test2Id.m, test2.m, test2inv.m);
 
 	result_return();
 }

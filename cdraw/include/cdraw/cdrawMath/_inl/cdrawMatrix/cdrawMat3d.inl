@@ -26,9 +26,9 @@
 CDRAW_INL doubleNx3_t matIdentity3d(double3x3_t m_out)
 {
 	failassert(m_out, NULL);
-	vecCopy3d(vx(m_out), vecX4d.v);
-	vecCopy3d(vy(m_out), vecY4d.v);
-	vecCopy3d(vz(m_out), vecZ4d.v);
+	vecCopy3d(vx(m_out), vecX3d.v);
+	vecCopy3d(vy(m_out), vecY3d.v);
+	vecCopy3d(vz(m_out), vecZ3d.v);
 	return m_out;
 }
 
