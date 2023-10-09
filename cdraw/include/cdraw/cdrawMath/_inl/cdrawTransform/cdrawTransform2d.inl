@@ -23,4 +23,29 @@
 #define _CDRAW_TRANSFORM2D_INL_
 
 
+CDRAW_INL doubleNx2_t RmatID2d(Rmat2d_t R_out)
+{
+	failassert(R_out, NULL);
+	return matIdentity2d(R_out);
+}
+
+CDRAW_INL doubleNx2_t RmatFromAngle2d(Rmat2d_t R_out, angle2d_t* angle_actual_out_opt, angle2d_t const angle)
+{
+	failassert(R_out, NULL);
+	angle2d_t const angle_actual = scNormalizeAngle180D(angle);
+	vecd_t s, c;
+	scSinCosdD(&s, &c, angle_actual);
+	mxx(R_out) = c;		myx(R_out) = -s;
+	mxy(R_out) = s;		myy(R_out) = c;
+	if (angle_actual_out_opt) *angle_actual_out_opt = angle_actual;
+	return R_out;
+}
+
+CDRAW_INL angle2d_t RmatToAngle2d(Rmat2d_t const R)
+{
+	failassert(R, sc0D);
+	return scAtan2dD(mxy(R), mxx(R));
+}
+
+
 #endif // #if (!(defined _CDRAW_TRANSFORM2D_INL_) && (defined _CDRAW_TRANSFORM_INL_))

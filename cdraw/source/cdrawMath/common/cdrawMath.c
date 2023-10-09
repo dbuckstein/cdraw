@@ -1418,6 +1418,21 @@ result_t cdrawTransformTest()
 {
 	result_init();
 
+	{
+		vecd_t const angle_desired_d = 225.0;
+		vecf_t const angle_desired_f = (vecf_t)angle_desired_d;
+		vecd_t angle_actual_d;
+		vecf_t angle_actual_f;
+		Rmat2d_t Rd;
+		Rmat2f_t Rf;
+
+		RmatFromAngle2d(Rd, &angle_actual_d, angle_desired_d);
+		RmatFromAngle2f(Rf, &angle_actual_f, angle_desired_f);
+
+		angle_actual_d = RmatToAngle2d(Rd);
+		angle_actual_f = RmatToAngle2f(Rf);
+	}
+
 	result_return();
 }
 

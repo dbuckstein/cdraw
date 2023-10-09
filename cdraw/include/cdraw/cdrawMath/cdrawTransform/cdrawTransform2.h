@@ -27,6 +27,29 @@
 extern "C" {
 #endif // #ifdef __cplusplus
 
+	/// <summary>
+	/// Initialize rotation matrix to identity.
+	/// </summary>
+	/// <param name="R_out">Result matrix.</param>
+	/// <returns><paramref name="R_out"/></returns>
+#define RmatID2d cdraw_transform_base(RmatID2d)
+
+	/// <summary>
+	/// Initialize rotation matrix from encoded angle.
+	/// </summary>
+	/// <param name="R_out">Result matrix.</param>
+	/// <param name="angle_actual_out_opt">Storage for resulting actual angle used for encoding (optional).</param>
+	/// <param name="angle">Desired angle to encode.</param>
+	/// <returns><paramref name="R_out"/></returns>
+#define RmatFromAngle2 cdraw_transform_base(RmatFromAngle2)
+
+	/// <summary>
+	/// Decode rotation matrix to extract angle.
+	/// </summary>
+	/// <param name="R">Input matrix to be converted.</param>
+	/// <returns>Actual angle.</returns>
+#define RmatToAngle2 cdraw_transform_base(RmatToAngle2)
+
 
 #ifdef __cplusplus
 }

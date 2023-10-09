@@ -42,20 +42,20 @@ typedef uint32_t ReferenceFrame_t;
 typedef enum AxisOrder_t
 {
 	/// <summary>
-	/// Right-handed basis with XYZ = Forward, Left, Up; 
-	/// forward axis defines zero rotation.
+	/// Right-handed basis with XYZ = Forward, Right, Down; 
+	/// also known as NED (North, East, Down), the principal aircraft basis with traditional roll/pitch/yaw axes.
 	/// </summary>
-	axis_rh_FLU,
+	axis_rh_FRD_NED,
 	/// <summary>
 	/// Right-handed basis with XYZ = Right, Forward, Up; 
 	/// also known as ENU (East, North, Up), a standard navigation basis.
 	/// </summary>
 	axis_rh_RFU_ENU,
 	/// <summary>
-	/// Right-handed basis with XYZ = Forward, Right, Down; 
-	/// also known as NED (North, East, Down), the principal aircraft basis with traditional roll/pitch/yaw axes.
+	/// Right-handed basis with XYZ = Forward, Left, Up; 
+	/// forward axis defines zero rotation.
 	/// </summary>
-	axis_rh_FRD_NED,
+	axis_rh_FLU,
 } AxisOrder_t;
 
 /// <summary>
@@ -93,6 +93,64 @@ typedef enum RotateOrder_t
 	rot_RPY,
 } RotateOrder_t;
 
+/// <summary>
+/// Description of rotation order given reference frame relative axes.
+/// </summary>
+typedef enum RotateAxisOrder_t
+{
+	/// <summary>
+	/// Rotation is about X then Y then Z.
+	/// </summary>
+	rot_XYZ,
+	/// <summary>
+	/// Rotation is about Y then Z then X.
+	/// </summary>
+	rot_YZX,
+	/// <summary>
+	/// Rotation is about Z then X then Y.
+	/// </summary>
+	rot_ZXY,
+	/// <summary>
+	/// Rotation is about Y then X then Z.
+	/// </summary>
+	rot_YXZ,
+	/// <summary>
+	/// Rotation is about X then Z then Y.
+	/// </summary>
+	rot_XZY,
+	/// <summary>
+	/// Rotation is about Z then Y then X.
+	/// </summary>
+	rot_ZYX,
+} RotateAxisOrder_t;
+
+
+/// <summary>
+/// 2D single-precision rotation matrix.
+/// </summary>
+typedef float2x2_t	Rmat2f_t;
+/// <summary>
+/// 2D single-precision absolute translation vector container.
+/// </summary>
+typedef union tvec2f_t
+{
+	/// <summary>
+	/// Raw translation component array.
+	/// </summary>
+	float2_t v;
+	/// <summary>
+	/// Named translation components.
+	/// </summary>
+	struct { vecf_t right, up; };
+} tvec2f_t;
+/// <summary>
+/// 2D single-precision angle representation in degrees.
+/// </summary>
+typedef vecf_t		angle2f_t;
+/// <summary>
+/// 2D single-precision transformation matrix.
+/// </summary>
+typedef float3x3_t	Tmat2f_t;
 
 /// <summary>
 /// Single-precision container for 2D rotation components.
@@ -102,12 +160,12 @@ typedef struct rotate2f_t
 	/// <summary>
 	/// Rotation matrix representation.
 	/// </summary>
-	float2x2_t m;
+	Rmat2f_t R;
 
 	/// <summary>
-	/// Angle representation (always about normal axis).
+	/// Angle representation in degrees (always about normal axis).
 	/// </summary>
-	float_t angle;
+	angle2f_t angle, angle_actual;
 } rotate2f_t;
 
 /// <summary>
@@ -118,7 +176,7 @@ typedef struct translate2f_t
 	/// <summary>
 	/// Translation vector.
 	/// </summary>
-	float2_t v;
+	tvec2f_t t;
 } translate2f_t;
 
 /// <summary>
@@ -129,7 +187,7 @@ typedef struct scale2f_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	float_t s;
+	vecf_t s;
 } scale2f_t;
 
 /// <summary>
@@ -140,7 +198,7 @@ typedef struct transform2f_t
 	/// <summary>
 	/// Encoded transformation matrix with all components.
 	/// </summary>
-	float3x3_t T;
+	Tmat2f_t T;
 
 	/// <summary>
 	/// Raw rotation descriptor.
@@ -160,69 +218,41 @@ typedef struct transform2f_t
 
 
 /// <summary>
-/// Double-precision container for 2D rotation components.
+/// 3D single-precision rotation matrix.
 /// </summary>
-typedef struct rotate2d_t
-{
-	/// <summary>
-	/// Rotation matrix representation.
-	/// </summary>
-	double2x2_t m;
-
-	/// <summary>
-	/// Angle representation (always about normal axis).
-	/// </summary>
-	double_t angle;
-} rotate2d_t;
-
+typedef float3x3_t	Rmat3f_t;
 /// <summary>
-/// Double-precision container for 2D translation components.
+/// 3D single-precision absolute translation vector container.
 /// </summary>
-typedef struct translate2d_t
+typedef union tvec3f_t
 {
 	/// <summary>
-	/// Translation vector.
+	/// Raw translation component array.
 	/// </summary>
-	double2_t v;
-} translate2d_t;
-
+	float3_t v;
+	/// <summary>
+	/// Named translation components.
+	/// </summary>
+	struct { vecf_t forward, right, down; };
+} tvec3f_t;
 /// <summary>
-/// Double-precision container for 2D scale components.
+/// 3D single-precision absolute rotation angle container.
 /// </summary>
-typedef struct scale2d_t
+typedef union angle3f_t
 {
 	/// <summary>
-	/// Uniform scale applied to all axes.
+	/// Raw angle component array.
 	/// </summary>
-	double_t s;
-} scale2d_t;
-
+	float3_t v;
+	/// <summary>
+	/// Named angle components.
+	/// </summary>
+	struct { vecf_t roll, pitch, yaw; };
+} angle3f_t;
 /// <summary>
-/// Double-precision container for encoded 2D transform components.
+/// 3D single-precision transformation matrix.
 /// </summary>
-typedef struct transform2d_t
-{
-	/// <summary>
-	/// Encoded transformation matrix with all components.
-	/// </summary>
-	double3x3_t T;
-
-	/// <summary>
-	/// Raw rotation descriptor.
-	/// </summary>
-	rotate2d_t rotate;
-
-	/// <summary>
-	/// Raw translation descriptor.
-	/// </summary>
-	translate2d_t translate;
-
-	/// <summary>
-	/// Raw scale descriptor.
-	/// </summary>
-	scale2d_t scale;
-} transform2d_t;
-
+typedef float4x4_t	Tmat3f_t;
 
 /// <summary>
 /// Single-precision container for 3D rotation components.
@@ -232,12 +262,12 @@ typedef struct rotate3f_t
 	/// <summary>
 	/// Rotation matrix representation.
 	/// </summary>
-	float3x3_t m;
+	Rmat3f_t R;
 
 	/// <summary>
-	/// Euler angle representation.
+	/// Euler angle representation in degrees.
 	/// </summary>
-	float3_t angles;
+	angle3f_t angles, angles_actual;
 } rotate3f_t;
 
 /// <summary>
@@ -248,7 +278,7 @@ typedef struct translate3f_t
 	/// <summary>
 	/// Translation vector.
 	/// </summary>
-	float3_t v;
+	tvec3f_t v;
 } translate3f_t;
 
 /// <summary>
@@ -259,7 +289,7 @@ typedef struct scale3f_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	float_t s;
+	vecf_t s;
 } scale3f_t;
 
 /// <summary>
@@ -270,7 +300,7 @@ typedef struct transform3f_t
 	/// <summary>
 	/// Encoded transformation matrix with all components.
 	/// </summary>
-	float4x4_t T;
+	Tmat3f_t T;
 
 	/// <summary>
 	/// Raw rotation descriptor.
@@ -290,6 +320,135 @@ typedef struct transform3f_t
 
 
 /// <summary>
+/// 2D double-precision rotation matrix.
+/// </summary>
+typedef double2x2_t	Rmat2d_t;
+/// <summary>
+/// 2D double-precision absolute translation vector container.
+/// </summary>
+typedef union tvec2d_t
+{
+	/// <summary>
+	/// Raw translation component array.
+	/// </summary>
+	double2_t v;
+	/// <summary>
+	/// Named translation components.
+	/// </summary>
+	struct { vecd_t right, up; };
+} tvec2d_t;
+/// <summary>
+/// 2D double-precision angle representation in degrees.
+/// </summary>
+typedef vecd_t		angle2d_t;
+/// <summary>
+/// 2D double-precision transformation matrix.
+/// </summary>
+typedef double3x3_t	Tmat2d_t;
+
+/// <summary>
+/// Double-precision container for 2D rotation components.
+/// </summary>
+typedef struct rotate2d_t
+{
+	/// <summary>
+	/// Rotation matrix representation.
+	/// </summary>
+	Rmat2d_t R;
+
+	/// <summary>
+	/// Angle representation in degrees (always about normal axis).
+	/// </summary>
+	angle2d_t angle, angle_actual;
+} rotate2d_t;
+
+/// <summary>
+/// Double-precision container for 2D translation components.
+/// </summary>
+typedef struct translate2d_t
+{
+	/// <summary>
+	/// Translation vector.
+	/// </summary>
+	tvec2d_t t;
+} translate2d_t;
+
+/// <summary>
+/// Double-precision container for 2D scale components.
+/// </summary>
+typedef struct scale2d_t
+{
+	/// <summary>
+	/// Uniform scale applied to all axes.
+	/// </summary>
+	vecd_t s;
+} scale2d_t;
+
+/// <summary>
+/// Double-precision container for encoded 2D transform components.
+/// </summary>
+typedef struct transform2d_t
+{
+	/// <summary>
+	/// Encoded transformation matrix with all components.
+	/// </summary>
+	Tmat2d_t T;
+
+	/// <summary>
+	/// Raw rotation descriptor.
+	/// </summary>
+	rotate2d_t rotate;
+
+	/// <summary>
+	/// Raw translation descriptor.
+	/// </summary>
+	translate2d_t translate;
+
+	/// <summary>
+	/// Raw scale descriptor.
+	/// </summary>
+	scale2d_t scale;
+} transform2d_t;
+
+
+/// <summary>
+/// 3D double-precision rotation matrix.
+/// </summary>
+typedef double3x3_t	Rmat3d_t;
+/// <summary>
+/// 3D double-precision absolute translation vector container.
+/// </summary>
+typedef union tvec3d_t
+{
+	/// <summary>
+	/// Raw translation component array.
+	/// </summary>
+	double3_t v;
+	/// <summary>
+	/// Named translation components.
+	/// </summary>
+	struct { vecd_t forward, right, down; };
+} tvec3d_t;
+/// <summary>
+/// 3D double-precision absolute rotation angle container.
+/// </summary>
+typedef union angle3d_t
+{
+	/// <summary>
+	/// Raw angle component array.
+	/// </summary>
+	double3_t v;
+	/// <summary>
+	/// Named angle components.
+	/// </summary>
+	struct { vecd_t roll, pitch, yaw; };
+} angle3d_t;
+/// <summary>
+/// 3D double-precision transformation matrix.
+/// </summary>
+typedef double4x4_t	Tmat3d_t;
+
+/// <summary>
 /// Double-precision container for 3D rotation components.
 /// </summary>
 typedef struct rotate3d_t
@@ -297,12 +456,12 @@ typedef struct rotate3d_t
 	/// <summary>
 	/// Rotation matrix representation.
 	/// </summary>
-	double3x3_t m;
+	Rmat3d_t R;
 
 	/// <summary>
-	/// Euler angle representation.
+	/// Euler angle representation in degrees.
 	/// </summary>
-	double3_t angles;
+	angle3d_t angles, angles_actual;
 } rotate3d_t;
 
 /// <summary>
@@ -313,7 +472,7 @@ typedef struct translate3d_t
 	/// <summary>
 	/// Translation vector.
 	/// </summary>
-	double3_t v;
+	tvec3d_t v;
 } translate3d_t;
 
 /// <summary>
@@ -324,7 +483,7 @@ typedef struct scale3d_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	double_t s;
+	vecd_t s;
 } scale3d_t;
 
 /// <summary>
@@ -335,7 +494,7 @@ typedef struct transform3d_t
 	/// <summary>
 	/// Encoded transformation matrix with all components.
 	/// </summary>
-	double4x4_t transform;
+	Tmat3d_t T;
 
 	/// <summary>
 	/// Raw rotation descriptor.
@@ -358,21 +517,38 @@ typedef struct transform3d_t
 * Configuration.
 ******************************************************************************/
 
+#define cdraw_transform_base(name)			tokencat(name, transform_suffix)
 #if CDRAW_USING_SCALAR_PREF
 #if CDRAW_USING_SCALAR_PREF_DOUBLE
+typedef Rmat2d_t		Rmat2_t;
+typedef tvec2d_t		tvec2_t;
+typedef angle2d_t		angle2_t;
+typedef Tmat2d_t		Tmat2_t;
 typedef rotate2d_t		rotate2_t;
 typedef translate2d_t	translate2_t;
 typedef scale2d_t		scale2_t;
 typedef transform2d_t	transform2_t;
+typedef Rmat3d_t		Rmat3_t;
+typedef tvec3d_t		tvec3_t;
+typedef angle3d_t		angle3_t;
+typedef Tmat3d_t		Tmat3_t;
 typedef rotate3d_t		rotate3_t;
 typedef translate3d_t	translate3_t;
 typedef scale3d_t		scale3_t;
 typedef transform3d_t	transform3_t;
 #else // #if CDRAW_USING_SCALAR_PREF_DOUBLE
+typedef Rmat2f_t		Rmat2_t;
+typedef tvec2f_t		tvec2_t;
+typedef angle2f_t		angle2_t;
+typedef Tmat2f_t		Tmat2_t;
 typedef rotate2f_t		rotate2_t;
 typedef translate2f_t	translate2_t;
 typedef scale2f_t		scale2_t;
 typedef transform2f_t	transform2_t;
+typedef Rmat3f_t		Rmat3_t;
+typedef tvec3f_t		tvec3_t;
+typedef angle3f_t		angle3_t;
+typedef Tmat3f_t		Tmat3_t;
 typedef rotate3f_t		rotate3_t;
 typedef translate3f_t	translate3_t;
 typedef scale3f_t		scale3_t;
@@ -409,6 +585,13 @@ AxisOrder_t cdrawReferenceFrameAxisOrder(ReferenceFrame_t const refFrame);
 /// <param name="refFrame">Encoded reference frame.</param>
 /// <returns>Absolute rotation order.</returns>
 RotateOrder_t cdrawReferenceFrameRotateOrder(ReferenceFrame_t const refFrame);
+
+/// <summary>
+/// Decode relative rotation order based on axes from encoded reference frame.
+/// </summary>
+/// <param name="refFrame">Encoded reference frame.</param>
+/// <returns>Relative rotation axis order.</returns>
+RotateAxisOrder_t cdrawReferenceFrameRotateAxisOrder(ReferenceFrame_t const refFrame);
 
 
 /******************************************************************************
