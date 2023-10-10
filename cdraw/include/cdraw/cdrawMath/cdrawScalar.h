@@ -63,16 +63,16 @@
 
 #define scEpsD		(DBL_EPSILON)				// Standard epsilon ("smallest value") for double-precision.
 #define scBigEpsD	(DBL_EPSILON * 64.0)		// Bigger epsilon for double-precision (32x covers inverse trigonometry).
-#define scEpsG1D	(scEpsD + 1.0)				// Smallest value greater than 1.
-#define scEpsL1D	(scEpsD - 1.0)				// Smallest value less than 1.
-#define scBigEpsG1D	(scBigEpsD + 1.0)			// Smallest bigger value greater than 1.
-#define scBigEpsL1D	(scBigEpsD - 1.0)			// Smallest bigger value less than 1.
+#define scEpsG1D	(1.0 + scEpsD)				// Smallest value greater than 1.
+#define scEpsL1D	(1.0 - scEpsD)				// Smallest value less than 1.
+#define scBigEpsG1D	(1.0 + scBigEpsD)			// Smallest bigger value greater than 1.
+#define scBigEpsL1D	(1.0 - scBigEpsD)			// Smallest bigger value less than 1.
 #define scEpsF		(FLT_EPSILON)				// Standard epsilon ("smallest value") for single-precision.
 #define scBigEpsF	(FLT_EPSILON * 64.0f)		// Bigger epsilon for single-precision (32x covers inverse trigonometry).
-#define scEpsG1F	(scEpsF + 1.0)				// Smallest value greater than 1.
-#define scEpsL1F	(scEpsF - 1.0)				// Smallest value less than 1.
-#define scBigEpsG1F	(scBigEpsF + 1.0)			// Smallest bigger value greater than 1.
-#define scBigEpsL1F	(scBigEpsF - 1.0)			// Smallest bigger value less than 1.
+#define scEpsG1F	(1.0f + scEpsF)				// Smallest value greater than 1.
+#define scEpsL1F	(1.0f - scEpsF)				// Smallest value less than 1.
+#define scBigEpsG1F	(1.0f + scBigEpsF)			// Smallest bigger value greater than 1.
+#define scBigEpsL1F	(1.0f - scBigEpsF)			// Smallest bigger value less than 1.
 
 
 #if CDRAW_USING_SCALAR_PREF

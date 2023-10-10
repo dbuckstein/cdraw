@@ -130,9 +130,9 @@ typedef enum RotateAxisOrder_t
 /// </summary>
 typedef float2x2_t	Rmat2f_t;
 /// <summary>
-/// 2D single-precision absolute translation vector container.
+/// 2D single-precision absolute axis descriptor vector container.
 /// </summary>
-typedef union tvec2f_t
+typedef union Avec2f_t
 {
 	/// <summary>
 	/// Raw translation component array.
@@ -142,7 +142,7 @@ typedef union tvec2f_t
 	/// Named translation components.
 	/// </summary>
 	struct { vecf_t right, up; };
-} tvec2f_t;
+} Avec2f_t;
 /// <summary>
 /// 2D single-precision angle representation in degrees.
 /// </summary>
@@ -176,7 +176,7 @@ typedef struct translate2f_t
 	/// <summary>
 	/// Translation vector.
 	/// </summary>
-	tvec2f_t t;
+	Avec2f_t t;
 } translate2f_t;
 
 /// <summary>
@@ -187,7 +187,7 @@ typedef struct scale2f_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	vecf_t s;
+	vecf_t s, s_actual;
 } scale2f_t;
 
 /// <summary>
@@ -222,9 +222,9 @@ typedef struct transform2f_t
 /// </summary>
 typedef float3x3_t	Rmat3f_t;
 /// <summary>
-/// 3D single-precision absolute translation vector container.
+/// 3D single-precision absolute axis descriptor vector container.
 /// </summary>
-typedef union tvec3f_t
+typedef union Avec3f_t
 {
 	/// <summary>
 	/// Raw translation component array.
@@ -234,21 +234,15 @@ typedef union tvec3f_t
 	/// Named translation components.
 	/// </summary>
 	struct { vecf_t forward, right, down; };
-} tvec3f_t;
-/// <summary>
-/// 3D single-precision absolute rotation angle container.
-/// </summary>
-typedef union angle3f_t
-{
-	/// <summary>
-	/// Raw angle component array.
-	/// </summary>
-	float3_t v;
 	/// <summary>
 	/// Named angle components.
 	/// </summary>
 	struct { vecf_t roll, pitch, yaw; };
-} angle3f_t;
+} Avec3f_t;
+/// <summary>
+/// 3D single-precision absolute rotation angle container.
+/// </summary>
+typedef Avec3f_t angle3f_t;
 /// <summary>
 /// 3D single-precision transformation matrix.
 /// </summary>
@@ -278,7 +272,7 @@ typedef struct translate3f_t
 	/// <summary>
 	/// Translation vector.
 	/// </summary>
-	tvec3f_t v;
+	Avec3f_t t;
 } translate3f_t;
 
 /// <summary>
@@ -289,7 +283,7 @@ typedef struct scale3f_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	vecf_t s;
+	vecf_t s, s_actual;
 } scale3f_t;
 
 /// <summary>
@@ -324,9 +318,9 @@ typedef struct transform3f_t
 /// </summary>
 typedef double2x2_t	Rmat2d_t;
 /// <summary>
-/// 2D double-precision absolute translation vector container.
+/// 2D double-precision absolute axis descriptor vector container.
 /// </summary>
-typedef union tvec2d_t
+typedef union Avec2d_t
 {
 	/// <summary>
 	/// Raw translation component array.
@@ -336,7 +330,7 @@ typedef union tvec2d_t
 	/// Named translation components.
 	/// </summary>
 	struct { vecd_t right, up; };
-} tvec2d_t;
+} Avec2d_t;
 /// <summary>
 /// 2D double-precision angle representation in degrees.
 /// </summary>
@@ -370,7 +364,7 @@ typedef struct translate2d_t
 	/// <summary>
 	/// Translation vector.
 	/// </summary>
-	tvec2d_t t;
+	Avec2d_t t;
 } translate2d_t;
 
 /// <summary>
@@ -381,7 +375,7 @@ typedef struct scale2d_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	vecd_t s;
+	vecd_t s, s_actual;
 } scale2d_t;
 
 /// <summary>
@@ -416,9 +410,9 @@ typedef struct transform2d_t
 /// </summary>
 typedef double3x3_t	Rmat3d_t;
 /// <summary>
-/// 3D double-precision absolute translation vector container.
+/// 3D double-precision absolute axis descriptor vector container.
 /// </summary>
-typedef union tvec3d_t
+typedef union Avec3d_t
 {
 	/// <summary>
 	/// Raw translation component array.
@@ -428,21 +422,15 @@ typedef union tvec3d_t
 	/// Named translation components.
 	/// </summary>
 	struct { vecd_t forward, right, down; };
-} tvec3d_t;
-/// <summary>
-/// 3D double-precision absolute rotation angle container.
-/// </summary>
-typedef union angle3d_t
-{
-	/// <summary>
-	/// Raw angle component array.
-	/// </summary>
-	double3_t v;
 	/// <summary>
 	/// Named angle components.
 	/// </summary>
 	struct { vecd_t roll, pitch, yaw; };
-} angle3d_t;
+} Avec3d_t;
+/// <summary>
+/// 3D double-precision absolute rotation angle container.
+/// </summary>
+typedef Avec3d_t angle3d_t;
 /// <summary>
 /// 3D double-precision transformation matrix.
 /// </summary>
@@ -472,7 +460,7 @@ typedef struct translate3d_t
 	/// <summary>
 	/// Translation vector.
 	/// </summary>
-	tvec3d_t v;
+	Avec3d_t t;
 } translate3d_t;
 
 /// <summary>
@@ -483,7 +471,7 @@ typedef struct scale3d_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	vecd_t s;
+	vecd_t s, s_actual;
 } scale3d_t;
 
 /// <summary>
@@ -521,7 +509,7 @@ typedef struct transform3d_t
 #if CDRAW_USING_SCALAR_PREF
 #if CDRAW_USING_SCALAR_PREF_DOUBLE
 typedef Rmat2d_t		Rmat2_t;
-typedef tvec2d_t		tvec2_t;
+typedef Avec2d_t		Avec2_t;
 typedef angle2d_t		angle2_t;
 typedef Tmat2d_t		Tmat2_t;
 typedef rotate2d_t		rotate2_t;
@@ -529,7 +517,7 @@ typedef translate2d_t	translate2_t;
 typedef scale2d_t		scale2_t;
 typedef transform2d_t	transform2_t;
 typedef Rmat3d_t		Rmat3_t;
-typedef tvec3d_t		tvec3_t;
+typedef Avec3d_t		Avec3_t;
 typedef angle3d_t		angle3_t;
 typedef Tmat3d_t		Tmat3_t;
 typedef rotate3d_t		rotate3_t;
@@ -538,7 +526,7 @@ typedef scale3d_t		scale3_t;
 typedef transform3d_t	transform3_t;
 #else // #if CDRAW_USING_SCALAR_PREF_DOUBLE
 typedef Rmat2f_t		Rmat2_t;
-typedef tvec2f_t		tvec2_t;
+typedef Avec2f_t		Avec2_t;
 typedef angle2f_t		angle2_t;
 typedef Tmat2f_t		Tmat2_t;
 typedef rotate2f_t		rotate2_t;
@@ -546,7 +534,7 @@ typedef translate2f_t	translate2_t;
 typedef scale2f_t		scale2_t;
 typedef transform2f_t	transform2_t;
 typedef Rmat3f_t		Rmat3_t;
-typedef tvec3f_t		tvec3_t;
+typedef Avec3f_t		Avec3_t;
 typedef angle3f_t		angle3_t;
 typedef Tmat3f_t		Tmat3_t;
 typedef rotate3f_t		rotate3_t;
@@ -556,8 +544,12 @@ typedef transform3f_t	transform3_t;
 #endif // #else // #if CDRAW_USING_SCALAR_PREF_DOUBLE
 #else // #if CDRAW_USING_SCALAR_PREF
 #endif // #else // #if CDRAW_USING_SCALAR_PREF
-#define transform_suffix	matrix_suffix
-#define transform_other		matrix_other
+#define transform_suffix			matrix_suffix
+#define transform_other				matrix_other
+#define transform_gimbalangle_maxF	(90.0f + scBigEpsF)
+#define transform_gimbalangle_minF	(90.0f - scBigEpsF)
+#define transform_gimbalangle_maxD	(90.0 + scBigEpsD)
+#define transform_gimbalangle_minD	(90.0 - scBigEpsD)
 
 
 /******************************************************************************

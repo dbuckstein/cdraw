@@ -1433,6 +1433,60 @@ result_t cdrawTransformTest()
 		angle_actual_f = RmatToAngle2f(Rf);
 	}
 
+	{
+		double3_t const angle0 = { 225.0, -135.0, 120.0 };
+		double3_t const angle1 = { 225.0, +90.0, 120.0 };
+		double3_t const angle2 = { 225.0, +270.0, 120.0 };
+
+		double3_t angle0d, angle1d, angle2d;
+		float3_t angle0f, angle1f, angle2f;
+
+		//double3_t angle_actual_d, angle_actual_1d;
+		float3_t angle_actual_f, angle_actual_1f;
+
+		//Rmat3d_t Rd, Rd1;
+		Rmat3f_t Rf, Rf1;
+
+		//vecd_t distd;
+		vecf_t distf;
+
+		RotateAxisOrder_t encodeOrder;
+		uint i;
+		for (i = 0; i < 3; ++i)
+		{
+			vecCopy3d3f(angle0f, vecInit3d(angle0d, angle0[(i + 0) % 3], angle0[(i + 1) % 3], angle0[(i + 2) % 3]));
+			vecCopy3d3f(angle1f, vecInit3d(angle1d, angle1[(i + 0) % 3], angle1[(i + 1) % 3], angle1[(i + 2) % 3]));
+			vecCopy3d3f(angle2f, vecInit3d(angle2d, angle2[(i + 0) % 3], angle2[(i + 1) % 3], angle2[(i + 2) % 3]));
+
+			for (encodeOrder = rot_XYZ; encodeOrder <= rot_ZYX; ++encodeOrder)
+			{
+				RmatFromAngles3f(Rf, angle_actual_f, angle0f, encodeOrder);
+				RmatToAngles3f(angle_actual_1f, Rf, encodeOrder);
+				RmatFromAngles3f(Rf1, 0, angle_actual_1f, encodeOrder);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(angle_actual_1f, angle_actual_f)), errcode_CUSTOM_BEGIN);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(vx(Rf), vx(Rf1))), errcode_CUSTOM_BEGIN);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(vy(Rf), vy(Rf1))), errcode_CUSTOM_BEGIN);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(vz(Rf), vz(Rf1))), errcode_CUSTOM_BEGIN);
+
+				RmatFromAngles3f(Rf, angle_actual_f, angle1f, encodeOrder);
+				RmatToAngles3f(angle_actual_1f, Rf, encodeOrder);
+				RmatFromAngles3f(Rf1, 0, angle_actual_1f, encodeOrder);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(angle_actual_1f, angle_actual_f)), errcode_CUSTOM_BEGIN);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(vx(Rf), vx(Rf1))), errcode_CUSTOM_BEGIN);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(vz(Rf), vz(Rf1))), errcode_CUSTOM_BEGIN);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(vy(Rf), vy(Rf1))), errcode_CUSTOM_BEGIN);
+
+				RmatFromAngles3f(Rf, angle_actual_f, angle2f, encodeOrder);
+				RmatToAngles3f(angle_actual_1f, Rf, encodeOrder);
+				RmatFromAngles3f(Rf1, 0, angle_actual_1f, encodeOrder);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(angle_actual_1f, angle_actual_f)), errcode_CUSTOM_BEGIN);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(vx(Rf), vx(Rf1))), errcode_CUSTOM_BEGIN);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(vy(Rf), vy(Rf1))), errcode_CUSTOM_BEGIN);
+				asserterr(scBigEpsF >= (distf = vecDistSq3f(vz(Rf), vz(Rf1))), errcode_CUSTOM_BEGIN);
+			}
+		}
+	}
+
 	result_return();
 }
 
