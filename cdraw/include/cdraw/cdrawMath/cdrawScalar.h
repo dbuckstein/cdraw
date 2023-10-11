@@ -200,6 +200,10 @@ cdraw_scalar_const(sc360, 360.0);
 #define gSafeSqrtD(x)						(sqrt(x))																					// Compute safe (non-negative input) square root for double-precision float.
 #define gSafeCbrtF(x)						(cbrtf(x))																					// Compute safe (any input) cube root for single-precision float.
 #define gSafeCbrtD(x)						(cbrt(x))																					// Compute safe (any input) cube root for double-precision float.
+#define gSafeSqrtInvF(x)					(sc1F / gSafeSqrtF(x))																		// Compute safe (positive input) square root inverse for single-precision float.
+#define gSafeSqrtInvD(x)					(sc1D / gSafeSqrtD(x))																		// Compute safe (positive input) square root inverse for double-precision float.
+#define gSafeCbrtInvF(x)					(sc1F / gSafeCbrtF(x))																		// Compute safe (non-zero input) cube root inverse for single-precision float.
+#define gSafeCbrtInvD(x)					(sc1D / gSafeCbrtD(x))																		// Compute safe (non-zero input) cube root inverse for double-precision float.
 
 
 #if !CDRAW_USING_PRECOMPILE_LIBS

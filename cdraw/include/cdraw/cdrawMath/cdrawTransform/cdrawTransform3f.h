@@ -210,6 +210,65 @@ extern "C" {
 	floatN_t RmatUp3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref);
 
 	/// <summary>
+	/// Copy the reference frame's absolute forward direction.
+	/// </summary>
+	/// <param name="v_out">Result forward axis vector.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatRefForward3f(float3_t v_out, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Copy the reference frame's absolute backward direction.
+	/// </summary>
+	/// <param name="v_out">Result backward axis vector.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatRefBackward3f(float3_t v_out, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Copy the reference frame's absolute right direction.
+	/// </summary>
+	/// <param name="v_out">Result right axis vector.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatRefRight3f(float3_t v_out, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Copy the reference frame's absolute left direction.
+	/// </summary>
+	/// <param name="v_out">Result left axis vector.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatRefLeft3f(float3_t v_out, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Copy the reference frame's absolute up direction.
+	/// </summary>
+	/// <param name="v_out">Result up axis vector.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatRefUp3f(float3_t v_out, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Copy the reference frame's absolute down direction.
+	/// </summary>
+	/// <param name="v_out">Result down axis vector.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatRefDown3f(float3_t v_out, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Calculate a look-at matrix given a center and target in reference frame.
+	/// Center to target is absolute forward, uses reference frame's absolute yaw axis as basis.
+	/// </summary>
+	/// <param name="R_out">Result rotation matrix.</param>
+	/// <param name="v_center">Center of reference frame.</param>
+	/// <param name="v_target">Target in reference frame</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="R_out"/></returns>
+	floatNx3_t RmatLookAt3f(Rmat3f_t R_out, float3_t const v_center, float3_t const v_target, ReferenceFrame_t const ref);
+
+	/// <summary>
 	/// Convert absolute axis representation (FRD/RPY) to relative axis representation (XYZ) given reference frame.
 	/// </summary>
 	/// <param name="v_rel_out">Result relative vector.</param>

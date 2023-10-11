@@ -165,7 +165,7 @@ CDRAW_INL fp32_t scSqrtF(fp32_t const x)
 CDRAW_INL fp32_t scSqrtInvF(fp32_t const x)
 {
 	failassertret(scIsPositiveApproxF(x), sc0F);
-	return (sc1F / gSafeSqrtF(x));
+	return gSafeSqrtInvF(x);
 }
 
 CDRAW_INL fp32_t scCbrtF(fp32_t const x)
@@ -176,7 +176,7 @@ CDRAW_INL fp32_t scCbrtF(fp32_t const x)
 CDRAW_INL fp32_t scCbrtInvF(fp32_t const x)
 {
 	failassertret(scIsNonZeroApproxF(x), sc0F);
-	return (sc1F / gSafeCbrtF(x));
+	return gSafeCbrtInvF(x);
 }
 
 CDRAW_INL fp32_t scDeg2RadF(fp32_t const x)

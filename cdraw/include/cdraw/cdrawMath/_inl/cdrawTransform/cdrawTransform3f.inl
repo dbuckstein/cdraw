@@ -778,6 +778,86 @@ CDRAW_INL floatN_t RmatUp3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t c
 	return vecNegate3f(v_out, R[cdrawRefIdxY(ref)]);
 }
 
+CDRAW_INL floatN_t RmatRefForward3f(float3_t v_out, ReferenceFrame_t const ref)
+{
+	failassert(v_out, NULL);
+	return RmatForward3f(v_out, matID3f.m, ref);
+}
+
+CDRAW_INL floatN_t RmatRefBackward3f(float3_t v_out, ReferenceFrame_t const ref)
+{
+	failassert(v_out, NULL);
+	return RmatBackward3f(v_out, matID3f.m, ref);
+}
+
+CDRAW_INL floatN_t RmatRefRight3f(float3_t v_out, ReferenceFrame_t const ref)
+{
+	failassert(v_out, NULL);
+	return RmatRight3f(v_out, matID3f.m, ref);
+}
+
+CDRAW_INL floatN_t RmatRefLeft3f(float3_t v_out, ReferenceFrame_t const ref)
+{
+	failassert(v_out, NULL);
+	return RmatLeft3f(v_out, matID3f.m, ref);
+}
+
+CDRAW_INL floatN_t RmatRefUp3f(float3_t v_out, ReferenceFrame_t const ref)
+{
+	failassert(v_out, NULL);
+	return RmatUp3f(v_out, matID3f.m, ref);
+}
+
+CDRAW_INL floatN_t RmatRefDown3f(float3_t v_out, ReferenceFrame_t const ref)
+{
+	failassert(v_out, NULL);
+	return RmatDown3f(v_out, matID3f.m, ref);
+}
+
+CDRAW_INL floatNx3_t RmatLookAt3f(Rmat3f_t R_out, float3_t const v_center, float3_t const v_target, ReferenceFrame_t const ref)
+{
+	failassert(R_out && v_center && v_target, NULL);
+	float3_t fw, rt, dn;
+	vecf_t d, lenSq = vecDispDistSq3f(fw, v_target, v_center);
+	if (scIsNonPositiveApproxF(lenSq))
+		return RmatID3f(R_out);
+	vecMulS3f(fw, fw, gSafeSqrtInvF(lenSq));
+	RmatDown3f(dn, matID3f.m, ref);
+	d = vecDot3f(fw, dn);
+	if (d >= +scBigEpsL1F)
+	{
+		vecCopy3f(fw, dn);
+		RmatBackward3f(dn, matID3f.m, ref);
+		RmatRight3f(rt, matID3f.m, ref);
+	}
+	else if (d <= -scBigEpsL1F)
+	{
+		vecNegate3f(fw, dn);
+		RmatForward3f(dn, matID3f.m, ref);
+		RmatRight3f(rt, matID3f.m, ref);
+	}
+	else
+	{
+		vecCross3f(rt, dn, fw);
+		lenSq = vecLenSq3f(rt);
+		vecMulS3f(rt, rt, gSafeSqrtInvF(lenSq));
+		vecCross3f(dn, fw, rt);
+	}
+	if (cdrawRefSgnR(ref))
+		vecNegate3f(R_out[cdrawRefIdxR(ref)], fw);
+	else
+		vecCopy3f(R_out[cdrawRefIdxR(ref)], fw);
+	if (cdrawRefSgnP(ref))
+		vecNegate3f(R_out[cdrawRefIdxP(ref)], rt);
+	else
+		vecCopy3f(R_out[cdrawRefIdxP(ref)], rt);
+	if (cdrawRefSgnY(ref))
+		vecNegate3f(R_out[cdrawRefIdxY(ref)], dn);
+	else
+		vecCopy3f(R_out[cdrawRefIdxY(ref)], dn);
+	return R_out;
+}
+
 CDRAW_INL floatN_t vecAbsToRel3f(float3_t v_rel_out, float3_t const v_abs, ReferenceFrame_t const ref)
 {
 	failassert(v_rel_out && v_abs, NULL);
