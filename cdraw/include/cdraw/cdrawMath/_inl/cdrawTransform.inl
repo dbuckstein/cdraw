@@ -30,14 +30,14 @@
 
 CDRAW_INL ReferenceFrame_t cdrawReferenceFrame(AxisOrder_t const axisOrder, RotateOrder_t const rotateOrder)
 {
-	// remapping F/R/D signs and indices
+	// remapping FRD/RPY signs and indices
 	static const uint16_t axOrder[] = {
 		0b000000110, // axis_rh_FRD_NED
 		0b001010010, // axis_rh_RFU_ENU
 		0b011000110, // axis_rh_FLU
 	};
 
-	// remapping R/P/Y axes
+	// remapping RPY axes
 	static const uint8_t rotOrder[][6] = {
 		{ rot_ZYX, rot_YXZ, rot_XZY, rot_YZX, rot_ZXY, rot_XYZ }, // axis_rh_FRD_NED
 		{ rot_ZXY, rot_XYZ, rot_YZX, rot_XZY, rot_ZYX, rot_YXZ }, // axis_rh_RFU_ENU
@@ -54,28 +54,28 @@ CDRAW_INL ReferenceFrame_t cdrawReferenceFrame(AxisOrder_t const axisOrder, Rota
 	return result;
 }
 
-CDRAW_INL AxisOrder_t cdrawReferenceFrameAxisOrder(ReferenceFrame_t const refFrame)
+CDRAW_INL AxisOrder_t cdrawReferenceFrameAxisOrder(ReferenceFrame_t const ref)
 {
-	return (AxisOrder_t)flagcheck(refFrame >> 0, 0b111);
+	return (AxisOrder_t)flagcheck(ref >> 0, 0b111);
 }
 
-CDRAW_INL RotateOrder_t cdrawReferenceFrameRotateOrder(ReferenceFrame_t const refFrame)
+CDRAW_INL RotateOrder_t cdrawReferenceFrameRotateOrder(ReferenceFrame_t const ref)
 {
-	return (RotateOrder_t)flagcheck(refFrame >> 3, 0b111);
+	return (RotateOrder_t)flagcheck(ref >> 3, 0b111);
 }
 
-CDRAW_INL RotateAxisOrder_t cdrawReferenceFrameRotateAxisOrder(ReferenceFrame_t const refFrame)
+CDRAW_INL RotateAxisOrder_t cdrawReferenceFrameRotateAxisOrder(ReferenceFrame_t const ref)
 {
-	return (RotateAxisOrder_t)flagcheck(refFrame >> 16, 0b111);
+	return (RotateAxisOrder_t)flagcheck(ref >> 16, 0b111);
 }
 
 
-#define cdrawRefForwardSgn(refFrame)	flagcheckincl(refFrame >> 14, 0b1)
-#define cdrawRefRightSgn(refFrame)		flagcheckincl(refFrame >> 13, 0b1)
-#define cdrawRefDownSgn(refFrame)		flagcheckincl(refFrame >> 12, 0b1)
-#define cdrawRefForwardIdx(refFrame)	flagcheck(refFrame >> 10, 0b11)
-#define cdrawRefRightIdx(refFrame)		flagcheck(refFrame >>  8, 0b11)
-#define cdrawRefDownIdx(refFrame)		flagcheck(refFrame >>  6, 0b11)
+#define cdrawRefSgnR(ref)	flagcheckincl(ref >> 14, 0b1)
+#define cdrawRefSgnP(ref)	flagcheckincl(ref >> 13, 0b1)
+#define cdrawRefSgnY(ref)	flagcheckincl(ref >> 12, 0b1)
+#define cdrawRefIdxR(ref)	flagcheck(ref >> 10, 0b11)
+#define cdrawRefIdxP(ref)	flagcheck(ref >>  8, 0b11)
+#define cdrawRefIdxY(ref)	flagcheck(ref >>  6, 0b11)
 
 
 /******************************************************************************

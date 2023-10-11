@@ -155,6 +155,137 @@ extern "C" {
 	/// <returns><paramref name="anglesXYZ_actual_out"/></returns>
 	floatN_t RmatToAngles3f(float3_t anglesXYZ_actual_out, Rmat3f_t const R, RotateAxisOrder_t const encodeOrder);
 
+	/// <summary>
+	/// Copy the forward axis from the input basis given reference frame.
+	/// </summary>
+	/// <param name="v_out">Result forward axis vector.</param>
+	/// <param name="R">Input basis matrix.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatForward3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Copy the backward axis from the input basis given reference frame.
+	/// </summary>
+	/// <param name="v_out">Result backward axis vector.</param>
+	/// <param name="R">Input basis matrix.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatBackward3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Copy the right axis from the input basis given reference frame.
+	/// </summary>
+	/// <param name="v_out">Result right axis vector.</param>
+	/// <param name="R">Input basis matrix.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatRight3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Copy the left axis from the input basis given reference frame.
+	/// </summary>
+	/// <param name="v_out">Result left axis vector.</param>
+	/// <param name="R">Input basis matrix.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatLeft3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Copy the down axis from the input basis given reference frame.
+	/// </summary>
+	/// <param name="v_out">Result down axis vector.</param>
+	/// <param name="R">Input basis matrix.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatDown3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Copy the up axis from the input basis given reference frame.
+	/// </summary>
+	/// <param name="v_out">Result up axis vector.</param>
+	/// <param name="R">Input basis matrix.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t RmatUp3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Convert absolute axis representation (FRD/RPY) to relative axis representation (XYZ) given reference frame.
+	/// </summary>
+	/// <param name="v_rel_out">Result relative vector.</param>
+	/// <param name="v_abs">Input absolute vector.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_rel_out"/></returns>
+	floatN_t vecAbsToRel3f(float3_t v_rel_out, float3_t const v_abs, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Convert relative axis representation (XYZ) to absolute axis representation (FRD/RPY) given reference frame.
+	/// </summary>
+	/// <param name="v_abs_out">Result absolute vector.</param>
+	/// <param name="v_rel">Input relative vector.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_abs_out"/></returns>
+	floatN_t vecRelToAbs3f(float3_t v_abs_out, float3_t const v_rel, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Get roll component of relative axis in absolute terms.
+	/// </summary>
+	/// <param name="v_rel">Input relative axis.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns>Roll component of relative input vector.</returns>
+	vecf_t vecAbsRoll3f(float3_t const v_rel, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Get pitch component of relative axis in absolute terms.
+	/// </summary>
+	/// <param name="v_rel">Input relative axis.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns>Pitch component of relative input vector.</returns>
+	vecf_t vecAbsPitch3f(float3_t const v_rel, ReferenceFrame_t const ref);
+	
+	/// <summary>
+	/// Get yaw component of relative axis in absolute terms.
+	/// </summary>
+	/// <param name="v_rel">Input relative axis.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns>Yaw component of relative input vector.</returns>
+	vecf_t vecAbsYaw3f(float3_t const v_rel, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Set absolute axis values to relative axis base.
+	/// </summary>
+	/// <param name="v_rel_out">Result relative vector.</param>
+	/// <param name="x_roll">Absolute roll axis value.</param>
+	/// <param name="x_pitch">Absolute pitch axis value.</param>
+	/// <param name="x_yaw">Absolute yaw axis value.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_rel_out"/></returns>
+	floatN_t vecRelSetAbs3f(float3_t v_rel_out, vecf_t const x_roll, vecf_t const x_pitch, vecf_t const x_yaw, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Add absolute axis deltas to relative axis base.
+	/// </summary>
+	/// <param name="v_rel_out">Result relative vector.</param>
+	/// <param name="v_rel">Input relative vector.</param>
+	/// <param name="d_roll">Absolute roll axis delta.</param>
+	/// <param name="d_pitch">Absolute pitch axis delta.</param>
+	/// <param name="d_yaw">Absolute yaw axis delta.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_rel_out"/></returns>
+	floatN_t vecRelAddAbs3f(float3_t v_rel_out, float3_t const v_rel, vecf_t const d_roll, vecf_t const d_pitch, vecf_t const d_yaw, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Multiply absolute axis scalars by relative axis base.
+	/// </summary>
+	/// <param name="v_rel_out">Result relative vector.</param>
+	/// <param name="v_rel">Input relative vector.</param>
+	/// <param name="s_roll">Absolute roll axis scalar.</param>
+	/// <param name="s_pitch">Absolute pitch axis scalar.</param>
+	/// <param name="s_yaw">Absolute yaw axis scalar.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="v_rel_out"/></returns>
+	floatN_t vecRelScaleAbs3f(float3_t v_rel_out, float3_t const v_rel, vecf_t const s_roll, vecf_t const s_pitch, vecf_t const s_yaw, ReferenceFrame_t const ref);
+
 
 #ifdef __cplusplus
 }

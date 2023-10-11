@@ -567,23 +567,23 @@ ReferenceFrame_t cdrawReferenceFrame(AxisOrder_t const axisOrder, RotateOrder_t 
 /// <summary>
 /// Decode absolute basis axis order from encoded reference frame.
 /// </summary>
-/// <param name="refFrame">Encoded reference frame.</param>
+/// <param name="ref">Encoded reference frame.</param>
 /// <returns>Absolute basis axis order.</returns>
-AxisOrder_t cdrawReferenceFrameAxisOrder(ReferenceFrame_t const refFrame);
+AxisOrder_t cdrawReferenceFrameAxisOrder(ReferenceFrame_t const ref);
 
 /// <summary>
 /// Decode absolute rotation order from encoded reference frame.
 /// </summary>
-/// <param name="refFrame">Encoded reference frame.</param>
+/// <param name="ref">Encoded reference frame.</param>
 /// <returns>Absolute rotation order.</returns>
-RotateOrder_t cdrawReferenceFrameRotateOrder(ReferenceFrame_t const refFrame);
+RotateOrder_t cdrawReferenceFrameRotateOrder(ReferenceFrame_t const ref);
 
 /// <summary>
 /// Decode relative rotation order based on axes from encoded reference frame.
 /// </summary>
-/// <param name="refFrame">Encoded reference frame.</param>
+/// <param name="ref">Encoded reference frame.</param>
 /// <returns>Relative rotation axis order.</returns>
-RotateAxisOrder_t cdrawReferenceFrameRotateAxisOrder(ReferenceFrame_t const refFrame);
+RotateAxisOrder_t cdrawReferenceFrameRotateAxisOrder(ReferenceFrame_t const ref);
 
 
 /******************************************************************************
