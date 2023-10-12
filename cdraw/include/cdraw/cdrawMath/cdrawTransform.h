@@ -126,9 +126,9 @@ typedef enum RotateAxisOrder_t
 
 
 /// <summary>
-/// 2D single-precision rotation matrix.
+/// 2D single-precision rotation/transformation matrix.
 /// </summary>
-typedef float2x2_t	Rmat2f_t;
+typedef float2_t	Rmat2f_t[2], Tmat2f_t[3];
 /// <summary>
 /// 2D single-precision absolute axis descriptor vector container.
 /// </summary>
@@ -147,10 +147,6 @@ typedef union Avec2f_t
 /// 2D single-precision angle representation in degrees.
 /// </summary>
 typedef vecf_t		angle2f_t;
-/// <summary>
-/// 2D single-precision transformation matrix.
-/// </summary>
-typedef float3x3_t	Tmat2f_t;
 
 /// <summary>
 /// Single-precision container for 2D rotation components.
@@ -218,13 +214,13 @@ typedef struct transform2f_t
 
 
 /// <summary>
-/// 3D single-precision rotation matrix.
+/// 3D single-precision rotation/transformation matrix.
 /// </summary>
-typedef float3x3_t	Rmat3f_t;
+typedef float3_t	Rmat3f_t[3], Tmat3f_t[4];
 /// <summary>
 /// 3D single-precision absolute axis descriptor vector container.
 /// </summary>
-typedef union Avec3f_t
+typedef union axis3f_t
 {
 	/// <summary>
 	/// Raw translation component array.
@@ -238,15 +234,11 @@ typedef union Avec3f_t
 	/// Named angle components.
 	/// </summary>
 	struct { vecf_t roll, pitch, yaw; };
-} Avec3f_t;
+} axis3f_t;
 /// <summary>
 /// 3D single-precision absolute rotation angle container.
 /// </summary>
-typedef Avec3f_t angle3f_t;
-/// <summary>
-/// 3D single-precision transformation matrix.
-/// </summary>
-typedef float4x4_t	Tmat3f_t;
+typedef axis3f_t angle3f_t;
 
 /// <summary>
 /// Single-precision container for 3D rotation components.
@@ -259,9 +251,9 @@ typedef struct rotate3f_t
 	Rmat3f_t R;
 
 	/// <summary>
-	/// Euler angle representation in degrees.
+	/// Relative Euler angle representation in degrees.
 	/// </summary>
-	angle3f_t angles, angles_actual;
+	float3_t angles, angles_actual;
 } rotate3f_t;
 
 /// <summary>
@@ -270,9 +262,9 @@ typedef struct rotate3f_t
 typedef struct translate3f_t
 {
 	/// <summary>
-	/// Translation vector.
+	/// Relative translation vector.
 	/// </summary>
-	Avec3f_t t;
+	float3_t t;
 } translate3f_t;
 
 /// <summary>
@@ -314,9 +306,9 @@ typedef struct transform3f_t
 
 
 /// <summary>
-/// 2D double-precision rotation matrix.
+/// 2D double-precision rotation/transformation matrix.
 /// </summary>
-typedef double2x2_t	Rmat2d_t;
+typedef double2_t	Rmat2d_t[2], Tmat2d_t[3];
 /// <summary>
 /// 2D double-precision absolute axis descriptor vector container.
 /// </summary>
@@ -335,10 +327,6 @@ typedef union Avec2d_t
 /// 2D double-precision angle representation in degrees.
 /// </summary>
 typedef vecd_t		angle2d_t;
-/// <summary>
-/// 2D double-precision transformation matrix.
-/// </summary>
-typedef double3x3_t	Tmat2d_t;
 
 /// <summary>
 /// Double-precision container for 2D rotation components.
@@ -406,13 +394,13 @@ typedef struct transform2d_t
 
 
 /// <summary>
-/// 3D double-precision rotation matrix.
+/// 3D double-precision rotation/transformation matrix.
 /// </summary>
-typedef double3x3_t	Rmat3d_t;
+typedef double3_t	Rmat3d_t[3], Tmat3d_t[4];
 /// <summary>
 /// 3D double-precision absolute axis descriptor vector container.
 /// </summary>
-typedef union Avec3d_t
+typedef union axis3d_t
 {
 	/// <summary>
 	/// Raw translation component array.
@@ -426,15 +414,11 @@ typedef union Avec3d_t
 	/// Named angle components.
 	/// </summary>
 	struct { vecd_t roll, pitch, yaw; };
-} Avec3d_t;
+} axis3d_t;
 /// <summary>
 /// 3D double-precision absolute rotation angle container.
 /// </summary>
-typedef Avec3d_t angle3d_t;
-/// <summary>
-/// 3D double-precision transformation matrix.
-/// </summary>
-typedef double4x4_t	Tmat3d_t;
+typedef axis3d_t angle3d_t;
 
 /// <summary>
 /// Double-precision container for 3D rotation components.
@@ -447,9 +431,9 @@ typedef struct rotate3d_t
 	Rmat3d_t R;
 
 	/// <summary>
-	/// Euler angle representation in degrees.
+	/// Relative Euler angle representation in degrees.
 	/// </summary>
-	angle3d_t angles, angles_actual;
+	double3_t angles, angles_actual;
 } rotate3d_t;
 
 /// <summary>
@@ -458,9 +442,9 @@ typedef struct rotate3d_t
 typedef struct translate3d_t
 {
 	/// <summary>
-	/// Translation vector.
+	/// Relative translation vector.
 	/// </summary>
-	Avec3d_t t;
+	double3_t t;
 } translate3d_t;
 
 /// <summary>
@@ -509,7 +493,7 @@ typedef struct transform3d_t
 #if CDRAW_USING_SCALAR_PREF
 #if CDRAW_USING_SCALAR_PREF_DOUBLE
 typedef Rmat2d_t		Rmat2_t;
-typedef Avec2d_t		Avec2_t;
+typedef axis2d_t		axis2_t;
 typedef angle2d_t		angle2_t;
 typedef Tmat2d_t		Tmat2_t;
 typedef rotate2d_t		rotate2_t;
@@ -526,7 +510,7 @@ typedef scale3d_t		scale3_t;
 typedef transform3d_t	transform3_t;
 #else // #if CDRAW_USING_SCALAR_PREF_DOUBLE
 typedef Rmat2f_t		Rmat2_t;
-typedef Avec2f_t		Avec2_t;
+typedef axis2f_t		axis2_t;
 typedef angle2f_t		angle2_t;
 typedef Tmat2f_t		Tmat2_t;
 typedef rotate2f_t		rotate2_t;

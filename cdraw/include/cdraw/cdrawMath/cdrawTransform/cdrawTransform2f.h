@@ -35,6 +35,14 @@ extern "C" {
 	floatNx2_t RmatID2f(Rmat2f_t R_out);
 
 	/// <summary>
+	/// Calculate the inverse of a rotation matrix (transpose).
+	/// </summary>
+	/// <param name="R_out">Result matrix (inverse).</param>
+	/// <param name="R">Input matrix.</param>
+	/// <returns><paramref name="R_out"/></returns>
+	floatNx2_t RmatInv2f(Rmat2f_t R_out, Rmat2f_t const R);
+
+	/// <summary>
 	/// Initialize rotation matrix from encoded angle.
 	/// </summary>
 	/// <param name="R_out">Result matrix.</param>

@@ -29,6 +29,12 @@ CDRAW_INL doubleNx2_t RmatID2d(Rmat2d_t R_out)
 	return matIdentity2d(R_out);
 }
 
+CDRAW_INL doubleNx2_t RmatInv2d(Rmat2d_t R_out, Rmat2d_t const R)
+{
+	failassert(R_out && R, NULL);
+	return matTranspose2d(R_out, R);
+}
+
 CDRAW_INL doubleNx2_t RmatFromAngle2d(Rmat2d_t R_out, angle2d_t* angle_actual_out_opt, angle2d_t const angle)
 {
 	failassert(R_out, NULL);

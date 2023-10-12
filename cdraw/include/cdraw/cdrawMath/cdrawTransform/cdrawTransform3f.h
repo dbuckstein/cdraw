@@ -35,6 +35,14 @@ extern "C" {
 	floatNx3_t RmatID3f(Rmat3f_t R_out);
 
 	/// <summary>
+	/// Calculate the inverse of a rotation matrix (transpose).
+	/// </summary>
+	/// <param name="R_out">Result matrix (inverse).</param>
+	/// <param name="R">Input matrix.</param>
+	/// <returns><paramref name="R_out"/></returns>
+	floatNx3_t RmatInv3f(Rmat3f_t R_out, Rmat3f_t const R);
+
+	/// <summary>
 	/// Initialize rotation matrix by encoding angles in XYZ order.
 	/// </summary>
 	/// <param name="R_out">Result matrix.</param>
@@ -344,6 +352,172 @@ extern "C" {
 	/// <param name="ref">Desired reference frame.</param>
 	/// <returns><paramref name="v_rel_out"/></returns>
 	floatN_t vecRelScaleAbs3f(float3_t v_rel_out, float3_t const v_rel, vecf_t const s_roll, vecf_t const s_pitch, vecf_t const s_yaw, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Reset rotation descriptor.
+	/// </summary>
+	/// <param name="rotate_out">Result rotation descriptor.</param>
+	/// <returns><paramref name="rotate_out"/></returns>
+	rotate3f_t* rotateReset3f(rotate3f_t* rotate_out);
+
+	/// <summary>
+	/// Calculate inverted rotation descriptor based on inverted encoded components.
+	/// </summary>
+	/// <param name="rotate_out">Result rotation descriptor.</param>
+	/// <param name="rotate">Input rotation descriptor to invert.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="rotate_out"/></returns>
+	rotate3f_t* rotateInvert3f(rotate3f_t* rotate_out, rotate3f_t const* rotate, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Calculate concatenated rotation descriptor based on the concatenated encoded components of two inputs.
+	/// </summary>
+	/// <param name="rotate_out">Result rotation descriptor.</param>
+	/// <param name="rotate_lh">Left-hand input rotation descriptor to concatenate.</param>
+	/// <param name="rotate_rh">Right-hand input rotation descriptor to concatenate.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="rotate_out"/></returns>
+	rotate3f_t* rotateConcat3f(rotate3f_t* rotate_out, rotate3f_t const* rotate_lh, rotate3f_t const* rotate_rh, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Set rotation descriptor based on absolute angles.
+	/// </summary>
+	/// <param name="rotate_out">Result rotation descriptor.</param>
+	/// <param name="angles">Input absolute angles.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="rotate_out"/></returns>
+	rotate3f_t* rotateSetAngles3f(rotate3f_t* rotate_out, angle3f_t const* angles, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Get absolute angles from rotation descriptor.
+	/// </summary>
+	/// <param name="angles_out">Result absolute angles.</param>
+	/// <param name="rotate">Input rotation descriptor.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="angles_out"/></returns>
+	angle3f_t* rotateGetAngles3f(angle3f_t* angles_out, rotate3f_t const* rotate, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Calculate inverted rotation descriptor based on inverted raw angles.
+	/// </summary>
+	/// <param name="rotate_out">Result rotation descriptor.</param>
+	/// <param name="rotate">Input rotation descriptor to invert.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="rotate_out"/></returns>
+	rotate3f_t* rotateInvertAngles3f(rotate3f_t* rotate_out, rotate3f_t const* rotate, ReferenceFrame_t const ref);
+	
+	/// <summary>
+	/// Calculate concatenated rotation descriptor based on the concatenated raw angles of two inputs.
+	/// </summary>
+	/// <param name="rotate_out">Result rotation descriptor.</param>
+	/// <param name="rotate_lh">Left-hand input rotation descriptor to concatenate.</param>
+	/// <param name="rotate_rh">Left-hand input rotation descriptor to concatenate.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="rotate_out"/></returns>
+	rotate3f_t* rotateConcatAngles3f(rotate3f_t* rotate_out, rotate3f_t const* rotate_lh, rotate3f_t const* rotate_rh, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Reset translation descriptor.
+	/// </summary>
+	/// <param name="translate_out">Result translation descriptor.</param>
+	/// <returns><paramref name="translate_out"/></returns>
+	translate3f_t* translateReset3f(translate3f_t* translate_out);
+
+	/// <summary>
+	/// Set translation descriptor based on absolute translation axis.
+	/// </summary>
+	/// <param name="translate_out">Result translation descriptor.</param>
+	/// <param name="axis">Input absolute translation axis.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="translate_out"/></returns>
+	translate3f_t* translateSetAxis3f(translate3f_t* translate_out, axis3f_t const* axis, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Get absolute translation axis from translation descriptor.
+	/// </summary>
+	/// <param name="axis_out">Result absolute translation axis.</param>
+	/// <param name="translate">Input translation descriptor.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="axis_out"/></returns>
+	axis3f_t* translateGetAxis3f(axis3f_t* axis_out, translate3f_t const* translate, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Calculate inverted translation descriptor based on raw axis.
+	/// </summary>
+	/// <param name="translate_out">Result translation descriptor.</param>
+	/// <param name="translate">Input translation descriptor.</param>
+	/// <returns><paramref name="translate_out"/></returns>
+	translate3f_t* translateInvertAxis3f(translate3f_t* translate_out, translate3f_t const* translate);
+
+	/// <summary>
+	/// Calculate concatenated translation descriptor based on concatenated raw axes.
+	/// </summary>
+	/// <param name="translate_out">Result translation descriptor.</param>
+	/// <param name="translate_lh">Left-hand input translation descriptor.</param>
+	/// <param name="translate_rh">Right-hand input translation descriptor.</param>
+	/// <returns><paramref name="translate_out"/></returns>
+	translate3f_t* translateConcatAxis3f(translate3f_t* translate_out, translate3f_t const* translate_lh, translate3f_t const* translate_rh);
+
+	/// <summary>
+	/// Reset transformation descriptor.
+	/// </summary>
+	/// <param name="transform_out">Result transformation descriptor.</param>
+	/// <returns><paramref name="transform_out"/></returns>
+	transform3f_t* transformReset3f(transform3f_t* transform_out);
+
+	/// <summary>
+	/// Update transformation descriptor based on encoded matrix.
+	/// </summary>
+	/// <param name="transform_out">Result transformation descriptor.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="transform_out"/></returns>
+	transform3f_t* transformUpdate3f(transform3f_t* transform_out, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Calculate inverted transformation descriptor based on encoded matrix.
+	/// </summary>
+	/// <param name="transform_out">Result transformation descriptor.</param>
+	/// <param name="transform">Input transformation descriptor.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="transform_out"/></returns>
+	transform3f_t* transformInvert3f(transform3f_t* transform_out, transform3f_t const* transform, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Calculate concatenated transformation descriptor based on encoded matrix.
+	/// </summary>
+	/// <param name="transform_out">Result transformation descriptor.</param>
+	/// <param name="transform_lh">Left-hand input transformation descriptor.</param>
+	/// <param name="transform_rh">Right-hand input transformation descriptor.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="transform_out"/></returns>
+	transform3f_t* transformConcat3f(transform3f_t* transform_out, transform3f_t const* transform_lh, transform3f_t const* transform_rh, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Update transformation descriptor based on updated components.
+	/// </summary>
+	/// <param name="transform_out">Result transformation descriptor.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="transform_out"/></returns>
+	transform3f_t* transformUpdateComponents3f(transform3f_t* transform_out, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Calculate inverted transformation descriptor based on updated components.
+	/// </summary>
+	/// <param name="transform_out">Result transformation descriptor.</param>
+	/// <param name="transform">Input transformation descriptor.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="transform_out"/></returns>
+	transform3f_t* transformInvertComponents3f(transform3f_t* transform_out, transform3f_t const* transform, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Calculate concatenated transformation descriptor based on updated components.
+	/// </summary>
+	/// <param name="transform_out">Result transformation descriptor.</param>
+	/// <param name="transform_lh">Left-hand input transformation descriptor.</param>
+	/// <param name="transform_rh">Right-hand input transformation descriptor.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="transform_out"/></returns>
+	transform3f_t* transformConcatComponents3f(transform3f_t* transform_out, transform3f_t const* transform_lh, transform3f_t const* transform_rh, ReferenceFrame_t const ref);
 
 
 #ifdef __cplusplus

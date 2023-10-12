@@ -29,6 +29,12 @@ CDRAW_INL floatNx3_t RmatID3f(Rmat3f_t R_out)
 	return matIdentity3f(R_out);
 }
 
+CDRAW_INL floatNx3_t RmatInv3f(Rmat3f_t R_out, Rmat3f_t const R)
+{
+	failassert(R_out && R, NULL);
+	return matTranspose3f(R_out, R);
+}
+
 CDRAW_INL floatNx3_t RmatFromAnglesXYZ3f(Rmat3f_t R_out, float3_t anglesXYZ_actual_out_opt, float3_t const anglesXYZ)
 {
 	failassert(R_out && anglesXYZ, NULL);
@@ -732,7 +738,7 @@ CDRAW_INL floatN_t RmatToAngles3f(float3_t anglesXYZ_actual_out, Rmat3f_t const 
 
 CDRAW_INL floatN_t RmatForward3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref)
 {
-	failassert(v_out && R, NULL);
+	failassert(v_out && R && cdrawRefValid(ref), NULL);
 	if (cdrawRefSgnR(ref))
 		return vecNegate3f(v_out, R[cdrawRefIdxR(ref)]);
 	return vecCopy3f(v_out, R[cdrawRefIdxR(ref)]);
@@ -740,7 +746,7 @@ CDRAW_INL floatN_t RmatForward3f(float3_t v_out, Rmat3f_t const R, ReferenceFram
 
 CDRAW_INL floatN_t RmatBackward3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref)
 {
-	failassert(v_out && R, NULL);
+	failassert(v_out && R && cdrawRefValid(ref), NULL);
 	if (cdrawRefSgnR(ref))
 		return vecCopy3f(v_out, R[cdrawRefIdxR(ref)]);
 	return vecNegate3f(v_out, R[cdrawRefIdxR(ref)]);
@@ -748,7 +754,7 @@ CDRAW_INL floatN_t RmatBackward3f(float3_t v_out, Rmat3f_t const R, ReferenceFra
 
 CDRAW_INL floatN_t RmatRight3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref)
 {
-	failassert(v_out && R, NULL);
+	failassert(v_out && R && cdrawRefValid(ref), NULL);
 	if (cdrawRefSgnP(ref))
 		return vecNegate3f(v_out, R[cdrawRefIdxP(ref)]);
 	return vecCopy3f(v_out, R[cdrawRefIdxP(ref)]);
@@ -756,7 +762,7 @@ CDRAW_INL floatN_t RmatRight3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_
 
 CDRAW_INL floatN_t RmatLeft3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref)
 {
-	failassert(v_out && R, NULL);
+	failassert(v_out && R && cdrawRefValid(ref), NULL);
 	if (cdrawRefSgnP(ref))
 		return vecCopy3f(v_out, R[cdrawRefIdxP(ref)]);
 	return vecNegate3f(v_out, R[cdrawRefIdxP(ref)]);
@@ -764,7 +770,7 @@ CDRAW_INL floatN_t RmatLeft3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t
 
 CDRAW_INL floatN_t RmatDown3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref)
 {
-	failassert(v_out && R, NULL);
+	failassert(v_out && R && cdrawRefValid(ref), NULL);
 	if (cdrawRefSgnY(ref))
 		return vecNegate3f(v_out, R[cdrawRefIdxY(ref)]);
 	return vecCopy3f(v_out, R[cdrawRefIdxY(ref)]);
@@ -772,7 +778,7 @@ CDRAW_INL floatN_t RmatDown3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t
 
 CDRAW_INL floatN_t RmatUp3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t const ref)
 {
-	failassert(v_out && R, NULL);
+	failassert(v_out && R && cdrawRefValid(ref), NULL);
 	if (cdrawRefSgnY(ref))
 		return vecCopy3f(v_out, R[cdrawRefIdxY(ref)]);
 	return vecNegate3f(v_out, R[cdrawRefIdxY(ref)]);
@@ -780,43 +786,43 @@ CDRAW_INL floatN_t RmatUp3f(float3_t v_out, Rmat3f_t const R, ReferenceFrame_t c
 
 CDRAW_INL floatN_t RmatRefForward3f(float3_t v_out, ReferenceFrame_t const ref)
 {
-	failassert(v_out, NULL);
+	failassert(v_out && cdrawRefValid(ref), NULL);
 	return RmatForward3f(v_out, matID3f.m, ref);
 }
 
 CDRAW_INL floatN_t RmatRefBackward3f(float3_t v_out, ReferenceFrame_t const ref)
 {
-	failassert(v_out, NULL);
+	failassert(v_out && cdrawRefValid(ref), NULL);
 	return RmatBackward3f(v_out, matID3f.m, ref);
 }
 
 CDRAW_INL floatN_t RmatRefRight3f(float3_t v_out, ReferenceFrame_t const ref)
 {
-	failassert(v_out, NULL);
+	failassert(v_out && cdrawRefValid(ref), NULL);
 	return RmatRight3f(v_out, matID3f.m, ref);
 }
 
 CDRAW_INL floatN_t RmatRefLeft3f(float3_t v_out, ReferenceFrame_t const ref)
 {
-	failassert(v_out, NULL);
+	failassert(v_out && cdrawRefValid(ref), NULL);
 	return RmatLeft3f(v_out, matID3f.m, ref);
 }
 
 CDRAW_INL floatN_t RmatRefUp3f(float3_t v_out, ReferenceFrame_t const ref)
 {
-	failassert(v_out, NULL);
+	failassert(v_out && cdrawRefValid(ref), NULL);
 	return RmatUp3f(v_out, matID3f.m, ref);
 }
 
 CDRAW_INL floatN_t RmatRefDown3f(float3_t v_out, ReferenceFrame_t const ref)
 {
-	failassert(v_out, NULL);
+	failassert(v_out && cdrawRefValid(ref), NULL);
 	return RmatDown3f(v_out, matID3f.m, ref);
 }
 
 CDRAW_INL floatNx3_t RmatLookAt3f(Rmat3f_t R_out, float3_t const v_center, float3_t const v_target, ReferenceFrame_t const ref)
 {
-	failassert(R_out && v_center && v_target, NULL);
+	failassert(R_out && v_center && v_target && cdrawRefValid(ref), NULL);
 	float3_t fw, rt, dn;
 	vecf_t d, lenSq = vecDispDistSq3f(fw, v_target, v_center);
 	if (scIsNonPositiveApproxF(lenSq))
@@ -860,7 +866,7 @@ CDRAW_INL floatNx3_t RmatLookAt3f(Rmat3f_t R_out, float3_t const v_center, float
 
 CDRAW_INL floatN_t vecAbsToRel3f(float3_t v_rel_out, float3_t const v_abs, ReferenceFrame_t const ref)
 {
-	failassert(v_rel_out && v_abs, NULL);
+	failassert(v_rel_out && v_abs && cdrawRefValid(ref), NULL);
 	v_rel_out[cdrawRefIdxR(ref)] = cdrawRefSgnR(ref) ? -vx(v_abs) : +vx(v_abs);
 	v_rel_out[cdrawRefIdxP(ref)] = cdrawRefSgnP(ref) ? -vy(v_abs) : +vy(v_abs);
 	v_rel_out[cdrawRefIdxY(ref)] = cdrawRefSgnY(ref) ? -vz(v_abs) : +vz(v_abs);
@@ -869,7 +875,7 @@ CDRAW_INL floatN_t vecAbsToRel3f(float3_t v_rel_out, float3_t const v_abs, Refer
 
 CDRAW_INL floatN_t vecRelToAbs3f(float3_t v_abs_out, float3_t const v_rel, ReferenceFrame_t const ref)
 {
-	failassert(v_abs_out && v_rel, NULL);
+	failassert(v_abs_out && v_rel && cdrawRefValid(ref), NULL);
 	vx(v_abs_out) = cdrawRefSgnR(ref) ? -v_rel[cdrawRefIdxR(ref)] : +v_rel[cdrawRefIdxR(ref)];
 	vy(v_abs_out) = cdrawRefSgnP(ref) ? -v_rel[cdrawRefIdxP(ref)] : +v_rel[cdrawRefIdxP(ref)];
 	vz(v_abs_out) = cdrawRefSgnY(ref) ? -v_rel[cdrawRefIdxY(ref)] : +v_rel[cdrawRefIdxY(ref)];
@@ -878,25 +884,25 @@ CDRAW_INL floatN_t vecRelToAbs3f(float3_t v_abs_out, float3_t const v_rel, Refer
 
 CDRAW_INL vecf_t vecAbsRoll3f(float3_t const v_rel, ReferenceFrame_t const ref)
 {
-	failassert(v_rel, sc0F);
+	failassert(v_rel && cdrawRefValid(ref), sc0F);
 	return (cdrawRefSgnR(ref) ? -v_rel[cdrawRefIdxR(ref)] : +v_rel[cdrawRefIdxR(ref)]);
 }
 
 CDRAW_INL vecf_t vecAbsPitch3f(float3_t const v_rel, ReferenceFrame_t const ref)
 {
-	failassert(v_rel, sc0F);
+	failassert(v_rel && cdrawRefValid(ref), sc0F);
 	return (cdrawRefSgnP(ref) ? -v_rel[cdrawRefIdxP(ref)] : +v_rel[cdrawRefIdxP(ref)]);
 }
 
 CDRAW_INL vecf_t vecAbsYaw3f(float3_t const v_rel, ReferenceFrame_t const ref)
 {
-	failassert(v_rel, sc0F);
+	failassert(v_rel && cdrawRefValid(ref), sc0F);
 	return (cdrawRefSgnY(ref) ? -v_rel[cdrawRefIdxY(ref)] : +v_rel[cdrawRefIdxY(ref)]);
 }
 
 CDRAW_INL floatN_t vecRelSetAbs3f(float3_t v_rel_out, vecf_t const x_roll, vecf_t const x_pitch, vecf_t const x_yaw, ReferenceFrame_t const ref)
 {
-	failassert(v_rel_out, NULL);
+	failassert(v_rel_out && cdrawRefValid(ref), NULL);
 	v_rel_out[cdrawRefIdxR(ref)] = cdrawRefSgnR(ref) ? -x_roll : +x_roll;
 	v_rel_out[cdrawRefIdxP(ref)] = cdrawRefSgnP(ref) ? -x_pitch : +x_pitch;
 	v_rel_out[cdrawRefIdxY(ref)] = cdrawRefSgnY(ref) ? -x_yaw : +x_yaw;
@@ -905,7 +911,7 @@ CDRAW_INL floatN_t vecRelSetAbs3f(float3_t v_rel_out, vecf_t const x_roll, vecf_
 
 CDRAW_INL floatN_t vecRelAddAbs3f(float3_t v_rel_out, float3_t const v_rel, vecf_t const d_roll, vecf_t const d_pitch, vecf_t const d_yaw, ReferenceFrame_t const ref)
 {
-	failassert(v_rel_out && v_rel, NULL);
+	failassert(v_rel_out && v_rel && cdrawRefValid(ref), NULL);
 	v_rel_out[cdrawRefIdxR(ref)] = v_rel[cdrawRefIdxR(ref)] + (cdrawRefSgnR(ref) ? -d_roll : +d_roll);
 	v_rel_out[cdrawRefIdxP(ref)] = v_rel[cdrawRefIdxP(ref)] + (cdrawRefSgnP(ref) ? -d_pitch : +d_pitch);
 	v_rel_out[cdrawRefIdxY(ref)] = v_rel[cdrawRefIdxY(ref)] + (cdrawRefSgnY(ref) ? -d_yaw : +d_yaw);
@@ -914,11 +920,144 @@ CDRAW_INL floatN_t vecRelAddAbs3f(float3_t v_rel_out, float3_t const v_rel, vecf
 
 CDRAW_INL floatN_t vecRelScaleAbs3f(float3_t v_rel_out, float3_t const v_rel, vecf_t const s_roll, vecf_t const s_pitch, vecf_t const s_yaw, ReferenceFrame_t const ref)
 {
-	failassert(v_rel_out && v_rel, NULL);
+	failassert(v_rel_out && v_rel && cdrawRefValid(ref), NULL);
 	v_rel_out[cdrawRefIdxR(ref)] = v_rel[cdrawRefIdxR(ref)] * (cdrawRefSgnR(ref) ? -s_roll : +s_roll);
 	v_rel_out[cdrawRefIdxP(ref)] = v_rel[cdrawRefIdxP(ref)] * (cdrawRefSgnP(ref) ? -s_pitch : +s_pitch);
 	v_rel_out[cdrawRefIdxY(ref)] = v_rel[cdrawRefIdxY(ref)] * (cdrawRefSgnY(ref) ? -s_yaw : +s_yaw);
 	return v_rel_out;
+}
+
+CDRAW_INL rotate3f_t* rotateReset3f(rotate3f_t* rotate_out)
+{
+	failassert(rotate_out, NULL);
+
+	return rotate_out;
+}
+
+CDRAW_INL rotate3f_t* rotateInvert3f(rotate3f_t* rotate_out, rotate3f_t const* rotate, ReferenceFrame_t const ref)
+{
+	failassert(rotate_out && rotate && cdrawRefValid(ref), NULL);
+
+	return rotate_out;
+}
+
+CDRAW_INL rotate3f_t* rotateConcat3f(rotate3f_t* rotate_out, rotate3f_t const* rotate_lh, rotate3f_t const* rotate_rh, ReferenceFrame_t const ref)
+{
+	failassert(rotate_out && rotate_lh && rotate_rh && cdrawRefValid(ref), NULL);
+
+	return rotate_out;
+}
+
+CDRAW_INL rotate3f_t* rotateSetAngles3f(rotate3f_t* rotate_out, angle3f_t const* angles, ReferenceFrame_t const ref)
+{
+	failassert(rotate_out && angles && cdrawRefValid(ref), NULL);
+
+	return rotate_out;
+}
+
+CDRAW_INL angle3f_t* rotateGetAngles3f(angle3f_t* angles_out, rotate3f_t const* rotate, ReferenceFrame_t const ref)
+{
+	failassert(angles_out && rotate && cdrawRefValid(ref), NULL);
+
+	return angles_out;
+}
+
+CDRAW_INL rotate3f_t* rotateInvertAngles3f(rotate3f_t* rotate_out, rotate3f_t const* rotate, ReferenceFrame_t const ref)
+{
+	failassert(rotate_out && rotate && cdrawRefValid(ref), NULL);
+
+	return rotate_out;
+}
+
+CDRAW_INL rotate3f_t* rotateConcatAngles3f(rotate3f_t* rotate_out, rotate3f_t const* rotate_lh, rotate3f_t const* rotate_rh, ReferenceFrame_t const ref)
+{
+	failassert(rotate_out && rotate_lh && rotate_rh && cdrawRefValid(ref), NULL);
+
+	return rotate_out;
+}
+
+CDRAW_INL translate3f_t* translateReset3f(translate3f_t* translate_out)
+{
+	failassert(translate_out, NULL);
+
+	return translate_out;
+}
+
+CDRAW_INL translate3f_t* translateSetAxis3f(translate3f_t* translate_out, axis3f_t const* axis, ReferenceFrame_t const ref)
+{
+	failassert(translate_out && axis && cdrawRefValid(ref), NULL);
+
+	return translate_out;
+}
+
+CDRAW_INL axis3f_t* translateGetAxis3f(axis3f_t* axis_out, translate3f_t const* translate, ReferenceFrame_t const ref)
+{
+	failassert(axis_out && translate && cdrawRefValid(ref), NULL);
+
+	return axis_out;
+}
+
+CDRAW_INL translate3f_t* translateInvertAxis3f(translate3f_t* translate_out, translate3f_t const* translate)
+{
+	failassert(translate_out && translate, NULL);
+
+	return translate_out;
+}
+
+CDRAW_INL translate3f_t* translateConcatAxis3f(translate3f_t* translate_out, translate3f_t const* translate_lh, translate3f_t const* translate_rh)
+{
+	failassert(translate_out && translate_lh && translate_rh, NULL);
+
+	return translate_out;
+}
+
+CDRAW_INL transform3f_t* transformReset3f(transform3f_t* transform_out)
+{
+	failassert(transform_out, NULL);
+
+	return transform_out;
+}
+
+CDRAW_INL transform3f_t* transformUpdate3f(transform3f_t* transform_out, ReferenceFrame_t const ref)
+{
+	failassert(transform_out && cdrawRefValid(ref), NULL);
+
+	return transform_out;
+}
+
+CDRAW_INL transform3f_t* transformInvert3f(transform3f_t* transform_out, transform3f_t const* transform, ReferenceFrame_t const ref)
+{
+	failassert(transform_out && transform && cdrawRefValid(ref), NULL);
+
+	return transform_out;
+}
+
+CDRAW_INL transform3f_t* transformConcat3f(transform3f_t* transform_out, transform3f_t const* transform_lh, transform3f_t const* transform_rh, ReferenceFrame_t const ref)
+{
+	failassert(transform_out && transform_lh && transform_rh && cdrawRefValid(ref), NULL);
+
+	return transform_out;
+}
+
+CDRAW_INL transform3f_t* transformUpdateComponents3f(transform3f_t* transform_out, ReferenceFrame_t const ref)
+{
+	failassert(transform_out && cdrawRefValid(ref), NULL);
+
+	return transform_out;
+}
+
+CDRAW_INL transform3f_t* transformInvertComponents3f(transform3f_t* transform_out, transform3f_t const* transform, ReferenceFrame_t const ref)
+{
+	failassert(transform_out && transform && cdrawRefValid(ref), NULL);
+
+	return transform_out;
+}
+
+CDRAW_INL transform3f_t* transformConcatComponents3f(transform3f_t* transform_out, transform3f_t const* transform_lh, transform3f_t const* transform_rh, ReferenceFrame_t const ref)
+{
+	failassert(transform_out && transform_lh && transform_rh && cdrawRefValid(ref), NULL);
+
+	return transform_out;
 }
 
 

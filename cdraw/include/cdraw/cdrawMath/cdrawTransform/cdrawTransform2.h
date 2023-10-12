@@ -32,7 +32,15 @@ extern "C" {
 	/// </summary>
 	/// <param name="R_out">Result matrix.</param>
 	/// <returns><paramref name="R_out"/></returns>
-#define RmatID2d cdraw_transform_base(RmatID2d)
+#define RmatID2 cdraw_transform_base(RmatID2)
+
+	/// <summary>
+	/// Calculate the inverse of a rotation matrix (transpose).
+	/// </summary>
+	/// <param name="R_out">Result matrix (inverse).</param>
+	/// <param name="R">Input matrix.</param>
+	/// <returns><paramref name="R_out"/></returns>
+#define RmatInv2 cdraw_transform_base(RmatInv2)
 
 	/// <summary>
 	/// Initialize rotation matrix from encoded angle.

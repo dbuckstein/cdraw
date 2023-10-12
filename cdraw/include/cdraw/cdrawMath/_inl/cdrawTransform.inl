@@ -45,28 +45,29 @@ CDRAW_INL ReferenceFrame_t cdrawReferenceFrame(AxisOrder_t const axisOrder, Rota
 	};
 
 	ReferenceFrame_t result = 0;
-	uint8_t const axisOrder_encode = flagcheck(axisOrder, 0b111);
-	uint8_t const rotateOrder_encode = flagcheck(rotateOrder, 0b111);
-	result |= axisOrder_encode << 0;
-	result |= rotateOrder_encode << 3;
-	result |= flagcheck(axOrder[axisOrder_encode], 0b111111111) << 6;
-	result |= flagcheck(rotOrder[axisOrder_encode][rotateOrder_encode], 0b111) << 16;
+	result |= flagcheck(axisOrder, 0b111) << 0;
+	result |= flagcheck(rotateOrder, 0b111) << 3;
+	result |= flagcheck(axOrder[axisOrder], 0b111111111) << 6;
+	result |= flagcheck(rotOrder[axisOrder][rotateOrder], 0b111) << 16;
 	return result;
 }
 
 CDRAW_INL AxisOrder_t cdrawReferenceFrameAxisOrder(ReferenceFrame_t const ref)
 {
-	return (AxisOrder_t)flagcheck(ref >> 0, 0b111);
+#define cdrawRefAxis(ref) ((AxisOrder_t)flagcheck(ref >> 0, 0b111))
+	return cdrawRefAxis(ref);
 }
 
 CDRAW_INL RotateOrder_t cdrawReferenceFrameRotateOrder(ReferenceFrame_t const ref)
 {
-	return (RotateOrder_t)flagcheck(ref >> 3, 0b111);
+#define cdrawRefRotate(ref) ((RotateOrder_t)flagcheck(ref >> 3, 0b111))
+	return cdrawRefRotate(ref);
 }
 
 CDRAW_INL RotateAxisOrder_t cdrawReferenceFrameRotateAxisOrder(ReferenceFrame_t const ref)
 {
-	return (RotateAxisOrder_t)flagcheck(ref >> 16, 0b111);
+#define cdrawRefRotateAxis(ref) ((RotateAxisOrder_t)flagcheck(ref >> 16, 0b111))
+	return cdrawRefRotateAxis(ref);
 }
 
 
@@ -76,6 +77,7 @@ CDRAW_INL RotateAxisOrder_t cdrawReferenceFrameRotateAxisOrder(ReferenceFrame_t 
 #define cdrawRefIdxR(ref)	flagcheck(ref >> 10, 0b11)
 #define cdrawRefIdxP(ref)	flagcheck(ref >>  8, 0b11)
 #define cdrawRefIdxY(ref)	flagcheck(ref >>  6, 0b11)
+#define cdrawRefValid(ref)	(ref == cdrawReferenceFrame(cdrawRefAxis(ref), cdrawRefRotate(ref)))
 
 
 /******************************************************************************

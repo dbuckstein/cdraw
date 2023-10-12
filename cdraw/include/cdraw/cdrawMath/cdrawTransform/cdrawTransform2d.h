@@ -35,6 +35,14 @@ extern "C" {
 	doubleNx2_t RmatID2d(Rmat2d_t R_out);
 
 	/// <summary>
+	/// Calculate the inverse of a rotation matrix (transpose).
+	/// </summary>
+	/// <param name="R_out">Result matrix (inverse).</param>
+	/// <param name="R">Input matrix.</param>
+	/// <returns><paramref name="R_out"/></returns>
+	doubleNx2_t RmatInv2d(Rmat2d_t R_out, Rmat2d_t const R);
+
+	/// <summary>
 	/// Initialize rotation matrix from encoded angle.
 	/// </summary>
 	/// <param name="R_out">Result matrix.</param>
