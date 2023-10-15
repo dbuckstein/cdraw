@@ -384,7 +384,7 @@ CDRAW_INL vecf_t vecLenInv3f(float3_t const v)
 	failassert(v, sc0F);
 	vecf_t const lenSq = vecLenSq3f(v);
 	failassert(scIsPositiveApproxF(lenSq), sc0F);
-	return (sc1F / gSafeSqrtF(lenSq));
+	return gSafeSqrtInvF(lenSq);
 }
 
 CDRAW_INL vecf_t vecDist3f(float3_t const v_lh, float3_t const v_rh)

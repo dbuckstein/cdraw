@@ -432,7 +432,7 @@ CDRAW_INL vecd_t vecLenInv4d(double4_t const v)
 	failassert(v, sc0D);
 	vecd_t const lenSq = vecLenSq4d(v);
 	failassert(scIsPositiveApproxD(lenSq), sc0D);
-	return (sc1D / gSafeSqrtD(lenSq));
+	return gSafeSqrtInvD(lenSq);
 }
 
 CDRAW_INL vecd_t vecDist4d(double4_t const v_lh, double4_t const v_rh)

@@ -40,6 +40,12 @@
     <Filter Include="Header Files\cdrawMath\cdrawMatrix">
       <UniqueIdentifier>{2ee00622-7eda-4297-9728-8d45d1f273ff}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\cdrawMath\cdrawTransform">
+      <UniqueIdentifier>{36009507-093b-479e-b5c5-ac5d48525a11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\_inl\cdrawTransform">
+      <UniqueIdentifier>{ca48d898-afeb-4e3c-9acf-42fc21ab0209}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdrawMath\common\cdrawMath.c">
@@ -149,6 +155,27 @@
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat4f.h">
       <Filter>Header Files\cdrawMath\cdrawMatrix</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform.h">
+      <Filter>Header Files\cdrawMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform3.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform3d.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform3f.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform2.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform2d.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform2f.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar.inl">
@@ -228,6 +255,21 @@
     </None>
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat4f.inl">
       <Filter>Header Files\cdrawMath\_inl\cdrawMatrix</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform.inl">
+      <Filter>Header Files\cdrawMath\_inl</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform3d.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawTransform</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform3f.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawTransform</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform2d.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawTransform</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform2f.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawTransform</Filter>
     </None>
   </ItemGroup>
 </Project>

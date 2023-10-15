@@ -206,7 +206,6 @@ extern "C" {
 #ifdef __cplusplus
 }
 #endif // #ifdef __cplusplus
-#define cdraw_assert_test(condition)																									// Framework assert disabled by testing, replaced by flag instead.
 #define failassert(condition,...)			(assert_defaultname = assert_defaultname || !(condition)); failret(condition, __VA_ARGS__)	// Raise assert flag and return variadic argument if condition fails;
 #define failassertret(condition,...)		failassert(condition, __VA_ARGS__)															// Raise assert flag and return variadic argument if condition fails.
 #define failassertreset()					(assert_defaultname = false)

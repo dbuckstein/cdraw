@@ -165,7 +165,7 @@ CDRAW_INL fp64_t scSqrtD(fp64_t const x)
 CDRAW_INL fp64_t scSqrtInvD(fp64_t const x)
 {
 	failassertret(scIsPositiveApproxD(x), sc0D);
-	return (sc1D / gSafeSqrtD(x));
+	return gSafeSqrtInvD(x);
 }
 
 CDRAW_INL fp64_t scCbrtD(fp64_t const x)
@@ -176,7 +176,7 @@ CDRAW_INL fp64_t scCbrtD(fp64_t const x)
 CDRAW_INL fp64_t scCbrtInvD(fp64_t const x)
 {
 	failassertret(scIsNonZeroApproxD(x), sc0D);
-	return (sc1D / gSafeCbrtD(x));
+	return gSafeCbrtInvD(x);
 }
 
 CDRAW_INL fp64_t scDeg2RadD(fp64_t const x)
