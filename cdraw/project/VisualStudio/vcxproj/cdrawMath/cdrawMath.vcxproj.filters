@@ -16,10 +16,260 @@
     <Filter Include="Source Files\common">
       <UniqueIdentifier>{73412c5d-1959-4d03-820d-2c9244cbb5a1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\cdrawMath">
+      <UniqueIdentifier>{d5eebff0-0498-4112-bf95-5a9a1f18c461}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\_inl">
+      <UniqueIdentifier>{fe269746-05b9-45cc-a163-646a8068bb01}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\_inl\cdrawScalar">
+      <UniqueIdentifier>{e85b6d90-fe57-45d1-99c9-5ff42379496a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\_inl\cdrawVector">
+      <UniqueIdentifier>{9d1396bb-1fa9-4594-81d0-3c6c18afce64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\cdrawScalar">
+      <UniqueIdentifier>{b3d8d1a7-d91b-489c-baa2-57b1013380fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\cdrawVector">
+      <UniqueIdentifier>{c9edf76a-45c3-479d-aa44-67ea5402ec30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\_inl\cdrawMatrix">
+      <UniqueIdentifier>{7f336e57-4712-4dbc-8f41-6a09592f32a1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\cdrawMatrix">
+      <UniqueIdentifier>{2ee00622-7eda-4297-9728-8d45d1f273ff}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\cdrawTransform">
+      <UniqueIdentifier>{36009507-093b-479e-b5c5-ac5d48525a11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\cdrawMath\_inl\cdrawTransform">
+      <UniqueIdentifier>{ca48d898-afeb-4e3c-9acf-42fc21ab0209}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdrawMath\common\cdrawMath.c">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar.h">
+      <Filter>Header Files\cdrawMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector.h">
+      <Filter>Header Files\cdrawMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawSc.h">
+      <Filter>Header Files\cdrawMath\cdrawScalar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawScD.h">
+      <Filter>Header Files\cdrawMath\cdrawScalar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar\cdrawScF.h">
+      <Filter>Header Files\cdrawMath\cdrawScalar</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2b.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2d.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2f.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2i.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec2u.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3b.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3d.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3f.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3i.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec3u.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4b.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4d.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4f.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4i.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawVector\cdrawVec4u.h">
+      <Filter>Header Files\cdrawMath\cdrawVector</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix.h">
+      <Filter>Header Files\cdrawMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat2.h">
+      <Filter>Header Files\cdrawMath\cdrawMatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat2d.h">
+      <Filter>Header Files\cdrawMath\cdrawMatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat2f.h">
+      <Filter>Header Files\cdrawMath\cdrawMatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat3.h">
+      <Filter>Header Files\cdrawMath\cdrawMatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat3d.h">
+      <Filter>Header Files\cdrawMath\cdrawMatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat3f.h">
+      <Filter>Header Files\cdrawMath\cdrawMatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat4.h">
+      <Filter>Header Files\cdrawMath\cdrawMatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat4d.h">
+      <Filter>Header Files\cdrawMath\cdrawMatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawMatrix\cdrawMat4f.h">
+      <Filter>Header Files\cdrawMath\cdrawMatrix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform.h">
+      <Filter>Header Files\cdrawMath</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform3.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform3d.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform3f.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform2.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform2d.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawTransform\cdrawTransform2f.h">
+      <Filter>Header Files\cdrawMath\cdrawTransform</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar.inl">
+      <Filter>Header Files\cdrawMath\_inl</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector.inl">
+      <Filter>Header Files\cdrawMath\_inl</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar\cdrawScD.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawScalar</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawScalar\cdrawScF.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawScalar</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2b.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2d.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2f.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2i.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec2u.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec3b.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec3d.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec3f.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec3i.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec3u.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4b.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4d.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4f.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4i.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4u.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawVector</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix.inl">
+      <Filter>Header Files\cdrawMath\_inl</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat2d.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawMatrix</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat2f.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawMatrix</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat3d.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawMatrix</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat3f.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawMatrix</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat4d.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawMatrix</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawMatrix\cdrawMat4f.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawMatrix</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform.inl">
+      <Filter>Header Files\cdrawMath\_inl</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform3d.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawTransform</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform3f.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawTransform</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform2d.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawTransform</Filter>
+    </None>
+    <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform2f.inl">
+      <Filter>Header Files\cdrawMath\_inl\cdrawTransform</Filter>
+    </None>
   </ItemGroup>
 </Project>

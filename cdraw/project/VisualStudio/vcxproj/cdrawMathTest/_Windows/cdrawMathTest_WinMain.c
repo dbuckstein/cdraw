@@ -19,9 +19,11 @@
 * Windows entry point for math test application.
 */
 
-#include "cdraw/cdraw/cdrawConfig.h"
+#include "cdraw/cdrawMath.h"
 #if CDRAW_USING_WINDOWS
 #include <Windows.h>
+
+result_t cdrawMathTest();
 
 int WINAPI WinMain(
 	_In_		HINSTANCE 	hInstance,
@@ -29,9 +31,7 @@ int WINAPI WinMain(
 	_In_		LPSTR 		lpCmdLine,
 	_In_		int 		nCmdShow)
 {
-	int result = 0;
-
-	return result;
+	return cdrawMathTest();
 }
 
 #endif // CDRAW_USING_WINDOWS

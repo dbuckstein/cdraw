@@ -15,15 +15,16 @@
 */
 
 /*
-* cdraw.h
-* Global root header for entire framework.
+* cdrawScalar.inl
+* Definitions of scalar functions.
 */
 
-#ifndef _CDRAW_H_
-#define _CDRAW_H_
+#if (!(defined _CDRAW_SCALAR_INL_) && (defined _CDRAW_SCALAR_H_))
+#define _CDRAW_SCALAR_INL_
 
 
-#include "cdrawMath.h"
+#include "cdrawScalar/cdrawScF.inl"
+#include "cdrawScalar/cdrawScD.inl"
 
 
-#endif // #ifndef _CDRAW_H_
+#endif // #if (!(defined _CDRAW_SCALAR_INL_) && (defined _CDRAW_SCALAR_H_))

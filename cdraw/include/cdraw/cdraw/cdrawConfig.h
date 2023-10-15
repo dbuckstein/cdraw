@@ -150,6 +150,7 @@ typedef uint32_t							bitflag_t[8];												// Convenient storage type for 2
 typedef uint32_t							result_t;	// Global type representing result of function.
 typedef enum errcode_common_t
 {
+	errcode_none,			// Global error code for no error.
 	errcode_invalidarg,		// Global error code for invalid argument passed as parameter.
 	errcode_invalidmem,		// Global error code for invalid memory management.
 	errcode_CUSTOM_BEGIN	// Global error code template for user functions to start declaring error codes.
@@ -162,8 +163,8 @@ typedef enum errcode_common_t
 #define result_isclean(result)				(result == 0)											// True if result is free of warnings and errors.
 #define result_haswarns(result)				flagcheckincl(result, 0x0000FFFF)						// True if result contains warnings.
 #define result_haserror(result)				flagcheckincl(result, 0xFFFF0000)						// True if result contains error.
-#define result_getwarns(result)				flagcheck(result)										// Get warning codes (bits) from result.
-#define result_geterror(result)				(result >> 16)											// Get error code (index) from result.
+#define result_getwarns(result)				flagcheck(result, 0x0000FFFF)							// Get warning codes (bits) from result.
+#define result_geterror(result)				(flagcheck(result, 0xFFFF0000) >> 16)					// Get error code (index) from result.
 
 
 #define buffer_valid(x)						((x)!=NULL&&*(x)!=0)									// True if pointer is initialized and value it points to is non-zero.
@@ -183,17 +184,6 @@ typedef byte_t const						labelk_t[sizeof(label_base_type)*4];								// Conveni
 #define label_copy(label_dst,label_src)		buffer_copy4(label_dst,label_src,0,label_base_type);label_term(dst)	// Copy and terminate label string.
 
 
-#define cdraw_assert(condition)				assert(condition)											// Framework assert.
-#define failret(condition,...)				if (!(condition)) return __VA_ARGS__						// Return variadic argument if condition fails.
-#define failassertret(condition,...)		cdraw_assert(condition); failret(condition, __VA_ARGS__)	// Assert and/or return variadic argument if condition fails.
-#define asserterr(condition,errcode)		failassertret(condition, result_seterror(errcode))			// Assert and/or return error result if condition fails.
-#define asserterr_range(x,min,max,errcode)	asserterr((x)>=(min)&&(x)<=(max), errcode)					// Assert and/or return error result if value is not in range.
-#define asserterr_ptr(ptr,errcode)			asserterr((ptr)!=NULL, errcode)								// Assert and/or return error result if pointer is not initialized.
-#define asserterr_ptrval(ptr,errcode)		asserterr(buffer_valid(ptr), errcode)						// Assert and/or return error result if pointer or its value is not initialized.
-#define asserterr_cstr(cstr,errorcode)		asserterr(label_valid(cstr), errcode)						// Assert and/or return error result if c-style string is not initialized.
-#define asserterr_count(x,count,errcode)	asserterr_range(x, 0, count, errcode)						// Assert and/or return error result if value is negative or exceeds count.
-
-
 #define swap2(x,y,tmp)						(tmp=x);(x=y);(y=tmp)				// Swap two values.
 #define swap3(x,y,z,tmp)					(tmp=x);(x=y);(y=z);(z=tmp)			// Swap three values.
 #define swap3r(x,y,z,tmp)					(tmp=x);(x=z);(z=y);(y=tmp)			// Swap three values (alt).
@@ -201,43 +191,45 @@ typedef byte_t const						labelk_t[sizeof(label_base_type)*4];								// Conveni
 #define swap4r(x,y,z,w,tmp)					(tmp=x);(x=w);(w=z);(z=y);(y=tmp)	// Swap four values (alt).
 
 
-// ****TO-DO: float constants - move to real
-#define f32Pi								3.1415926535897932384626433832795f
-#define f64Pi								3.1415926535897932384626433832795
+/******************************************************************************
+* Universal testing macros and interfaces.
+******************************************************************************/
+
+#define cdraw_assert(condition)				assert(condition)																			// Framework assert.
+#define failret(condition,...)				if (!(condition)) return __VA_ARGS__														// Return variadic argument if condition fails.
+#if (defined CDRAW_ASSERT_TEST)
+#define assert_defaultname					tokencat(__CDRAW_ASSERT_TEST__, CDRAW_ASSERT_TEST)
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
+	static bool assert_defaultname;
+#ifdef __cplusplus
+}
+#endif // #ifdef __cplusplus
+#define failassert(condition,...)			(assert_defaultname = assert_defaultname || !(condition)); failret(condition, __VA_ARGS__)	// Raise assert flag and return variadic argument if condition fails;
+#define failassertret(condition,...)		failassert(condition, __VA_ARGS__)															// Raise assert flag and return variadic argument if condition fails.
+#define failassertreset()					(assert_defaultname = false)
+#else // #if (defined CDRAW_ASSERT_TEST)
+#define failassert(condition,...)			cdraw_assert(condition)																		// Assert without returning if condition fails.
+#define failassertret(condition,...)		cdraw_assert(condition); failret(condition, __VA_ARGS__)									// Assert and/or return variadic argument if condition fails.
+#define failassertreset()
+#endif // #else // #if (defined CDRAW_ASSERT_TEST)
+#define asserterr(condition,errcode)		cdraw_assert(condition); failret(condition, result_seterror(errcode))						// Assert and/or return error result if condition fails.
+#define asserterr_rng(x,xmin,xmax,errcode)	asserterr((x)>=(xmin)&&(x)<=(xmax), errcode)												// Assert and/or return error result if value is not in range.
+#define asserterr_ptr(ptr,errcode)			asserterr((ptr)!=NULL, errcode)																// Assert and/or return error result if pointer is not initialized.
+#define asserterr_ptrval(ptr,errcode)		asserterr(buffer_valid(ptr), errcode)														// Assert and/or return error result if pointer or its value is not initialized.
+#define asserterr_cstr(cstr,errorcode)		asserterr(label_valid(cstr), errcode)														// Assert and/or return error result if c-style string is not initialized.
+#define asserterr_count(x,count,errcode)	asserterr_rng(x, 0, count, errcode)															// Assert and/or return error result if value is negative or exceeds count.
 
 
-// ****TO-DO: float rands - move to real as functions
-#define f32rand()							((fp32_t)(rand()))
-#define f32randUnit()						((fp32_t)(rand())*0.000030517578125f)
-#define f32randSymm()						((fp32_t)(rand()-16384)*0.00006103515625f)
-#define f64rand()							((fp64_t)(rand()))
-#define f64randUnit()						((fp64_t)(rand())*0.000030517578125)
-#define f64randSymm()						((fp64_t)(rand()-16384)*0.00006103515625)
-
-
-// ****TO-DO: loop in range - move to real as functions
-#define flerp(x,min,max)					((min)+(x)*((max)-(min)))
-#define flerpinv(x,min,max)					(((x)-(min))/((max)-(min)))
-#define ffrac(x)							((x)-floor(x))
-#define fmod(x,y)							((x)-(y)*floor((x)/(y)))
-#define fmodrange(x,min,max)				((x)-((max)-(min))*floor(((x)-(min))/((max)-(min))))
-#define fclamp(x,min,max)					((x)>=(min)?(x)<=(max)?(x):(max):(min))
-#define fisclamped(x,min,max)				((x)>=(min)&&(x)<=(max))
-// min,max,abs,sgn,etc
-
-
-// ****TO-DO: vector/matrix base types - move to vector/matrix
-typedef int32_t								int2_t[2], int3_t[3], int4_t[4], * intN_t;
-typedef uint32_t							uint2_t[2], uint3_t[3], uint4_t[4], * uintN_t;
-typedef bool								bool2_t[2], bool3_t[3], bool4_t[4], * boolN_t;
-typedef fp32_t								float2_t[2], float3_t[3], float4_t[4], * floatN_t;
-typedef fp64_t								double2_t[2], double3_t[3], double4_t[4], * doubleN_t;
-typedef float2_t							float2x2_t[2], * floatNx2;
-typedef float3_t							float3x3_t[3], * floatNx3;
-typedef float4_t							float4x4_t[4], * floatNx4;
-typedef double2_t							double2x2_t[2], * doubleNx2;
-typedef double3_t							double3x3_t[3], * doubleNx3;
-typedef double4_t							double4x4_t[4], * doubleNx4;
+#define cdraw_istrue(tolerance_unused,expect_unused,result)		(!!result)																// Definition of true result test.
+#define cdraw_isfalse(tolerance_unused,expect_unused,result)	(!result)																// Definition of false result test.
+#define cdraw_isexact(tolerance_unused,expect,result)			(result==expect)														// Definition of exact result test.
+#define cdraw_isapprox(tolerance,expect,result)					(result<=(expect+tolerance) && result>=(expect-tolerance))				// Definition of approximate result test.
+#if (defined CDRAW_ASSERT_TEST)
+#define cdraw_isunsafe(tolerance_unused,expect,result)			(cdraw_isexact(tolerance_unused,expect,result) && assert_defaultname)	// Definition of unsafe result test.
+#endif // #if (defined CDRAW_ASSERT_TEST)
+#define cdraw_testname(name,_t)									tokencat(tokencat(cdraw_, name), _t)
 
 
 #endif // #ifndef _CDRAW_CONFIG_H_
