@@ -165,6 +165,7 @@ typedef enum errcode_common_t
 #define result_haserror(result)				flagcheckincl(result, 0xFFFF0000)						// True if result contains error.
 #define result_getwarns(result)				flagcheck(result, 0x0000FFFF)							// Get warning codes (bits) from result.
 #define result_geterror(result)				(flagcheck(result, 0xFFFF0000) >> 16)					// Get error code (index) from result.
+#define result_getwarn(result,warncode)		flagcheck(result_getwarns(result), (1<<(warncode&0xF)))	// Get specific warning code (bit) from result.
 
 
 #define buffer_valid(x)						((x)!=NULL&&*(x)!=0)									// True if pointer is initialized and value it points to is non-zero.
@@ -218,7 +219,7 @@ extern "C" {
 #define asserterr_rng(x,xmin,xmax,errcode)	asserterr((x)>=(xmin)&&(x)<=(xmax), errcode)												// Assert and/or return error result if value is not in range.
 #define asserterr_ptr(ptr,errcode)			asserterr((ptr)!=NULL, errcode)																// Assert and/or return error result if pointer is not initialized.
 #define asserterr_ptrval(ptr,errcode)		asserterr(buffer_valid(ptr), errcode)														// Assert and/or return error result if pointer or its value is not initialized.
-#define asserterr_cstr(cstr,errorcode)		asserterr(label_valid(cstr), errcode)														// Assert and/or return error result if c-style string is not initialized.
+#define asserterr_cstr(cstr,errcode)		asserterr(label_valid(cstr), errcode)														// Assert and/or return error result if c-style string is not initialized.
 #define asserterr_count(x,count,errcode)	asserterr_rng(x, 0, count, errcode)															// Assert and/or return error result if value is negative or exceeds count.
 
 
