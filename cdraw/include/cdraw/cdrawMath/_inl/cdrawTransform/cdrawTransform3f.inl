@@ -927,137 +927,226 @@ CDRAW_INL floatN_t vecRelScaleAbs3f(float3_t v_rel_out, float3_t const v_rel, ve
 	return v_rel_out;
 }
 
+CDRAW_INL floatN_t TmatMulVec3f(float3_t v_out, Tmat3f_t const T_lh, float3_t const v_rh)
+{
+	failassert(v_out && T_lh && v_rh, NULL);
+	failassert((v_out != v_rh) && (v_out != vx(T_lh)) && (v_out != vy(T_lh)) && (v_out != vz(T_lh)), NULL);
+	return matMulVec3f(v_out, T_lh, v_rh);
+}
+
+CDRAW_INL floatN_t TmatMulPoint3f(float3_t p_out, Tmat3f_t const T_lh, float3_t const p_rh)
+{
+	failassert(p_out && T_lh && p_rh, NULL);
+	failassert((p_out != p_rh) && (p_out != vx(T_lh)) && (p_out != vy(T_lh)) && (p_out != vz(T_lh)) && (p_out != vw(T_lh)), NULL);
+	return vecAdd3f(p_out, matMulVec3f(p_out, T_lh, p_rh), vw(T_lh));
+}
+
+CDRAW_INL floatNx3_t TmatMul3f(Tmat3f_t T_out, Tmat3f_t const T_lh, Tmat3f_t const T_rh)
+{
+	failassert(T_out && T_lh && T_rh, NULL);
+	// v' = t' + M'(t + Mv) = t' + M't + M'Mv
+	vecAdd3f(vw(T_out), matMulVec3f(vw(T_out), T_lh, vw(T_rh)), vw(T_lh));
+	return matMul3f(T_out, T_lh, T_rh);
+}
+
 CDRAW_INL rotate3f_t* rotateReset3f(rotate3f_t* rotate_out)
 {
 	failassert(rotate_out, NULL);
+	RmatID3f(rotate_out->R);
+	vecZero3f(rotate_out->angles);
+	return rotate_out;
+}
 
+CDRAW_INL rotate3f_t* rotateUpdate3f(rotate3f_t* rotate_out, ReferenceFrame_t const ref)
+{
+	failassert(rotate_out && cdrawRefValid(ref), NULL);
+	RmatFromAngles3f(rotate_out->R, rotate_out->angles, rotate_out->angles, cdrawRefRotateAxis(ref));
 	return rotate_out;
 }
 
 CDRAW_INL rotate3f_t* rotateInvert3f(rotate3f_t* rotate_out, rotate3f_t const* rotate, ReferenceFrame_t const ref)
 {
 	failassert(rotate_out && rotate && cdrawRefValid(ref), NULL);
-
+	RmatInv3f(rotate_out->R, rotate->R);
+	RmatToAngles3f(rotate_out->angles, rotate_out->R, cdrawRefRotateAxis(ref));
 	return rotate_out;
 }
 
 CDRAW_INL rotate3f_t* rotateConcat3f(rotate3f_t* rotate_out, rotate3f_t const* rotate_lh, rotate3f_t const* rotate_rh, ReferenceFrame_t const ref)
 {
 	failassert(rotate_out && rotate_lh && rotate_rh && cdrawRefValid(ref), NULL);
+	matMul3f(rotate_out->R, rotate_lh->R, rotate_rh->R);
+	RmatToAngles3f(rotate_out->angles, rotate_out->R, cdrawRefRotateAxis(ref));
+	return rotate_out;
+}
 
+CDRAW_INL rotate3f_t* rotateUpdateAngles3f(rotate3f_t* rotate_out, ReferenceFrame_t const ref)
+{
+	failassert(rotate_out && cdrawRefValid(ref), NULL);
+	RmatToAngles3f(rotate_out->angles, rotate_out->R, cdrawRefRotateAxis(ref));
 	return rotate_out;
 }
 
 CDRAW_INL rotate3f_t* rotateSetAngles3f(rotate3f_t* rotate_out, angle3f_t const* angles, ReferenceFrame_t const ref)
 {
 	failassert(rotate_out && angles && cdrawRefValid(ref), NULL);
-
+	vecAbsToRel3f(rotate_out->angles, angles->v, ref);
+	RmatFromAngles3f(rotate_out->R, rotate_out->angles, rotate_out->angles, cdrawRefRotateAxis(ref));
 	return rotate_out;
 }
 
 CDRAW_INL angle3f_t* rotateGetAngles3f(angle3f_t* angles_out, rotate3f_t const* rotate, ReferenceFrame_t const ref)
 {
 	failassert(angles_out && rotate && cdrawRefValid(ref), NULL);
-
+	vecRelToAbs3f(angles_out->v, rotate->angles, ref);
 	return angles_out;
 }
 
 CDRAW_INL rotate3f_t* rotateInvertAngles3f(rotate3f_t* rotate_out, rotate3f_t const* rotate, ReferenceFrame_t const ref)
 {
 	failassert(rotate_out && rotate && cdrawRefValid(ref), NULL);
-
+	vecNegate3f(rotate_out->angles, rotate->angles);
+	RmatFromAngles3f(rotate_out->R, 0, rotate_out->angles, cdrawRefRotateAxis(ref));
 	return rotate_out;
 }
 
 CDRAW_INL rotate3f_t* rotateConcatAngles3f(rotate3f_t* rotate_out, rotate3f_t const* rotate_lh, rotate3f_t const* rotate_rh, ReferenceFrame_t const ref)
 {
 	failassert(rotate_out && rotate_lh && rotate_rh && cdrawRefValid(ref), NULL);
-
+	vecAdd3f(rotate_out->angles, rotate_lh->angles, rotate_rh->angles);
+	RmatFromAngles3f(rotate_out->R, rotate_out->angles, rotate_out->angles, cdrawRefRotateAxis(ref));
 	return rotate_out;
 }
 
 CDRAW_INL translate3f_t* translateReset3f(translate3f_t* translate_out)
 {
 	failassert(translate_out, NULL);
-
+	vecZero3f(translate_out->t);
 	return translate_out;
 }
 
 CDRAW_INL translate3f_t* translateSetAxis3f(translate3f_t* translate_out, axis3f_t const* axis, ReferenceFrame_t const ref)
 {
 	failassert(translate_out && axis && cdrawRefValid(ref), NULL);
-
+	vecAbsToRel3f(translate_out->t, axis->v, ref);
 	return translate_out;
 }
 
 CDRAW_INL axis3f_t* translateGetAxis3f(axis3f_t* axis_out, translate3f_t const* translate, ReferenceFrame_t const ref)
 {
 	failassert(axis_out && translate && cdrawRefValid(ref), NULL);
-
+	vecRelToAbs3f(axis_out->v, translate->t, ref);
 	return axis_out;
 }
 
 CDRAW_INL translate3f_t* translateInvertAxis3f(translate3f_t* translate_out, translate3f_t const* translate)
 {
 	failassert(translate_out && translate, NULL);
-
+	vecNegate3f(translate_out->t, translate->t);
 	return translate_out;
 }
 
 CDRAW_INL translate3f_t* translateConcatAxis3f(translate3f_t* translate_out, translate3f_t const* translate_lh, translate3f_t const* translate_rh)
 {
 	failassert(translate_out && translate_lh && translate_rh, NULL);
-
+	vecAdd3f(translate_out->t, translate_lh->t, translate_rh->t);
 	return translate_out;
+}
+
+CDRAW_INL scale3f_t* scaleReset3f(scale3f_t* scale_out)
+{
+	failassert(scale_out, NULL);
+	scale_out->s = sc1F;
+	return scale_out;
+}
+
+CDRAW_INL scale3f_t* scaleInvertAxis3f(scale3f_t* scale_out, scale3f_t const* scale)
+{
+	failassert(scale_out && scale, NULL);
+	scale_out->s = scIsNonZeroApproxD(scale->s) ? (sc1F / scale->s) : sc0F;
+	return scale_out;
+}
+
+CDRAW_INL scale3f_t* scaleConcatAxis3f(scale3f_t* scale_out, scale3f_t const* scale_lh, scale3f_t const* scale_rh)
+{
+	failassert(scale_out && scale_lh && scale_rh, NULL);
+	scale_out->s = scale_lh->s * scale_rh->s;
+	return scale_out;
 }
 
 CDRAW_INL transform3f_t* transformReset3f(transform3f_t* transform_out)
 {
 	failassert(transform_out, NULL);
-
+	matIdentity3f(transform_out->rs.m);
+	vecZero3f(transform_out->t.v);
+	rotateReset3f(&transform_out->rotate);
+	translateReset3f(&transform_out->translate);
+	scaleReset3f(&transform_out->scale);
 	return transform_out;
 }
 
-CDRAW_INL transform3f_t* transformUpdate3f(transform3f_t* transform_out, ReferenceFrame_t const ref)
+CDRAW_INL transform3f_t* transformUpdate3f(transform3f_t* transform_out)
 {
-	failassert(transform_out && cdrawRefValid(ref), NULL);
-
+	failassert(transform_out, NULL);
+	vecCopy3f(transform_out->t.v, transform_out->translate.t);
+	matMulS3f(transform_out->rs.m, transform_out->rotate.R, transform_out->scale.s);
 	return transform_out;
 }
 
 CDRAW_INL transform3f_t* transformInvert3f(transform3f_t* transform_out, transform3f_t const* transform, ReferenceFrame_t const ref)
 {
 	failassert(transform_out && transform && cdrawRefValid(ref), NULL);
-
+	vecf_t const scaleInv = (sc1F / transform->scale.s);
+	matTranspose3f(transform_out->rs.m, transform->rs.m);
+	matMulS3f(transform_out->rotate.R, transform_out->rs.m, scaleInv);
+	rotateUpdateAngles3f(&transform_out->rotate, ref);
+	matMulS3f(transform_out->rs.m, transform_out->rotate.R, scaleInv);
+	vecNegate3f(transform_out->t.v, transform->t.v);
+	matMulVec3f(transform_out->t.v, transform_out->rs.m, transform_out->t.v);
+	vecCopy3f(transform_out->translate.t, transform_out->t.v);
+	transform_out->scale.s = scaleInv;
 	return transform_out;
 }
 
 CDRAW_INL transform3f_t* transformConcat3f(transform3f_t* transform_out, transform3f_t const* transform_lh, transform3f_t const* transform_rh, ReferenceFrame_t const ref)
 {
 	failassert(transform_out && transform_lh && transform_rh && cdrawRefValid(ref), NULL);
-
+	vecf_t const scale = (transform_lh->scale.s * transform_lh->scale.s), scaleInv = (sc1F / scale);
+	TmatMul3f(transform_out->T, transform_lh->T, transform_rh->T);
+	matMulS3f(transform_out->rotate.R, transform_out->T, scaleInv);
+	rotateUpdateAngles3f(&transform_out->rotate, ref);
+	vecCopy3f(transform_out->translate.t, transform_out->t.v);
+	transform_out->scale.s = scale;
 	return transform_out;
 }
 
 CDRAW_INL transform3f_t* transformUpdateComponents3f(transform3f_t* transform_out, ReferenceFrame_t const ref)
 {
 	failassert(transform_out && cdrawRefValid(ref), NULL);
-
+	vecf_t const scale = vecLen3f(vx(transform_out->T)), scaleInv = (sc1F / scale);
+	matMulS3f(transform_out->rotate.R, transform_out->T, scaleInv);
+	rotateUpdateAngles3f(&transform_out->rotate, ref);
+	vecCopy3f(transform_out->translate.t, transform_out->t.v);
+	transform_out->scale.s = scale;
 	return transform_out;
 }
 
 CDRAW_INL transform3f_t* transformInvertComponents3f(transform3f_t* transform_out, transform3f_t const* transform, ReferenceFrame_t const ref)
 {
 	failassert(transform_out && transform && cdrawRefValid(ref), NULL);
-
-	return transform_out;
+	rotateInvertAngles3f(&transform_out->rotate, &transform->rotate, ref);
+	translateInvertAxis3f(&transform_out->translate, &transform->translate);
+	scaleInvertAxis3f(&transform_out->scale, &transform->scale);
+	return transformUpdate3f(transform_out);
 }
 
 CDRAW_INL transform3f_t* transformConcatComponents3f(transform3f_t* transform_out, transform3f_t const* transform_lh, transform3f_t const* transform_rh, ReferenceFrame_t const ref)
 {
 	failassert(transform_out && transform_lh && transform_rh && cdrawRefValid(ref), NULL);
-
-	return transform_out;
+	rotateConcatAngles3f(&transform_out->rotate, &transform_lh->rotate, &transform_rh->rotate, ref);
+	translateConcatAxis3f(&transform_out->translate, &transform_lh->translate, &transform_rh->translate);
+	scaleConcatAxis3f(&transform_out->scale, &transform_lh->scale, &transform_rh->scale);
+	return transformUpdate3f(transform_out);
 }
 
 

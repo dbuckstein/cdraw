@@ -354,11 +354,46 @@ extern "C" {
 	floatN_t vecRelScaleAbs3f(float3_t v_rel_out, float3_t const v_rel, vecf_t const s_roll, vecf_t const s_pitch, vecf_t const s_yaw, ReferenceFrame_t const ref);
 
 	/// <summary>
+	/// Calculate transformed vector by multiplying transform matrix by input vector; translation ignored.
+	/// </summary>
+	/// <param name="v_out">Result product vector.</param>
+	/// <param name="T_lh">Left-hand input transform matrix.</param>
+	/// <param name="v_rh">Right-hand input vector.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t TmatMulVec3f(float3_t v_out, Tmat3f_t const T_lh, float3_t const v_rh);
+
+	/// <summary>
+	/// Calculate transformed point by multiplying transform matrix by input point.
+	/// </summary>
+	/// <param name="p_out">Result product point.</param>
+	/// <param name="T_lh">Left-hand input transform matrix.</param>
+	/// <param name="p_rh">Right-hand input point.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatN_t TmatMulPoint3f(float3_t p_out, Tmat3f_t const T_lh , float3_t const p_rh);
+
+	/// <summary>
+	/// Calculate optimized product of transform matrices.
+	/// </summary>
+	/// <param name="T_out">Result product transform matrix.</param>
+	/// <param name="T_lh">Left-hand input transform matrix.</param>
+	/// <param name="T_rh">Right-hand input transform matrix.</param>
+	/// <returns><paramref name="v_out"/></returns>
+	floatNx3_t TmatMul3f(Tmat3f_t T_out, Tmat3f_t const T_lh, Tmat3f_t const T_rh);
+
+	/// <summary>
 	/// Reset rotation descriptor.
 	/// </summary>
 	/// <param name="rotate_out">Result rotation descriptor.</param>
 	/// <returns><paramref name="rotate_out"/></returns>
 	rotate3f_t* rotateReset3f(rotate3f_t* rotate_out);
+
+	/// <summary>
+	/// Update rotation descriptor encoding based on raw components.
+	/// </summary>
+	/// <param name="rotate_out">Result rotation descriptor.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="rotate_out"/></returns>
+	rotate3f_t* rotateUpdate3f(rotate3f_t* rotate_out, ReferenceFrame_t const ref);
 
 	/// <summary>
 	/// Calculate inverted rotation descriptor based on inverted encoded components.
@@ -378,6 +413,14 @@ extern "C" {
 	/// <param name="ref">Desired reference frame.</param>
 	/// <returns><paramref name="rotate_out"/></returns>
 	rotate3f_t* rotateConcat3f(rotate3f_t* rotate_out, rotate3f_t const* rotate_lh, rotate3f_t const* rotate_rh, ReferenceFrame_t const ref);
+
+	/// <summary>
+	/// Update rotation descriptor raw components based on encoding.
+	/// </summary>
+	/// <param name="rotate_out">Result rotation descriptor.</param>
+	/// <param name="ref">Desired reference frame.</param>
+	/// <returns><paramref name="rotate_out"/></returns>
+	rotate3f_t* rotateUpdateAngles3f(rotate3f_t* rotate_out, ReferenceFrame_t const ref);
 
 	/// <summary>
 	/// Set rotation descriptor based on absolute angles.
@@ -459,6 +502,30 @@ extern "C" {
 	translate3f_t* translateConcatAxis3f(translate3f_t* translate_out, translate3f_t const* translate_lh, translate3f_t const* translate_rh);
 
 	/// <summary>
+	/// Reset scale descriptor.
+	/// </summary>
+	/// <param name="scale_out">Result scale descriptor.</param>
+	/// <returns><paramref name="scale_out"/></returns>
+	scale3f_t* scaleReset3f(scale3f_t* scale_out);
+
+	/// <summary>
+	/// Calculate inverted scale descriptor based on raw axis.
+	/// </summary>
+	/// <param name="scale_out">Result scale descriptor.</param>
+	/// <param name="scale">Input scale descriptor.</param>
+	/// <returns><paramref name="scale_out"/></returns>
+	scale3f_t* scaleInvertAxis3f(scale3f_t* scale_out, scale3f_t const* scale);
+
+	/// <summary>
+	/// Calculate concatenated scale descriptor based on concatenated raw axes.
+	/// </summary>
+	/// <param name="scale_out">Result scale descriptor.</param>
+	/// <param name="scale_lh">Left-hand input scale descriptor.</param>
+	/// <param name="scale_rh">Right-hand input scale descriptor.</param>
+	/// <returns><paramref name="scale_out"/></returns>
+	scale3f_t* scaleConcatAxis3f(scale3f_t* scale_out, scale3f_t const* scale_lh, scale3f_t const* scale_rh);
+
+	/// <summary>
 	/// Reset transformation descriptor.
 	/// </summary>
 	/// <param name="transform_out">Result transformation descriptor.</param>
@@ -466,12 +533,11 @@ extern "C" {
 	transform3f_t* transformReset3f(transform3f_t* transform_out);
 
 	/// <summary>
-	/// Update transformation descriptor based on encoded matrix.
+	/// Update transformation encoded matrix based on updated descriptor components.
 	/// </summary>
 	/// <param name="transform_out">Result transformation descriptor.</param>
-	/// <param name="ref">Desired reference frame.</param>
 	/// <returns><paramref name="transform_out"/></returns>
-	transform3f_t* transformUpdate3f(transform3f_t* transform_out, ReferenceFrame_t const ref);
+	transform3f_t* transformUpdate3f(transform3f_t* transform_out);
 
 	/// <summary>
 	/// Calculate inverted transformation descriptor based on encoded matrix.
@@ -493,7 +559,7 @@ extern "C" {
 	transform3f_t* transformConcat3f(transform3f_t* transform_out, transform3f_t const* transform_lh, transform3f_t const* transform_rh, ReferenceFrame_t const ref);
 
 	/// <summary>
-	/// Update transformation descriptor based on updated components.
+	/// Update transformation descriptor components based on encoded matrix.
 	/// </summary>
 	/// <param name="transform_out">Result transformation descriptor.</param>
 	/// <param name="ref">Desired reference frame.</param>

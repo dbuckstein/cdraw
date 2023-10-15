@@ -161,7 +161,7 @@ typedef struct rotate2f_t
 	/// <summary>
 	/// Angle representation in degrees (always about normal axis).
 	/// </summary>
-	angle2f_t angle, angle_actual;
+	angle2f_t angle;
 } rotate2f_t;
 
 /// <summary>
@@ -183,7 +183,7 @@ typedef struct scale2f_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	vecf_t s, s_actual;
+	vecf_t s;
 } scale2f_t;
 
 /// <summary>
@@ -191,10 +191,22 @@ typedef struct scale2f_t
 /// </summary>
 typedef struct transform2f_t
 {
-	/// <summary>
-	/// Encoded transformation matrix with all components.
-	/// </summary>
-	Tmat2f_t T;
+	union {
+		/// <summary>
+		/// Encoded transformation matrix with all components.
+		/// </summary>
+		Tmat2f_t T;
+		struct {
+			/// <summary>
+			/// Matrix component encoding rotation and scale.
+			/// </summary>
+			mat2f_t rs;
+			/// <summary>
+			/// Vector component encoding translation.
+			/// </summary>
+			vec2f_t t;
+		};
+	};
 
 	/// <summary>
 	/// Raw rotation descriptor.
@@ -253,7 +265,7 @@ typedef struct rotate3f_t
 	/// <summary>
 	/// Relative Euler angle representation in degrees.
 	/// </summary>
-	float3_t angles, angles_actual;
+	float3_t angles;
 } rotate3f_t;
 
 /// <summary>
@@ -275,7 +287,7 @@ typedef struct scale3f_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	vecf_t s, s_actual;
+	vecf_t s;
 } scale3f_t;
 
 /// <summary>
@@ -283,10 +295,22 @@ typedef struct scale3f_t
 /// </summary>
 typedef struct transform3f_t
 {
-	/// <summary>
-	/// Encoded transformation matrix with all components.
-	/// </summary>
-	Tmat3f_t T;
+	union {
+		/// <summary>
+		/// Encoded transformation matrix with all components.
+		/// </summary>
+		Tmat3f_t T;
+		struct {
+			/// <summary>
+			/// Matrix component encoding rotation and scale.
+			/// </summary>
+			mat3f_t rs;
+			/// <summary>
+			/// Vector component encoding translation.
+			/// </summary>
+			vec3f_t t;
+		};
+	};
 
 	/// <summary>
 	/// Raw rotation descriptor.
@@ -341,7 +365,7 @@ typedef struct rotate2d_t
 	/// <summary>
 	/// Angle representation in degrees (always about normal axis).
 	/// </summary>
-	angle2d_t angle, angle_actual;
+	angle2d_t angle;
 } rotate2d_t;
 
 /// <summary>
@@ -363,7 +387,7 @@ typedef struct scale2d_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	vecd_t s, s_actual;
+	vecd_t s;
 } scale2d_t;
 
 /// <summary>
@@ -371,10 +395,22 @@ typedef struct scale2d_t
 /// </summary>
 typedef struct transform2d_t
 {
-	/// <summary>
-	/// Encoded transformation matrix with all components.
-	/// </summary>
-	Tmat2d_t T;
+	union {
+		/// <summary>
+		/// Encoded transformation matrix with all components.
+		/// </summary>
+		Tmat2d_t T;
+		struct {
+			/// <summary>
+			/// Matrix component encoding rotation and scale.
+			/// </summary>
+			mat2d_t rs;
+			/// <summary>
+			/// Vector component encoding translation.
+			/// </summary>
+			vec2d_t t;
+		};
+	};
 
 	/// <summary>
 	/// Raw rotation descriptor.
@@ -433,7 +469,7 @@ typedef struct rotate3d_t
 	/// <summary>
 	/// Relative Euler angle representation in degrees.
 	/// </summary>
-	double3_t angles, angles_actual;
+	double3_t angles;
 } rotate3d_t;
 
 /// <summary>
@@ -455,7 +491,7 @@ typedef struct scale3d_t
 	/// <summary>
 	/// Uniform scale applied to all axes.
 	/// </summary>
-	vecd_t s, s_actual;
+	vecd_t s;
 } scale3d_t;
 
 /// <summary>
@@ -463,10 +499,22 @@ typedef struct scale3d_t
 /// </summary>
 typedef struct transform3d_t
 {
-	/// <summary>
-	/// Encoded transformation matrix with all components.
-	/// </summary>
-	Tmat3d_t T;
+	union {
+		/// <summary>
+		/// Encoded transformation matrix with all components.
+		/// </summary>
+		Tmat3d_t T;
+		struct {
+			/// <summary>
+			/// Matrix component encoding rotation and scale.
+			/// </summary>
+			mat3d_t rs;
+			/// <summary>
+			/// Vector component encoding translation.
+			/// </summary>
+			vec3d_t t;
+		};
+	};
 
 	/// <summary>
 	/// Raw rotation descriptor.
