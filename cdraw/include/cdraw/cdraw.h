@@ -24,6 +24,7 @@
 
 
 #include "cdrawMath.h"
+#include "cdrawPlatform.h"
 
 
 #endif // #ifndef _CDRAW_H_

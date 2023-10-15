@@ -14,6 +14,14 @@
 *   limitations under the License.
 */
 
-#define CDRAW_ASSERT_TEST cdraw_assert_test_flag
+/*
+* cdrawConsole.h
+* Interface for versatile console window.
+*/
 
-#include "cdraw/cdrawPlatform.h"
+#ifndef _CDRAW_CONSOLE_H_
+#define _CDRAW_CONSOLE_H_
+
+
+
+#endif // #ifndef _CDRAW_CONSOLE_H_

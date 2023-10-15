@@ -14,6 +14,21 @@
 *   limitations under the License.
 */
 
-#define CDRAW_ASSERT_TEST cdraw_assert_test_flag
+/*
+* cdrawPlatform.h
+* Global root header for platform library.
+*/
 
-#include "cdraw/cdrawPlatform.h"
+#ifndef _CDRAW_PLATFORM_H_
+#define _CDRAW_PLATFORM_H_
+
+
+#include "cdrawPlatform/cdrawConsole.h"
+#include "cdrawPlatform/cdrawTimer.h"
+#include "cdrawPlatform/cdrawInput.h"
+#include "cdrawPlatform/cdrawPlugin.h"
+#include "cdrawPlatform/cdrawWindow.h"
+#include "cdrawPlatform/cdrawRenderer.h"
+
+
+#endif // #ifndef _CDRAW_PLATFORM_H_

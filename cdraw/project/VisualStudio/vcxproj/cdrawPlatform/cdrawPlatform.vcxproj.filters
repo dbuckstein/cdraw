@@ -19,10 +19,36 @@
     <Filter Include="Source Files\common">
       <UniqueIdentifier>{62f05ce8-5738-42fa-8d5a-9dd3d964a62f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\cdrawPlatform">
+      <UniqueIdentifier>{a00cd3a0-c16d-4c02-81ae-2070281495d8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdrawPlatform\common\cdrawPlatform.c">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawConsole.h">
+      <Filter>Header Files\cdrawPlatform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawInput.h">
+      <Filter>Header Files\cdrawPlatform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawPlugin.h">
+      <Filter>Header Files\cdrawPlatform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawRenderer.h">
+      <Filter>Header Files\cdrawPlatform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawTimer.h">
+      <Filter>Header Files\cdrawPlatform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawWindow.h">
+      <Filter>Header Files\cdrawPlatform</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

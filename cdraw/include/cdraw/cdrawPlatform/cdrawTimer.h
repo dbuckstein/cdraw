@@ -14,6 +14,14 @@
 *   limitations under the License.
 */
 
-#define CDRAW_ASSERT_TEST cdraw_assert_test_flag
+/*
+* cdrawTimer.h
+* System and general timer interface.
+*/
 
-#include "cdraw/cdrawPlatform.h"
+#ifndef _CDRAW_TIMER_H_
+#define _CDRAW_TIMER_H_
+
+
+
+#endif // #ifndef _CDRAW_TIMER_H_
