@@ -27,6 +27,9 @@
     <ClCompile Include="..\..\..\..\source\cdrawPlatform\common\cdrawPlatform.c">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdrawPlatform\_Windows\cdrawConsole_win.c">
+      <Filter>Source Files\_Windows</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform.h">

@@ -17,3 +17,21 @@
 #define CDRAW_ASSERT_TEST cdraw_assert_test_flag
 
 #include "cdraw/cdrawPlatform.h"
+
+
+result_t cdrawConsoleTest()
+{
+	result_init();
+	cdrawConsoleCreate();
+	cdrawConsoleDebugPatch();
+	cdrawConsoleRelease();
+	result_return();
+}
+
+
+result_t cdrawPlatformTest()
+{
+	result_init();
+	cdrawConsoleTest();
+	result_return();
+}
