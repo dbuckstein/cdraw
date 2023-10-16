@@ -444,7 +444,10 @@ result_t cdrawConsoleDebugPrint(cstrk_t const format, ...)
 
 	// fill buffer with formatted arguments
 	va_start(args, format);
-	result_defaultname = _vsnprintf(str, sizeof(str), format, args);
+	{
+		int const result = _vsnprintf(str, sizeof(str), format, args);
+		result_inc(result);
+	}
 	va_end(args);
 
 	// internal print

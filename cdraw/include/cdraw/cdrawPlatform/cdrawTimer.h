@@ -124,6 +124,13 @@ extern "C" {
 #endif // #ifdef __cplusplus
 
 	/// <summary>
+	/// Reset timer.
+	/// </summary>
+	/// <param name="timer">Pointer to affected timer object.</param>
+	/// <returns>Zero if success, error code otherwise.</returns>
+	result_t cdrawTimerReset(cdrawTimer* const timer);
+
+	/// <summary>
 	/// Calculate elapsed time in seconds.
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
@@ -216,11 +223,12 @@ extern "C" {
 	/// Step and sample system timer, ticking every second and invoking callback on tick.
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
+	/// <param name="count_out_opt">Optional pointer to tick count storage.</param>
 	/// <param name="callback">Timer callback function, called on tick.</param>
 	/// <param name="callbackArg_opt">Optional argument to callback function.</param>
 	/// <param name="callbackResult_out_opt">Optional pointer to store result of callback function.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>
-	result_t cdrawTimerStepSystemMultiCallback(cdrawTimer* const timer, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt);
+	result_t cdrawTimerStepSystemMultiCallback(cdrawTimer* const timer, result_t* const count_out_opt, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt);
 
 	/// <summary>
 	/// Initialize timer relative to another timer's frame of reference.
@@ -230,13 +238,6 @@ extern "C" {
 	/// <param name="ticksPerSecond">Tick rate (ticks per second) relative to parent time frame.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>
 	result_t cdrawTimerSet(cdrawTimer* const timer, cdrawTimer const* const parent, uint16_t const ticksPerSecond);
-
-	/// <summary>
-	/// Reset timer.
-	/// </summary>
-	/// <param name="timer">Pointer to affected timer object.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
-	result_t cdrawTimerReset(cdrawTimer* const timer);
 
 	/// <summary>
 	/// Step and sample timer.
@@ -291,11 +292,12 @@ extern "C" {
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
 	/// <param name="dt_parent">Delta time relative to parent time.</param>
+	/// <param name="count_out_opt">Optional pointer to tick count storage.</param>
 	/// <param name="callback">Timer callback function, called on tick.</param>
 	/// <param name="callbackArg_opt">Optional argument to callback function.</param>
 	/// <param name="callbackResult_out_opt">Optional pointer to store result of callback function.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>
-	result_t cdrawTimerStepMultiCallback(cdrawTimer* const timer, ctime_t const dt_parent, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt);
+	result_t cdrawTimerStepMultiCallback(cdrawTimer* const timer, ctime_t const dt_parent, result_t* const count_out_opt, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt);
 
 
 #ifdef __cplusplus
