@@ -20,7 +20,7 @@
 */
 
 #include "cdraw/cdrawPlatform/cdrawConsole.h"
-#ifdef CDRAW_TARGET_WINDOWS
+#if CDRAW_TARGET_WINDOWS
 #include <io.h>
 #include <stdio.h>
 #include <Windows.h>

@@ -18,8 +18,8 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\source\cdrawCore\common\cdrawCore.c">
-      <Filter>Source Files\common</Filter>
+    <ClCompile Include="..\..\..\..\source\cdrawCore.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

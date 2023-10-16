@@ -24,11 +24,17 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\source\cdrawPlatform\common\cdrawPlatform.c">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\..\source\cdrawPlatform\_Windows\cdrawConsole_win.c">
       <Filter>Source Files\_Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdrawPlatform.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdrawPlatform\_Windows\cdrawTimer_win.c">
+      <Filter>Source Files\_Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdrawPlatform\common\cdrawTimer.c">
+      <Filter>Source Files\common</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
