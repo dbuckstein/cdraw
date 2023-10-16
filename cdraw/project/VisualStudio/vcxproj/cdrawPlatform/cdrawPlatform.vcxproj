@@ -155,8 +155,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\source\cdrawPlatform\common\cdrawPlatform.c" />
+    <ClCompile Include="..\..\..\..\source\cdrawPlatform.c" />
+    <ClCompile Include="..\..\..\..\source\cdrawPlatform\common\cdrawTimer.c" />
     <ClCompile Include="..\..\..\..\source\cdrawPlatform\_Windows\cdrawConsole_win.c" />
+    <ClCompile Include="..\..\..\..\source\cdrawPlatform\_Windows\cdrawTimer_win.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform.h" />

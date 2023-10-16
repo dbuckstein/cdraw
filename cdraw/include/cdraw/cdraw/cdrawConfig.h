@@ -159,6 +159,8 @@ typedef enum errcode_common_t
 #define result_init()						result_t result_defaultname = 0							// Common result initializer.
 #define result_raisewarn(warncode)			flagraise(result_defaultname, (1<<(warncode&0xF)))		// Common result append warning code (bit).
 #define result_seterror(errcode)			flagraise(result_defaultname, ((errcode&0xFFFF)<<16))	// Common result set error code (index).
+#define result_inc(x)						(result_defaultname += x)								// Common result increment.
+#define result_dec(x)						(result_defaultname -= x)								// Common result decrement.
 #define result_return()						return result_defaultname								// Common result return.
 #define result_isclean(result)				(result == 0)											// True if result is free of warnings and errors.
 #define result_haswarns(result)				flagcheckincl(result, 0x0000FFFF)						// True if result contains warnings.

@@ -48,11 +48,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\source\cdrawMath\common\cdrawMath.c">
-      <Filter>Source Files\common</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawMath\cdrawScalar.h">
       <Filter>Header Files\cdrawMath</Filter>
     </ClInclude>
@@ -271,5 +266,10 @@
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawTransform\cdrawTransform2f.inl">
       <Filter>Header Files\cdrawMath\_inl\cdrawTransform</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\source\cdrawMath.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
