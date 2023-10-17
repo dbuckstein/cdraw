@@ -196,11 +196,14 @@ typedef enum errcode_common_t
 
 #define label_base_type						uint64_t															// Basis type of label type.
 typedef byte_t								label_t[sizeof(label_base_type)*4];									// Convenient label type for predefined small strings or tags.
-typedef byte_t const						labelk_t[sizeof(label_base_type)*4];								// Convenient constant label type for predefined small strings or tags.
-#define label_term(label)					(label[sizeof(label_t)-1]=0)										// Terminate label string.
+typedef byte_t								label_long_t[sizeof(label_t)*4];									// Convenient long label type for predefined longer strings or tags.
 #define label_valid(label)					buffer_valid(label)													// True if label string has contents.
+#define label_term(label)					(label[sizeof(label_t)-1]=0)										// Terminate label string.
 #define label_init(label)					buffer_init4(label,0,label_base_type)								// Initialize label string to empty.
-#define label_copy(label_dst,label_src)		buffer_copy4(label_dst,label_src,0,label_base_type);label_term(dst)	// Copy and terminate label string.
+#define label_copy(dst,src)					buffer_copy4(dst,src,0,label_base_type);label_term(dst)				// Copy and terminate label string.
+#define label_long_term(label_long)			(label_long[sizeof(label_long_t)-1]=0)								// Terminate long label string.
+#define label_long_init(label_long)			buffer_init4(label_long,0,label_t)									// Initialize long label string to empty.
+#define label_long_copy(dst,src)			buffer_copy4(dst,src,0,label_t);label_long_term(dst)				// Copy and terminate long label string.
 
 
 #define swap2(x,y,tmp)						(tmp=x);(x=y);(y=tmp)				// Swap two values.
