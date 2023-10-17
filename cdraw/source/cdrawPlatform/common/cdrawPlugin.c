@@ -15,37 +15,28 @@
 */
 
 /*
-* cdrawPlugin.h
-* Plugin management interface.
+* cdrawPlugin.c
+* Common implementation of plugin management.
 */
 
-#ifndef _CDRAW_PLUGIN_H_
-#define _CDRAW_PLUGIN_H_
+#include <stdio.h>
+#include <stdlib.h>
 
-
-#include "cdraw/cdraw/cdrawConfig.h"
-
-
-/******************************************************************************
-* Public interfaces.
-******************************************************************************/
-
-
+#include "cdraw/cdrawPlatform/cdrawPlugin.h"
 
 
 /******************************************************************************
-* Functions.
+* Private/internal functions.
 ******************************************************************************/
 
-#ifdef __cplusplus
-extern "C" {
-#endif // #ifdef __cplusplus
+cstr_t cdrawPluginInternalDylibGetExt(cstr_t const ext_out, size_t const arrlen_ext);
+ptr_t cdrawPluginInternalDylibLoad(cstrk_t const path);
+bool cdrawPluginInternalDylibUnload(ptr_t const handle);
+ptr_t cdrawPluginInternalDylibGetSymbol(ptrk_t const handle, cstrk_t const name);
 
 
 
-#ifdef __cplusplus
-}
-#endif // #ifdef __cplusplus
+/******************************************************************************
+* Public functions.
+******************************************************************************/
 
-
-#endif // #ifndef _CDRAW_PLUGIN_H_

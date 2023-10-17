@@ -66,9 +66,13 @@
 
 #define CDRAW_INL							static inline
 #if CDRAW_USING_WINDOWS
+#define CDRAW_DYLIB_EXPORT					__declspec(dllexport)
+#define CDRAW_DYLIB_IMPORT					__declspec(dllimport)
 #define CDRAW_INL_NEVER						__declspec(noinline)
 #define CDRAW_INL_ALWAYS					static __forceinline
 #else // #if CDRAW_USING_WINDOWS
+#define CDRAW_DYLIB_EXPORT					__attribute__((visibility("default")))
+#define CDRAW_DYLIB_IMPORT					__attribute__((weak_import))
 #define CDRAW_INL_NEVER						__attribute__((noinline))
 #define CDRAW_INL_ALWAYS					static inline __attribute__((always_inline))
 #endif // #else // #if CDRAW_USING_WINDOWS
@@ -101,6 +105,18 @@
 //	-x: First token (left).
 //	-y: Second token (right).
 #define tokencat(x,y)						__cdraw_tokencat_internal__(x,y)
+
+
+// Universal export/import symbol tag definition. 
+#ifdef CDRAW_PLUGIN_EXPORTS
+#define CDRAW_DYLIB_SYMBOL	CDRAW_DYLIB_EXPORT
+#else // #ifdef CDRAW_PLUGIN_EXPORTS
+#ifdef CDRAW_PLUGIN_IMPORTS
+#define CDRAW_DYLIB_SYMBOL	CDRAW_DYLIB_IMPORT
+#else // #ifdef CDRAW_PLUGIN_IMPORTS
+#define CDRAW_DYLIB_SYMBOL	
+#endif // #else // #ifdef CDRAW_PLUGIN_IMPORTS
+#endif // #else // #ifdef CDRAW_PLUGIN_EXPORTS
 
 
 /******************************************************************************
@@ -171,7 +187,7 @@ typedef enum errcode_common_t
 
 
 #define buffer_valid(x)						((x)!=NULL&&*(x)!=0)									// True if pointer is initialized and value it points to is non-zero.
-#define buffer_len(x)						(sizeof(x) / sizeof(*x))								// Calculate number of elements in buffer (note: does not work on raw pointers).
+#define buffer_len(x)						(sizeof(x) / sizeof(*(x)))								// Calculate number of elements in buffer (note: does not work on raw pointers).
 #define buffer_init1(dst,offset,type)		(((type*)(dst))[offset]=(type)0)						// Initialize single value in buffer to zero.
 #define buffer_copy1(dst,src,offset,type)	(((type*)(dst))[offset]=((type const*)(src))[offset])	// Copy single value in buffer.
 #define buffer_init4(dst,offset,type)		(((type*)(dst))[offset]=((type*)(dst))[offset+1]=((type*)(dst))[offset+2]=((type*)(dst))[offset+3]=(type)0)										// Initialize set of four values in buffer to zero.

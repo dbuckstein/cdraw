@@ -36,6 +36,12 @@
     <ClCompile Include="..\..\..\..\source\cdrawPlatform\common\cdrawTimer.c">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdrawPlatform\_Windows\cdrawPlugin_win.c">
+      <Filter>Source Files\_Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdrawPlatform\common\cdrawPlugin.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform.h">
