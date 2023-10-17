@@ -33,6 +33,8 @@
 enum
 {
 	errcode_plugin_init = errcode_CUSTOM_BEGIN,	// Failure with initialization.
+	errcode_plugin_callback,					// Failure invoking callback.
+	errcode_plugin_CUSTOM_BEGIN					// Begin internal plugin error codes.
 };
 
 
@@ -61,6 +63,10 @@ typedef struct cdrawPluginInfo
 	/// Longer description of plugin (purpose/activities).
 	/// </summary>
 	label_long_t details;
+	/// <summary>
+	/// List of user-defined named callback hooks.
+	/// </summary>
+	label_t callbacks[32];
 } cdrawPluginInfo;
 
 
@@ -90,15 +96,14 @@ typedef struct cdrawPlugin
 	/// <summary>
 	/// Index of plugin in managed list.
 	/// </summary>
-	ptrdiff_t i_list;
+	ptrdiff_t id;
 	/// <summary>
 	/// Callback list.
 	/// </summary>
 	struct
 	{
-		cdrawPluginCallback cb_load, cb_hotload;												// Loading callbacks.
-		cdrawPluginCallback cb_pre_reload, cb_reload;											// Reloading callbacks.
-		cdrawPluginCallback cb_pre_unload, cb_unload;											// Unloading callbacks.
+		cdrawPluginCallback cb_load_post, cb_hotload_pre, cb_hotload_post;						// Loading/hotloading callbacks.
+		cdrawPluginCallback cb_reload_pre, cb_reload_post, cb_unload_pre;						// Reloading/unloading callbacks.
 		cdrawPluginCallback cb_win_attach, cb_win_detach;										// Window attachment callbacks.
 		cdrawPluginCallback cb_win_activate, cb_win_deactivate;									// Window activation callbacks.
 		cdrawPluginCallback cb_win_resize, cb_win_move;											// Window shape callbacks.
@@ -124,20 +129,21 @@ extern "C" {
 	/// Initialize plugin info descriptor.
 	/// </summary>
 	/// <param name="pluginInfo">Plugin info descriptor.</param>
-	/// <param name="name"></param>
-	/// <param name="dylib"></param>
-	/// <param name="author"></param>
-	/// <param name="version"></param>
-	/// <param name="details"></param>
+	/// <param name="name">Short name of descriptor.</param>
+	/// <param name="dylib">Short name of library file.</param>
+	/// <param name="author">Short author string.</param>
+	/// <param name="version">Short version string.</param>
+	/// <param name="details">Longer details string.</param>
+	/// <param name="callbackNames">List of callback names.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>
-	result_t cdrawPluginInfoInit(cdrawPluginInfo* const pluginInfo, label_t const name, label_t const dylib, label_t const author, label_t const version, label_long_t const details);
+	result_t cdrawPluginInfoInit(cdrawPluginInfo* const pluginInfo, label_t const name, label_t const dylib, label_t const author, label_t const version, label_long_t const details, label_t const callbackNames[32]);
 
 	/// <summary>
 	/// Initialize default plugin info descriptor with basic info.
 	/// </summary>
 	/// <param name="pluginInfo">Plugin info descriptor.</param>
-	/// <param name="author"></param>
-	/// <param name="version"></param>
+	/// <param name="author">Short author string.</param>
+	/// <param name="version">Short version string.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>
 	result_t cdrawPluginInfoInitDefault(cdrawPluginInfo* const pluginInfo, label_t const author, label_t const version);
 
@@ -152,8 +158,8 @@ extern "C" {
 	/// Load list of plugin info descriptors from resource file.
 	/// </summary>
 	/// <param name="pluginInfoList_out">List of plugin info descriptors (points to null).</param>
-	/// <param name="count_out"></param>
-	/// <param name="listFile"></param>
+	/// <param name="count_out">Pointer to storage for number of info descriptors loaded.</param>
+	/// <param name="listFile">Path to file.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>
 	result_t cdrawPluginInfoListLoad(cdrawPluginInfo** const pluginInfoList_out, size_t* const count_out, cstrk_t const listFile);
 
@@ -165,11 +171,141 @@ extern "C" {
 	result_t cdrawPluginInfoListRelease(cdrawPluginInfo** const pluginInfoList);
 
 	/// <summary>
+	/// Print info to string.
+	/// </summary>
+	/// <param name="pluginInfo">Plugin info descriptor.</param>
+	/// <param name="stringPtr">Pointer to string to be concatenated with info (user must ensure buffer has enough space).</param>
+	/// <returns></returns>
+	result_t cdrawPluginInfoPrint(cdrawPluginInfo const* const pluginInfo, cstr_t* const stringPtr);
+
+	/// <summary>
 	/// Reset plugin descriptor.
 	/// </summary>
 	/// <param name="plugin">Plugin descriptor.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>
 	result_t cdrawPluginReset(cdrawPlugin* const plugin);
+
+	/// <summary>
+	/// Load plugin dynamic library.
+	/// </summary>
+	/// <param name="plugin">Target plugin.</param>
+	/// <param name="pluginInfo"></param>
+	/// <param name="id"></param>
+	/// <param name="owner_opt">Pointer to owner of plugin for control over its manipulation.</param>
+	/// <returns>Zero if success, error code otherwise.</returns>
+	result_t cdrawPluginLoad(cdrawPlugin* const plugin, cdrawPluginInfo const* const pluginInfo, ptrdiff_t const id, ptrk_t const owner_opt);
+
+	/// <summary>
+	/// Reload plugin dynamic library.
+	/// </summary>
+	/// <param name="plugin">Target plugin.</param>
+	/// <param name="caller">Pointer to caller of this function.</param>
+	/// <returns>Zero if success, error code otherwise.</returns>
+	result_t cdrawPluginReload(cdrawPlugin* const plugin, ptrk_t const caller);
+
+	/// <summary>
+	/// Unload plugin dynamic library.
+	/// </summary>
+	/// <param name="plugin">Target plugin.</param>
+	/// <param name="caller">Pointer to caller of this function.</param>
+	/// <returns>Zero if success, error code otherwise.</returns>
+	result_t cdrawPluginUnload(cdrawPlugin* const plugin, ptrk_t const caller);
+
+
+	result_t cdrawPluginCallPostLoad(cdrawPlugin* const plugin, ptrk_t const caller);
+
+
+	result_t cdrawPluginCallPreHotload(cdrawPlugin* const plugin, ptrk_t const caller);
+
+
+	result_t cdrawPluginCallPostHotload(cdrawPlugin* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallPreReload(cdrawPlugin* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallPostReload(cdrawPlugin* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallPreUnload(cdrawPlugin* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallOnWindowAttach(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const w, int32_t const h, int32_t const x, int32_t const y);
+	
+	
+	result_t cdrawPluginCallOnWindowDetach(cdrawPlugin const* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallOnWindowActivate(cdrawPlugin const* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallOnWindowDeactivate(cdrawPlugin const* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallOnWindowResize(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const w, int32_t const h);
+	
+	
+	result_t cdrawPluginCallOnWindowMove(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y);
+	
+	
+	result_t cdrawPluginCallOnDisplay(cdrawPlugin const* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallOnIdle(cdrawPlugin const* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallOnVirtkeyPress(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const virtkey);
+	
+	
+	result_t cdrawPluginCallOnVirtkeyHold(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const virtkey);
+	
+	
+	result_t cdrawPluginCallOnVirtkeyRelease(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const virtkey);
+	
+	
+	result_t cdrawPluginCallOnKeyPress(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const key);
+	
+	
+	result_t cdrawPluginCallOnKeyHold(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const key);
+	
+	
+	result_t cdrawPluginCallOnKeyRelease(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const key);
+	
+	
+	result_t cdrawPluginCallOnMousePress(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const btn, int32_t const x, int32_t const y);
+	
+	
+	result_t cdrawPluginCallOnMouseRelease(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const btn, int32_t const x, int32_t const y);
+	
+	
+	result_t cdrawPluginCallOnMouseDouble(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const btn, int32_t const x, int32_t const y);
+	
+	
+	result_t cdrawPluginCallOnMouseWheel(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const delta, int32_t const x, int32_t const y);
+	
+	
+	result_t cdrawPluginCallOnMouseMove(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y);
+	
+	
+	result_t cdrawPluginCallOnMouseDrag(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y);
+	
+	
+	result_t cdrawPluginCallOnMouseEnter(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y);
+	
+	
+	result_t cdrawPluginCallOnMouseLeave(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y);
+	
+	
+	result_t cdrawPluginCallOnUser1(cdrawPlugin const* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallOnUser2(cdrawPlugin const* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallOnUser3(cdrawPlugin const* const plugin, ptrk_t const caller);
+	
+	
+	result_t cdrawPluginCallOnUserCmd(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const argc, cstrk_t const argv[]);
 
 
 #ifdef __cplusplus
