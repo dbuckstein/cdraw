@@ -119,42 +119,26 @@ CDRAW_INL void cdrawPluginInfoInternalResetCallbackNames(cdrawPluginInfo* const 
 		strncpy(pluginInfo->callbacks[i], gPluginCallbackHook[i], sizeof(*pluginInfo->callbacks));
 }
 
-
-CDRAW_INL void cdrawPluginInternalResetCallbacks(cdrawPlugin* const plugin)
+CDRAW_INL void cdrawPluginInternalResetCallbacks(cdrawPluginCallback callback[], size_t const numCallbacks)
 {
-	cdraw_assert(plugin);
-	plugin->cbname_load_post = cdrawPluginCallbackDefault;
-	plugin->cbname_hotload_pre = cdrawPluginCallbackDefault;
-	plugin->cbname_hotload_post = cdrawPluginCallbackDefault;
-	plugin->cbname_reload_pre = cdrawPluginCallbackDefault;
-	plugin->cbname_load_post = cdrawPluginCallbackDefault;
-	plugin->cbname_unload_pre = cdrawPluginCallbackDefault;
-	plugin->cbname_win_attach = cdrawPluginCallbackDefault;
-	plugin->cbname_win_detach = cdrawPluginCallbackDefault;
-	plugin->cbname_win_activate = cdrawPluginCallbackDefault;
-	plugin->cbname_win_deactivate = cdrawPluginCallbackDefault;
-	plugin->cbname_win_resize = cdrawPluginCallbackDefault;
-	plugin->cbname_win_move = cdrawPluginCallbackDefault;
-	plugin->cbname_display = cdrawPluginCallbackDefault;
-	plugin->cbname_idle = cdrawPluginCallbackDefault;
-	plugin->cbname_virtkey_press = cdrawPluginCallbackDefault;
-	plugin->cbname_virtkey_hold = cdrawPluginCallbackDefault;
-	plugin->cbname_virtkey_release = cdrawPluginCallbackDefault;
-	plugin->cbname_key_press = cdrawPluginCallbackDefault;
-	plugin->cbname_key_hold = cdrawPluginCallbackDefault;
-	plugin->cbname_key_release = cdrawPluginCallbackDefault;
-	plugin->cbname_mouse_press = cdrawPluginCallbackDefault;
-	plugin->cbname_mouse_release = cdrawPluginCallbackDefault;
-	plugin->cbname_mouse_double = cdrawPluginCallbackDefault;
-	plugin->cbname_mouse_wheel = cdrawPluginCallbackDefault;
-	plugin->cbname_mouse_move = cdrawPluginCallbackDefault;
-	plugin->cbname_mouse_drag = cdrawPluginCallbackDefault;
-	plugin->cbname_mouse_enter = cdrawPluginCallbackDefault;
-	plugin->cbname_mouse_leave = cdrawPluginCallbackDefault;
-	plugin->cbname_user_1 = cdrawPluginCallbackDefault;
-	plugin->cbname_user_2 = cdrawPluginCallbackDefault;
-	plugin->cbname_user_3 = cdrawPluginCallbackDefault;
-	plugin->cbname_user_cmd = cdrawPluginCallbackDefault;
+	cdraw_assert(callback);
+	size_t i;
+	for (i = 0; i < numCallbacks; ++i)
+	{
+		callback[i] = cdrawPluginCallbackDefault;
+	}
+}
+
+CDRAW_INL void cdrawPluginInternalSetCallbacks(cdrawPluginCallback callback[], label_t const callbackNames[], ptr_t const handle, size_t const numCallbacks)
+{
+	cdraw_assert(callback && callbackNames);
+	size_t i;
+	ptr_t cb;
+	for (i = 0; i < numCallbacks; ++i)
+	{
+		cb = cdrawPluginInternalDylibGetSymbol(handle, callbackNames[i]);
+		callback[i] = cb ? cb : cdrawPluginCallbackDefault;
+	}
 }
 
 CDRAW_INL cstr_t cdrawPluginInfoInternalRead(cstr_t const data_out, size_t const data_len, label_t data_alt_out_opt, cstr_t buffer, byte_t const delim)
@@ -214,6 +198,25 @@ CDRAW_INL cstr_t cdrawPluginInfoInternalRead(cstr_t const data_out, size_t const
 
 	// fail
 	return NULL;
+}
+
+CDRAW_INL ptr_t cdrawPluginInternalLoad(cdrawPlugin* const plugin, cdrawPluginInfo const* const pluginInfo)
+{
+	ptr_t handle = NULL;
+	label_long_t path = "./cdrawPlugin/";
+	label_t ext;
+	failassertret(label_valid(pluginInfo->dylib), NULL);
+	strcat(strcat(path, pluginInfo->dylib), cdrawPluginInternalDylibGetExt(ext, sizeof(ext)));
+	handle = cdrawPluginInternalDylibLoad(path);
+	failassertret(handle, NULL);
+	cdrawPluginInternalSetCallbacks(plugin->cb, pluginInfo->callbacks, handle, buffer_len(plugin->cb));
+	return handle;
+}
+
+CDRAW_INL bool cdrawPluginInternalUnload(cdrawPlugin* const plugin)
+{
+	cdrawPluginInternalResetCallbacks(plugin->cb, buffer_len(plugin->cb));
+	return cdrawPluginInternalDylibUnload(plugin->p_handle);
 }
 
 
@@ -371,45 +374,71 @@ result_t cdrawPluginInfoPrint(cdrawPluginInfo const* const pluginInfo, cstr_t* c
 result_t cdrawPluginReset(cdrawPlugin* const plugin)
 {
 	result_init();
-	asserterr(plugin && !plugin->p_handle, errcode_invalidarg);
-	cdrawPluginInternalResetCallbacks(plugin);
+	asserterr(plugin, errcode_invalidarg);
+	cdrawPluginInfoReset(&plugin->info);
+	plugin->id = -1;
+	plugin->p_handle = NULL;
 	plugin->p_owner = NULL;
 	plugin->p_data = NULL;
-	plugin->id = -1;
+	cdrawPluginInternalResetCallbacks(plugin->cb, buffer_len(plugin->cb));
 	result_return();
 }
 
 result_t cdrawPluginLoad(cdrawPlugin* const plugin, cdrawPluginInfo const* const pluginInfo, ptrdiff_t const id, ptrk_t const owner_opt)
 {
 	result_init();
-	asserterr(plugin && (plugin->id == -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id == -1) && !plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner, errcode_invalidarg);
-
+	plugin->p_handle = cdrawPluginInternalLoad(plugin, pluginInfo);
+	failassertret(plugin->p_handle, errcode_plugin_init);
+	plugin->info = *pluginInfo;
+	plugin->id = id;
+	plugin->p_owner = owner_opt;
+	if (id >= 0)
+		cdrawPluginCallPostLoad(plugin, owner_opt);
+	else
+		cdrawPluginCallPostHotload(plugin, owner_opt);
 	result_return();
 }
 
 result_t cdrawPluginReload(cdrawPlugin* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	bool unloadResult = false;
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
-
+	cdrawPluginCallPreReload(plugin, caller);
+	unloadResult = cdrawPluginInternalUnload(plugin);
+	failassertret(unloadResult, errcode_plugin_init);
+	plugin->p_handle = cdrawPluginInternalLoad(plugin, &plugin->info);
+	failassertret(plugin->p_handle, errcode_plugin_init);
+	cdrawPluginCallPostReload(plugin, caller);
 	result_return();
 }
 
 result_t cdrawPluginUnload(cdrawPlugin* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	bool unloadResult = false;
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
-
+	if (plugin->id >= 0)
+		cdrawPluginCallPreUnload(plugin, caller);
+	else
+		cdrawPluginCallPreHotload(plugin, caller);
+	unloadResult = cdrawPluginInternalUnload(plugin);
+	failassertret(unloadResult, errcode_plugin_init);
+	cdrawPluginInfoReset(&plugin->info);
+	plugin->id = -1;
+	plugin->p_owner = NULL;
+	plugin->p_handle = NULL;
 	result_return();
 }
 
 result_t cdrawPluginCallPostLoad(cdrawPlugin* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_load_post, errcode_plugin_callback);
 	result_inc(plugin->cb_load_post(&plugin->p_data));
@@ -419,7 +448,7 @@ result_t cdrawPluginCallPostLoad(cdrawPlugin* const plugin, ptrk_t const caller)
 result_t cdrawPluginCallPreHotload(cdrawPlugin* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_hotload_pre, errcode_plugin_callback);
 	result_inc(plugin->cb_hotload_pre(&plugin->p_data));
@@ -429,7 +458,7 @@ result_t cdrawPluginCallPreHotload(cdrawPlugin* const plugin, ptrk_t const calle
 result_t cdrawPluginCallPostHotload(cdrawPlugin* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_hotload_post, errcode_plugin_callback);
 	result_inc(plugin->cb_hotload_post(&plugin->p_data));
@@ -439,7 +468,7 @@ result_t cdrawPluginCallPostHotload(cdrawPlugin* const plugin, ptrk_t const call
 result_t cdrawPluginCallPreReload(cdrawPlugin* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_reload_pre, errcode_plugin_callback);
 	result_inc(plugin->cb_reload_pre(&plugin->p_data));
@@ -449,7 +478,7 @@ result_t cdrawPluginCallPreReload(cdrawPlugin* const plugin, ptrk_t const caller
 result_t cdrawPluginCallPostReload(cdrawPlugin* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_reload_post, errcode_plugin_callback);
 	result_inc(plugin->cb_reload_post(&plugin->p_data));
@@ -459,7 +488,7 @@ result_t cdrawPluginCallPostReload(cdrawPlugin* const plugin, ptrk_t const calle
 result_t cdrawPluginCallPreUnload(cdrawPlugin* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_unload_pre, errcode_plugin_callback);
 	result_inc(plugin->cb_unload_pre(&plugin->p_data));
@@ -469,7 +498,7 @@ result_t cdrawPluginCallPreUnload(cdrawPlugin* const plugin, ptrk_t const caller
 result_t cdrawPluginCallOnWindowAttach(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const w, int32_t const h, int32_t const x, int32_t const y)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_win_attach, errcode_plugin_callback);
 	result_inc(plugin->cb_win_attach(plugin->p_data, w, h, x, y));
@@ -479,7 +508,7 @@ result_t cdrawPluginCallOnWindowAttach(cdrawPlugin const* const plugin, ptrk_t c
 result_t cdrawPluginCallOnWindowDetach(cdrawPlugin const* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_win_detach, errcode_plugin_callback);
 	result_inc(plugin->cb_win_detach(plugin->p_data));
@@ -489,7 +518,7 @@ result_t cdrawPluginCallOnWindowDetach(cdrawPlugin const* const plugin, ptrk_t c
 result_t cdrawPluginCallOnWindowActivate(cdrawPlugin const* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_win_activate, errcode_plugin_callback);
 	result_inc(plugin->cb_win_activate(plugin->p_data));
@@ -499,7 +528,7 @@ result_t cdrawPluginCallOnWindowActivate(cdrawPlugin const* const plugin, ptrk_t
 result_t cdrawPluginCallOnWindowDeactivate(cdrawPlugin const* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_win_deactivate, errcode_plugin_callback);
 	result_inc(plugin->cb_win_deactivate(plugin->p_data));
@@ -509,7 +538,7 @@ result_t cdrawPluginCallOnWindowDeactivate(cdrawPlugin const* const plugin, ptrk
 result_t cdrawPluginCallOnWindowResize(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const w, int32_t const h)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_win_resize, errcode_plugin_callback);
 	result_inc(plugin->cb_win_resize(plugin->p_data, w, h));
@@ -519,7 +548,7 @@ result_t cdrawPluginCallOnWindowResize(cdrawPlugin const* const plugin, ptrk_t c
 result_t cdrawPluginCallOnWindowMove(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_win_move, errcode_plugin_callback);
 	result_inc(plugin->cb_win_move(plugin->p_data, x, y));
@@ -529,7 +558,7 @@ result_t cdrawPluginCallOnWindowMove(cdrawPlugin const* const plugin, ptrk_t con
 result_t cdrawPluginCallOnDisplay(cdrawPlugin const* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_display, errcode_plugin_callback);
 	result_inc(plugin->cb_display(plugin->p_data));
@@ -539,7 +568,7 @@ result_t cdrawPluginCallOnDisplay(cdrawPlugin const* const plugin, ptrk_t const 
 result_t cdrawPluginCallOnIdle(cdrawPlugin const* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_idle, errcode_plugin_callback);
 	result_inc(plugin->cb_idle(plugin->p_data));
@@ -549,7 +578,7 @@ result_t cdrawPluginCallOnIdle(cdrawPlugin const* const plugin, ptrk_t const cal
 result_t cdrawPluginCallOnVirtkeyPress(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const virtkey)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_virtkey_press, errcode_plugin_callback);
 	result_inc(plugin->cb_virtkey_press(plugin->p_data, virtkey));
@@ -559,7 +588,7 @@ result_t cdrawPluginCallOnVirtkeyPress(cdrawPlugin const* const plugin, ptrk_t c
 result_t cdrawPluginCallOnVirtkeyHold(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const virtkey)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_virtkey_hold, errcode_plugin_callback);
 	result_inc(plugin->cb_virtkey_hold(plugin->p_data, virtkey));
@@ -569,7 +598,7 @@ result_t cdrawPluginCallOnVirtkeyHold(cdrawPlugin const* const plugin, ptrk_t co
 result_t cdrawPluginCallOnVirtkeyRelease(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const virtkey)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_virtkey_release, errcode_plugin_callback);
 	result_inc(plugin->cb_virtkey_release(plugin->p_data, virtkey));
@@ -579,7 +608,7 @@ result_t cdrawPluginCallOnVirtkeyRelease(cdrawPlugin const* const plugin, ptrk_t
 result_t cdrawPluginCallOnKeyPress(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const key)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_key_press, errcode_plugin_callback);
 	result_inc(plugin->cb_key_press(plugin->p_data, key));
@@ -589,7 +618,7 @@ result_t cdrawPluginCallOnKeyPress(cdrawPlugin const* const plugin, ptrk_t const
 result_t cdrawPluginCallOnKeyHold(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const key)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_key_hold, errcode_plugin_callback);
 	result_inc(plugin->cb_key_hold(plugin->p_data, key));
@@ -599,7 +628,7 @@ result_t cdrawPluginCallOnKeyHold(cdrawPlugin const* const plugin, ptrk_t const 
 result_t cdrawPluginCallOnKeyRelease(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const key)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_key_release, errcode_plugin_callback);
 	result_inc(plugin->cb_key_release(plugin->p_data, key));
@@ -609,7 +638,7 @@ result_t cdrawPluginCallOnKeyRelease(cdrawPlugin const* const plugin, ptrk_t con
 result_t cdrawPluginCallOnMousePress(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const btn, int32_t const x, int32_t const y)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_mouse_press, errcode_plugin_callback);
 	result_inc(plugin->cb_mouse_press(plugin->p_data, btn, x, y));
@@ -619,7 +648,7 @@ result_t cdrawPluginCallOnMousePress(cdrawPlugin const* const plugin, ptrk_t con
 result_t cdrawPluginCallOnMouseRelease(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const btn, int32_t const x, int32_t const y)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_mouse_release, errcode_plugin_callback);
 	result_inc(plugin->cb_mouse_release(plugin->p_data, btn, x, y));
@@ -629,7 +658,7 @@ result_t cdrawPluginCallOnMouseRelease(cdrawPlugin const* const plugin, ptrk_t c
 result_t cdrawPluginCallOnMouseDouble(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const btn, int32_t const x, int32_t const y)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_mouse_double, errcode_plugin_callback);
 	result_inc(plugin->cb_mouse_double(plugin->p_data, btn, x, y));
@@ -639,7 +668,7 @@ result_t cdrawPluginCallOnMouseDouble(cdrawPlugin const* const plugin, ptrk_t co
 result_t cdrawPluginCallOnMouseWheel(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const delta, int32_t const x, int32_t const y)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_mouse_wheel, errcode_plugin_callback);
 	result_inc(plugin->cb_mouse_wheel(plugin->p_data, delta, x, y));
@@ -649,7 +678,7 @@ result_t cdrawPluginCallOnMouseWheel(cdrawPlugin const* const plugin, ptrk_t con
 result_t cdrawPluginCallOnMouseMove(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_mouse_move, errcode_plugin_callback);
 	result_inc(plugin->cb_mouse_move(plugin->p_data, x, y));
@@ -659,7 +688,7 @@ result_t cdrawPluginCallOnMouseMove(cdrawPlugin const* const plugin, ptrk_t cons
 result_t cdrawPluginCallOnMouseDrag(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_mouse_drag, errcode_plugin_callback);
 	result_inc(plugin->cb_mouse_drag(plugin->p_data, x, y));
@@ -669,7 +698,7 @@ result_t cdrawPluginCallOnMouseDrag(cdrawPlugin const* const plugin, ptrk_t cons
 result_t cdrawPluginCallOnMouseEnter(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_mouse_enter, errcode_plugin_callback);
 	result_inc(plugin->cb_mouse_enter(plugin->p_data, x, y));
@@ -679,7 +708,7 @@ result_t cdrawPluginCallOnMouseEnter(cdrawPlugin const* const plugin, ptrk_t con
 result_t cdrawPluginCallOnMouseLeave(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_mouse_leave, errcode_plugin_callback);
 	result_inc(plugin->cb_mouse_leave(plugin->p_data, x, y));
@@ -689,7 +718,7 @@ result_t cdrawPluginCallOnMouseLeave(cdrawPlugin const* const plugin, ptrk_t con
 result_t cdrawPluginCallOnUser1(cdrawPlugin const* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_user_1, errcode_plugin_callback);
 	result_inc(plugin->cb_user_1(plugin->p_data));
@@ -699,7 +728,7 @@ result_t cdrawPluginCallOnUser1(cdrawPlugin const* const plugin, ptrk_t const ca
 result_t cdrawPluginCallOnUser2(cdrawPlugin const* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_user_2, errcode_plugin_callback);
 	result_inc(plugin->cb_user_2(plugin->p_data));
@@ -709,7 +738,7 @@ result_t cdrawPluginCallOnUser2(cdrawPlugin const* const plugin, ptrk_t const ca
 result_t cdrawPluginCallOnUser3(cdrawPlugin const* const plugin, ptrk_t const caller)
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_user_3, errcode_plugin_callback);
 	result_inc(plugin->cb_user_3(plugin->p_data));
@@ -719,7 +748,7 @@ result_t cdrawPluginCallOnUser3(cdrawPlugin const* const plugin, ptrk_t const ca
 result_t cdrawPluginCallOnUserCmd(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const argc, cstrk_t const argv[])
 {
 	result_init();
-	asserterr(plugin && (plugin->id != -1), errcode_invalidarg);
+	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_user_cmd, errcode_plugin_callback);
 	result_inc(plugin->cb_user_cmd(plugin->p_data, argc, argv));
