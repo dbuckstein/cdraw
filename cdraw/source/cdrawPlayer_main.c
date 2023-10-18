@@ -15,23 +15,15 @@
 */
 
 /*
-* cdrawPlayer_WinMain.c
-* Windows entry point for player application.
+* cdrawPlayer_main.c
+* Common entry point for player application.
 */
 
 #include "cdraw/cdraw/cdrawConfig.h"
-#if CDRAW_USING_WINDOWS
-#include <Windows.h>
 
-result_t cdrawPlayer_main(cstrk_t const cmd, int32_t const options);
-
-int WINAPI WinMain(
-	_In_		HINSTANCE 	hInstance,
-	_In_opt_	HINSTANCE 	hPrevInstance,
-	_In_		LPSTR 		lpCmdLine,
-	_In_		int 		nCmdShow)
+result_t cdrawPlayer_main(cstrk_t const cmd, int32_t const options)
 {
-	return cdrawPlayer_main(lpCmdLine, nCmdShow);
-}
+	result_init();
 
-#endif // #if CDRAW_USING_WINDOWS
+	result_return();
+}

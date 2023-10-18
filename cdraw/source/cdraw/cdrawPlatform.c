@@ -266,9 +266,31 @@ void cdrawTimerTest()
 
 void cdrawPluginTest()
 {
+	cdrawPlugin plugin;
 	cdrawPluginInfo* pluginInfo = NULL;
 	size_t numPluginInfo = 0;
+	byte_t pluginInfoBuffer[2048];
+	cstr_t pluginInfoBufferItr;
+	ptrdiff_t id = 0;
+	
+	cdrawPluginReset(&plugin);
+	
 	cdrawPluginInfoListLoad(&pluginInfo, &numPluginInfo, "../../../../resource/_plugin/cdraw_plugin_info.txt");
+	
+	cdrawPluginLoad(&plugin, pluginInfo + id, id, cdrawPluginTest);
+	pluginInfoBufferItr = pluginInfoBuffer;
+	cdrawPluginInfoPrint(&plugin.info, &pluginInfoBufferItr);
+	printf("\n %s", pluginInfoBuffer);
+	cdrawPluginReload(&plugin, cdrawPluginTest);
+	cdrawPluginUnload(&plugin, cdrawPluginTest);
+
+	id = -2;
+	cdrawPluginLoad(&plugin, pluginInfo - id, id, cdrawPluginTest);
+	pluginInfoBufferItr = pluginInfoBuffer;
+	cdrawPluginInfoPrint(&plugin.info, &pluginInfoBufferItr);
+	printf("\n %s", pluginInfoBuffer);
+	cdrawPluginReload(&plugin, cdrawPluginTest);
+	cdrawPluginUnload(&plugin, cdrawPluginTest);
 
 	cdrawPluginInfoListRelease(&pluginInfo);
 }
