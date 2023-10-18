@@ -220,6 +220,55 @@ CDRAW_INL bool cdrawPluginInternalUnload(cdrawPlugin* const plugin)
 }
 
 
+/// <summary>
+/// Call to safely invoke post-load callback with format: func(ptr_t* data_inout).
+/// </summary>
+/// <param name="plugin">Target plugin.</param>
+/// <param name="caller">Pointer to caller of this function; must match owner.</param>
+/// <returns>Zero if success, error code otherwise.</returns>
+static result_t cdrawPluginCallPostLoad(cdrawPlugin* const plugin, ptrk_t const caller);
+
+/// <summary>
+/// Call to safely invoke pre-hotload callback with format: func(ptr_t* data_inout).
+/// </summary>
+/// <param name="plugin">Target plugin.</param>
+/// <param name="caller">Pointer to caller of this function; must match owner.</param>
+/// <returns>Zero if success, error code otherwise.</returns>
+static result_t cdrawPluginCallPreHotload(cdrawPlugin* const plugin, ptrk_t const caller);
+
+/// <summary>
+/// Call to safely invoke post-hotload callback with format: func(ptr_t* data_inout).
+/// </summary>
+/// <param name="plugin">Target plugin.</param>
+/// <param name="caller">Pointer to caller of this function; must match owner.</param>
+/// <returns>Zero if success, error code otherwise.</returns>
+static result_t cdrawPluginCallPostHotload(cdrawPlugin* const plugin, ptrk_t const caller);
+
+/// <summary>
+/// Call to safely invoke pre-reload callback with format: func(ptr_t* data_inout).
+/// </summary>
+/// <param name="plugin">Target plugin.</param>
+/// <param name="caller">Pointer to caller of this function; must match owner.</param>
+/// <returns>Zero if success, error code otherwise.</returns>
+static result_t cdrawPluginCallPreReload(cdrawPlugin* const plugin, ptrk_t const caller);
+
+/// <summary>
+/// Call to safely invoke post-reload callback with format: func(ptr_t* data_inout).
+/// </summary>
+/// <param name="plugin">Target plugin.</param>
+/// <param name="caller">Pointer to caller of this function; must match owner.</param>
+/// <returns>Zero if success, error code otherwise.</returns>
+static result_t cdrawPluginCallPostReload(cdrawPlugin* const plugin, ptrk_t const caller);
+
+/// <summary>
+/// Call to safely invoke pre-unload callback with format: func(ptr_t* data_inout).
+/// </summary>
+/// <param name="plugin">Target plugin.</param>
+/// <param name="caller">Pointer to caller of this function; must match owner.</param>
+/// <returns>Zero if success, error code otherwise.</returns>	
+static result_t cdrawPluginCallPreUnload(cdrawPlugin* const plugin, ptrk_t const caller);
+
+
 /******************************************************************************
 * Public functions.
 ******************************************************************************/
@@ -339,7 +388,7 @@ result_t cdrawPluginInfoListLoad(cdrawPluginInfo** const pluginInfoList_out, siz
 			}
 
 			// copy
-			list[count++] = tmp;
+			cdrawPluginInfoInit(&list[count++], tmp.name, tmp.dylib, tmp.author, tmp.version, tmp.details, tmp.callbacks);
 		}
 	}
 

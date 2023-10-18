@@ -231,7 +231,7 @@
     <None Include="..\..\..\..\include\cdraw\cdrawMath\_inl\cdrawVector\cdrawVec4u.inl" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\source\cdrawMath.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawMath.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

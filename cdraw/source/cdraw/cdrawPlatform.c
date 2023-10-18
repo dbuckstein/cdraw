@@ -33,7 +33,6 @@ result_t cdrawConsoleTest()
 }
 
 
-
 typedef struct cdrawTimerTest_t
 {
 	result_t count;
@@ -265,6 +264,16 @@ void cdrawTimerTest()
 }
 
 
+void cdrawPluginTest()
+{
+	cdrawPluginInfo* pluginInfo = NULL;
+	size_t numPluginInfo = 0;
+	cdrawPluginInfoListLoad(&pluginInfo, &numPluginInfo, "../../../../resource/_plugin/cdraw_plugin_info.txt");
+
+	cdrawPluginInfoListRelease(&pluginInfo);
+}
+
+
 result_t cdrawPlatformTest()
 {
 	result_init();
@@ -272,7 +281,9 @@ result_t cdrawPlatformTest()
 
 	cdrawConsoleCreate();
 	
-	cdrawTimerTest();
+	//cdrawTimerTest();
+
+	cdrawPluginTest();
 	
 	cdrawConsoleRelease();
 

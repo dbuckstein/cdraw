@@ -220,54 +220,6 @@ extern "C" {
 	result_t cdrawPluginUnload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 	/// <summary>
-	/// Call to safely invoke post-load callback with format: func(ptr_t* data_inout).
-	/// </summary>
-	/// <param name="plugin">Target plugin.</param>
-	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
-	result_t cdrawPluginCallPostLoad(cdrawPlugin* const plugin, ptrk_t const caller);
-
-	/// <summary>
-	/// Call to safely invoke pre-hotload callback with format: func(ptr_t* data_inout).
-	/// </summary>
-	/// <param name="plugin">Target plugin.</param>
-	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
-	result_t cdrawPluginCallPreHotload(cdrawPlugin* const plugin, ptrk_t const caller);
-
-	/// <summary>
-	/// Call to safely invoke post-hotload callback with format: func(ptr_t* data_inout).
-	/// </summary>
-	/// <param name="plugin">Target plugin.</param>
-	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
-	result_t cdrawPluginCallPostHotload(cdrawPlugin* const plugin, ptrk_t const caller);
-	
-	/// <summary>
-	/// Call to safely invoke pre-reload callback with format: func(ptr_t* data_inout).
-	/// </summary>
-	/// <param name="plugin">Target plugin.</param>
-	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
-	result_t cdrawPluginCallPreReload(cdrawPlugin* const plugin, ptrk_t const caller);
-	
-	/// <summary>
-	/// Call to safely invoke post-reload callback with format: func(ptr_t* data_inout).
-	/// </summary>
-	/// <param name="plugin">Target plugin.</param>
-	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
-	result_t cdrawPluginCallPostReload(cdrawPlugin* const plugin, ptrk_t const caller);
-	
-	/// <summary>
-	/// Call to safely invoke pre-unload callback with format: func(ptr_t* data_inout).
-	/// </summary>
-	/// <param name="plugin">Target plugin.</param>
-	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
-	result_t cdrawPluginCallPreUnload(cdrawPlugin* const plugin, ptrk_t const caller);
-	
-	/// <summary>
 	/// Call to safely invoke window attach callback with format: func(ptr_t data, int32_t w, int32_t h, int32_t x, int32_t y).
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
