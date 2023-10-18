@@ -24,5 +24,8 @@
     <ClCompile Include="_Windows\cdrawPlugin_DllMain.c">
       <Filter>Source Files\_Windows</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdrawPlugin_main.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

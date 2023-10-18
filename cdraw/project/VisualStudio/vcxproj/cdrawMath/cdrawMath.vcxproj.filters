@@ -268,7 +268,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\source\cdrawMath.c">
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawMath.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

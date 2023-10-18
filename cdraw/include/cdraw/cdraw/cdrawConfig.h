@@ -66,9 +66,13 @@
 
 #define CDRAW_INL							static inline
 #if CDRAW_USING_WINDOWS
+#define CDRAW_DYLIB_EXPORT					__declspec(dllexport)
+#define CDRAW_DYLIB_IMPORT					__declspec(dllimport)
 #define CDRAW_INL_NEVER						__declspec(noinline)
 #define CDRAW_INL_ALWAYS					static __forceinline
 #else // #if CDRAW_USING_WINDOWS
+#define CDRAW_DYLIB_EXPORT					__attribute__((visibility("default")))
+#define CDRAW_DYLIB_IMPORT					__attribute__((weak_import))
 #define CDRAW_INL_NEVER						__attribute__((noinline))
 #define CDRAW_INL_ALWAYS					static inline __attribute__((always_inline))
 #endif // #else // #if CDRAW_USING_WINDOWS
@@ -101,6 +105,18 @@
 //	-x: First token (left).
 //	-y: Second token (right).
 #define tokencat(x,y)						__cdraw_tokencat_internal__(x,y)
+
+
+// Universal export/import symbol tag definition. 
+#ifdef CDRAW_PLUGIN_EXPORTS
+#define CDRAW_DYLIB_SYMBOL	CDRAW_DYLIB_EXPORT
+#else // #ifdef CDRAW_PLUGIN_EXPORTS
+#ifdef CDRAW_PLUGIN_IMPORTS
+#define CDRAW_DYLIB_SYMBOL	CDRAW_DYLIB_IMPORT
+#else // #ifdef CDRAW_PLUGIN_IMPORTS
+#define CDRAW_DYLIB_SYMBOL	
+#endif // #else // #ifdef CDRAW_PLUGIN_IMPORTS
+#endif // #else // #ifdef CDRAW_PLUGIN_EXPORTS
 
 
 /******************************************************************************
@@ -171,7 +187,7 @@ typedef enum errcode_common_t
 
 
 #define buffer_valid(x)						((x)!=NULL&&*(x)!=0)									// True if pointer is initialized and value it points to is non-zero.
-#define buffer_len(x)						(sizeof(x) / sizeof(*x))								// Calculate number of elements in buffer (note: does not work on raw pointers).
+#define buffer_len(x)						(sizeof(x) / sizeof(*(x)))								// Calculate number of elements in buffer (note: does not work on raw pointers).
 #define buffer_init1(dst,offset,type)		(((type*)(dst))[offset]=(type)0)						// Initialize single value in buffer to zero.
 #define buffer_copy1(dst,src,offset,type)	(((type*)(dst))[offset]=((type const*)(src))[offset])	// Copy single value in buffer.
 #define buffer_init4(dst,offset,type)		(((type*)(dst))[offset]=((type*)(dst))[offset+1]=((type*)(dst))[offset+2]=((type*)(dst))[offset+3]=(type)0)										// Initialize set of four values in buffer to zero.
@@ -180,11 +196,14 @@ typedef enum errcode_common_t
 
 #define label_base_type						uint64_t															// Basis type of label type.
 typedef byte_t								label_t[sizeof(label_base_type)*4];									// Convenient label type for predefined small strings or tags.
-typedef byte_t const						labelk_t[sizeof(label_base_type)*4];								// Convenient constant label type for predefined small strings or tags.
-#define label_term(label)					(label[sizeof(label_t)-1]=0)										// Terminate label string.
+typedef byte_t								label_long_t[sizeof(label_t)*4];									// Convenient long label type for predefined longer strings or tags.
 #define label_valid(label)					buffer_valid(label)													// True if label string has contents.
+#define label_term(label)					(label[sizeof(label_t)-1]=0)										// Terminate label string.
 #define label_init(label)					buffer_init4(label,0,label_base_type)								// Initialize label string to empty.
-#define label_copy(label_dst,label_src)		buffer_copy4(label_dst,label_src,0,label_base_type);label_term(dst)	// Copy and terminate label string.
+#define label_copy(dst,src)					buffer_copy4(dst,src,0,label_base_type);label_term(dst)				// Copy and terminate label string.
+#define label_long_term(label_long)			(label_long[sizeof(label_long_t)-1]=0)								// Terminate long label string.
+#define label_long_init(label_long)			buffer_init4(label_long,0,label_t)									// Initialize long label string to empty.
+#define label_long_copy(dst,src)			buffer_copy4(dst,src,0,label_t);label_long_term(dst)				// Copy and terminate long label string.
 
 
 #define swap2(x,y,tmp)						(tmp=x);(x=y);(y=tmp)				// Swap two values.

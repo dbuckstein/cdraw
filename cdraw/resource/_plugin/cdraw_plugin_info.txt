@@ -1,0 +1,19 @@
+#Plugin info list - cdraw
+#Copyright 2023 Daniel S. Buckstein
+
+@ "cdraw Plugin (Test0)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.0" "Testing debuggable plugin description 0."
+@ "cdraw Plugin (Test1)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.1" "Testing debuggable plugin description 1."
+@ "cdraw Plugin (Test2)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.2" "Testing debuggable plugin description 2."
+@ "cdraw Plugin (Test3)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.3" "Testing debuggable plugin description 3."
+@ "cdraw Plugin (Test4)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.4" "Testing debuggable plugin description 4."
+@ "cdraw Plugin (Test5)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.5" "Testing debuggable plugin description 5."
+@ "cdraw Plugin (Test6)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.6" "Testing debuggable plugin description 6."
+@ "cdraw Plugin (Test7)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.7" "Testing debuggable plugin description 7."
+@ "cdraw Plugin (Test8)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.8" "Testing debuggable plugin description 8."
+@ "cdraw Plugin (Test9)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.9" "Testing debuggable plugin description 9."
+@ "cdraw Plugin (TestA)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.A" "Testing debuggable plugin description A."
+@ "cdraw Plugin (TestB)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.B" "Testing debuggable plugin description B."
+@ "cdraw Plugin (TestC)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.C" "Testing debuggable plugin description C."
+@ "cdraw Plugin (TestD)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.D" "Testing debuggable plugin description D."
+@ "cdraw Plugin (TestE)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.E" "Testing debuggable plugin description E."
+@ "cdraw Plugin (TestF)" "cdrawPlugin" "Dan Buckstein" "cdraw-test:0.0.F" "Testing debuggable plugin description F."
