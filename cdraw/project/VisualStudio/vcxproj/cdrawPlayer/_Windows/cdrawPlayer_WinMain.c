@@ -33,9 +33,9 @@
 /// Platform-independent entry point.
 /// </summary>
 /// <param name="cmd">Command line passed to application.</param>
-/// <param name="option">Optional integer.</param>
+/// <param name="option">Optional platform data.</param>
 /// <returns>Zero if clean; window wparam on quit.</returns>
-result_t cdrawPlayer_main(cstrk_t const cmd, int32_t const option);
+result_t cdrawPlayer_main(cstrk_t const cmd, ptr_t const data_opt);
 
 /// <summary>
 /// Platform-dependent windowing initialization (Windows).
@@ -75,11 +75,11 @@ int WINAPI WinMain(
 	_In_		LPSTR 		lpCmdLine,
 	_In_		int 		nCmdShow)
 {
-	int result;
+	int result = nCmdShow;
 	cdrawWindowInternalPlatformInit_win(hInstance,
 		cdraw_envstr_vsdevenv, cdraw_envstr_sln, cdraw_envstr_root, cdraw_envstr_cfg,
 		ID_ACCEL_F1, IDR_ACCEL, IDD_DIALOGBAR, -1, IDI_ICON1);
-	result = cdrawPlayer_main(lpCmdLine, nCmdShow);
+	cdrawPlayer_main(lpCmdLine, &result);
 	cdrawWindowInternalPlatformTerm_win(hInstance);
 	return result;
 }

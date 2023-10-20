@@ -22,18 +22,17 @@
 #include "cdraw/cdrawPlatform/cdrawConsole.h"
 #include "cdraw/cdrawPlatform/cdrawWindow.h"
 
-result_t cdrawPlayer_main(cstrk_t const cmd, int32_t const options)
+result_t cdrawPlayer_main(cstrk_t const cmd, ptr_t const data_opt)
 {
 	result_init();
 	ptr_t appHandle = NULL;
 	int32_t appCount = -1;
 	cdrawWindow window = { 0 };
+	cdrawWindowControl const control = (cdrawWindowControl_all & ~(cdrawWindowControl_cursor_hide | cdrawWindowControl_cursor_lock | cdrawWindowControl_active_unfocused));
 	cdrawApplicationStartSingleInstance(&appHandle, "cdraw Player Application", &appCount);
 	cdrawConsoleCreate();
-	cdrawWindowCreate(&window,
-		"cdraw Player", 0, 0, 1024, 768, false,
-		(cdrawWindowControl_all & ~(cdrawWindowControl_cursor_hide | cdrawWindowControl_cursor_lock | cdrawWindowControl_active_unfocused)));
-	cdrawWindowLoop(&window);
+	cdrawWindowCreate(&window, "cdraw Player", 0, 0, 1280, 720, false, control, data_opt);
+	cdrawWindowLoop(data_opt);
 	cdrawWindowRelease(&window);
 	cdrawConsoleRelease();
 	cdrawApplicationStopSingleInstance(&appHandle, &appCount);

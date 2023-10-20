@@ -142,8 +142,9 @@ extern "C" {
 	/// <param name="windowSzH">Height of window.</param>
 	/// <param name="fullScreen">Option to start in full-screen.</param>
 	/// <param name="control">Set of window control options.</param>
+	/// <param name="data_opt">Optional platform data.</param>
 	/// <returns>Zero if success; error code otherwise.</returns>
-	result_t cdrawWindowCreate(cdrawWindow* const window, label_t const windowName, int16_t const windowPosX, int16_t const windowPosY, int16_t const windowSzW, int16_t const windowSzH, bool const fullScreen, cdrawWindowControl const control);
+	result_t cdrawWindowCreate(cdrawWindow* const window, label_t const windowName, int16_t const windowPosX, int16_t const windowPosY, int16_t const windowSzW, int16_t const windowSzH, bool const fullScreen, cdrawWindowControl const control, ptr_t const data_opt);
 
 	/// <summary>
 	/// Destroy and release a window.
@@ -155,9 +156,9 @@ extern "C" {
 	/// <summary>
 	/// Enter a window's main loop to handle events.
 	/// </summary>
-	/// <param name="window">Target window.</param>
+	/// <param name="data_opt">Optional platform data.</param>
 	/// <returns>Zero if success; error code otherwise.</returns>
-	result_t cdrawWindowLoop(cdrawWindow* const window);
+	result_t cdrawWindowLoop(ptr_t const data_opt);
 
 	/// <summary>
 	/// Attach plugin to window for automated event processing.
