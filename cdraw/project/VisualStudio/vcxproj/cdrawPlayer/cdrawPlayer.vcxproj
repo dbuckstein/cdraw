@@ -162,6 +162,18 @@
     <ClCompile Include="..\..\..\..\source\cdrawPlayer_main.c" />
     <ClCompile Include="_Windows\cdrawPlayer_WinMain.c" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\..\resource\_plugin\cdraw_plugin_info.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="_Windows\resource\icon\cbtk.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="cdrawPlayer.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cdrawPlayer.rc.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

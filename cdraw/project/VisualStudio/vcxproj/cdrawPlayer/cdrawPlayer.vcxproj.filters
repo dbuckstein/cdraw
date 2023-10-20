@@ -19,6 +19,15 @@
     <Filter Include="Source Files\common">
       <UniqueIdentifier>{66d3eae5-14a6-43a2-859c-4d8872c54e39}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\_Windows">
+      <UniqueIdentifier>{091fe2ee-27c8-4982-8298-77ca32be83f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\_plugin">
+      <UniqueIdentifier>{b4b1da15-5094-419c-b604-599275446725}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\_Windows\icon">
+      <UniqueIdentifier>{734d3d11-71a5-40e3-937a-4933833abebb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="_Windows\cdrawPlayer_WinMain.c">
@@ -27,5 +36,25 @@
     <ClCompile Include="..\..\..\..\source\cdrawPlayer_main.c">
       <Filter>Source Files\common</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\..\..\resource\_plugin\cdraw_plugin_info.txt">
+      <Filter>Resource Files\_plugin</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="_Windows\resource\icon\cbtk.ico">
+      <Filter>Resource Files\_Windows\icon</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="cdrawPlayer.rc">
+      <Filter>Resource Files\_Windows</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cdrawPlayer.rc.h">
+      <Filter>Resource Files\_Windows</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

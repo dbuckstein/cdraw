@@ -161,6 +161,8 @@
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawConsole_win.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawPlugin_win.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawTimer_win.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawWindow_win.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawWindow_win_pdb.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform.h" />

@@ -299,15 +299,8 @@ void cdrawPluginTest()
 result_t cdrawPlatformTest()
 {
 	result_init();
-	cdrawConsoleTest();
-
-	cdrawConsoleCreate();
-	
+	//cdrawConsoleTest();
 	//cdrawTimerTest();
-
 	cdrawPluginTest();
-	
-	cdrawConsoleRelease();
-
 	result_return();
 }

@@ -19,11 +19,19 @@
 * Common entry point for player application.
 */
 
-#include "cdraw/cdraw/cdrawConfig.h"
+#include "cdraw/cdrawPlatform.h"
 
 result_t cdrawPlayer_main(cstrk_t const cmd, int32_t const options)
 {
 	result_init();
-
+	ptr_t appHandle = NULL;
+	int32_t appCount = -1;
+	cdrawApplicationStartSingleInstance(&appHandle, "cdraw Player Application", &appCount);
+	cdrawConsoleCreate();
+	//cdrawWindowCreate(...);
+	//cdrawWindowLoop(...);
+	//cdrawWindowRelease(...);
+	cdrawConsoleRelease();
+	cdrawApplicationStopSingleInstance(&appHandle, &appCount);
 	result_return();
 }
