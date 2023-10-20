@@ -30,29 +30,72 @@
 
 typedef struct cdrawWindowPlatform_win
 {
-	HINSTANCE inst;
+	WNDCLASSEXA info;
+	ATOM info_reg;
+	label_t name;
+	size_t windowCount;
+
 	cstrk_t dir_build, dir_target, dir_sdk, tag_cfg;
 	int16_t res_control_base;
 	int8_t res_control_id;
 	int8_t res_dialog;
-	int8_t res_cursor;
-	int8_t res_icon;
-	size_t windowCount;
 } cdrawWindowPlatform_win;
 static cdrawWindowPlatform_win gWindowPlatform;
 
-bool cdrawWindowPlatformIsInit_win()
+
+CDRAW_INL bool cdrawWindowPlatformIsInit_win()
 {
-	return (gWindowPlatform.inst != NULL);
+	return (gWindowPlatform.info.hInstance != NULL);
 }
 
-bool cdrawWindowPlatformInit_win(HINSTANCE const inst,
+CDRAW_INL bool cdrawWindowPlatformIsHandleValid_win(HINSTANCE const inst)
+{
+	return (gWindowPlatform.info.hInstance == inst)
+		|| (!inst && gWindowPlatform.info.hInstance == GetModuleHandle(NULL));
+}
+
+CDRAW_INL bool cdrawWindowInternalInfoCreate_win()
+{
+	if (!cdrawWindowPlatformIsInit_win())
+		return false;
+
+	gWindowPlatform.info_reg = RegisterClassExA(&gWindowPlatform.info);
+	return (gWindowPlatform.info_reg != 0);
+}
+
+CDRAW_INL bool cdrawWindowInternalInfoRelease_win()
+{
+	if (!cdrawWindowPlatformIsInit_win())
+		return false;
+	if (gWindowPlatform.info_reg == 0)
+		return true;
+	BOOL const unregistered = UnregisterClassA(gWindowPlatform.info.lpszClassName, gWindowPlatform.info.hInstance);
+	return (unregistered != 0);
+}
+
+result_t cdrawWindowInternalUnlockPDB_win(label_t const sdkDirStr, label_t const cfgDirStr, label_t const projName);
+
+static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	return DefWindowProcA(hWnd, message, wParam, lParam);
+}
+
+bool cdrawWindowInternalPlatformInit_win(HINSTANCE const inst,
 	cstrk_t const dir_build, cstrk_t const dir_target, cstrk_t const dir_sdk, cstrk_t const tag_cfg,
 	int16_t const res_control_base, int8_t const res_control_id, int8_t const res_dialog, int8_t const res_cursor, int8_t const res_icon)
 {
-	if (cdrawWindowPlatformIsInit_win())
+	if (cdrawWindowPlatformIsInit_win() || !inst)
 		return false;
-	gWindowPlatform.inst = (inst ? inst : GetModuleHandle(NULL));
+
+	HINSTANCE const hInst = (inst ? inst : GetModuleHandle(NULL));
+	HINSTANCE const cursorInst = (res_cursor >= 0 ? hInst : NULL);
+	HINSTANCE const iconInst = (res_icon >= 0 ? hInst : NULL);
+	LPSTR const cursorStr = (cursorInst ? MAKEINTRESOURCEA(res_cursor) : MAKEINTRESOURCEA(32512)); // IDC_ARROW = 32512
+	LPSTR const iconStr = (iconInst ? MAKEINTRESOURCEA(res_icon) : MAKEINTRESOURCEA(32517)); // IDI_WINLOGO = 32517
+
+	label_t const windowPlatformName = "cdraw Window Platform";
+	label_copy(gWindowPlatform.name, windowPlatformName);
+
 	gWindowPlatform.dir_build = (buffer_valid(dir_build) ? dir_build : NULL);
 	gWindowPlatform.dir_target = (buffer_valid(dir_target) ? dir_target : NULL);
 	gWindowPlatform.dir_sdk = (buffer_valid(dir_sdk) ? dir_sdk : NULL);
@@ -60,8 +103,30 @@ bool cdrawWindowPlatformInit_win(HINSTANCE const inst,
 	gWindowPlatform.res_control_base = res_control_base;
 	gWindowPlatform.res_control_id = res_control_id;
 	gWindowPlatform.res_dialog = res_dialog;
-	gWindowPlatform.res_cursor = res_cursor;
-	gWindowPlatform.res_icon = res_icon;
+
+	gWindowPlatform.info.cbSize = sizeof(gWindowPlatform.info);
+	gWindowPlatform.info.style = (CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS);
+	gWindowPlatform.info.lpfnWndProc = cdrawWindowInternalEvent_win;
+	gWindowPlatform.info.cbClsExtra = 0;
+	gWindowPlatform.info.cbWndExtra = (int)sizeof(ptr_t);
+	gWindowPlatform.info.hInstance = hInst;
+	gWindowPlatform.info.hIcon = LoadIconA(iconInst, iconStr);
+	gWindowPlatform.info.hCursor = LoadCursorA(cursorInst, cursorStr);
+	gWindowPlatform.info.hbrBackground = 0;
+	gWindowPlatform.info.lpszMenuName = 0;
+	gWindowPlatform.info.lpszClassName = gWindowPlatform.name;
+	gWindowPlatform.info.hIconSm = gWindowPlatform.info.hIcon;
+
+	return true;
+}
+
+bool cdrawWindowInternalPlatformTerm_win(HINSTANCE const inst)
+{
+	if (!cdrawWindowPlatformIsInit_win() || !cdrawWindowPlatformIsHandleValid_win(inst))
+		return false;
+	if (!cdrawWindowInternalInfoRelease_win())
+		return false;
+	memset(&gWindowPlatform, 0, sizeof(gWindowPlatform));
 	return true;
 }
 
@@ -100,9 +165,6 @@ static result_t cdrawApplicationInternalStartSingleInstance(ptr_t* const handle_
 	*handle_out = handle;
 	result_return();
 }
-
-
-result_t cdrawWindowInternalUnlockPDB(label_t const sdkDirStr, label_t const cfgDirStr, label_t const projName);
 
 
 /******************************************************************************
@@ -245,6 +307,26 @@ result_t cdrawApplicationStopMultipleInstance(ptr_t* const p_handle, uint32_t* c
 	result_return();
 }
 
+result_t cdrawWindowCreate(cdrawWindow* const window, label_t const windowName, int16_t const windowPosX, int16_t const windowPosY, int16_t const windowSzW, int16_t const windowSzH, bool const fullScreen, cdrawWindowControl const control)
+{
+	result_init();
+
+	result_return();
+}
+
+result_t cdrawWindowRelease(cdrawWindow* const window)
+{
+	result_init();
+
+	result_return();
+}
+
+result_t cdrawWindowLoop(cdrawWindow* const window)
+{
+	result_init();
+
+	result_return();
+}
 
 result_t cdrawWindowPluginAttach(cdrawWindow* const window, cdrawPlugin const* const plugin)
 {

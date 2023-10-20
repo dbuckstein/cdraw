@@ -68,7 +68,7 @@
 //-----------------------------------------------------------------------------
 
 // release the PDB in a chaotic fashion (see sources at top of file)
-result_t cdrawWindowInternalUnlockPDB(label_t const sdkDirStr, label_t const cfgDirStr, label_t const projName)
+result_t cdrawWindowInternalUnlockPDB_win(label_t const sdkDirStr, label_t const cfgDirStr, label_t const projName)
 {
 	typedef NTSTATUS(NTAPI* _NtQuerySystemInformation)(
 		ULONG SystemInformationClass,

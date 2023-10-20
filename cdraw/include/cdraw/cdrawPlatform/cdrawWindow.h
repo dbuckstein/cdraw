@@ -35,11 +35,56 @@ enum
 };
 
 
+/// <summary>
+/// Window control flags.
+/// </summary>
+typedef enum cdrawWindowControl
+{
+	cdrawWindowControl_none,						// All controls disabled.
+	cdrawWindowControl_F1_info = 0x0001,			// Press F1 to open player info window.
+	cdrawWindowControl_F2_load = 0x0002,			// Press F2 to open plugin management window.
+	cdrawWindowControl_F3_reload = 0x0004,			// Press F3 to reload current plugin.
+	cdrawWindowControl_F4_unload = 0x0008,			// Press F4 to unload current plugin.
+	cdrawWindowControl_F5_debug = 0x0010,			// Press F5 to load and run debug plugin.
+	cdrawWindowControl_F6_build = 0x0020,			// Press F6 to hot build debug plugin, and live swap if currently running.
+	cdrawWindowControl_F7_rebuild = 0x0040,			// Press F7 to hot rebuild debug plugin, and live swap if currently running.
+	cdrawWindowControl_F8_fullscreen = 0x0080,		// Press F8 to toggle full-screen.
+	cdrawWindowControl_F9_user_1 = 0x0100,			// Press F9 to invoke plugin's user function (1)
+	cdrawWindowControl_F10_user_2 = 0x0200,			// Press F10 to invoke plugin's user function (2)
+	cdrawWindowControl_F11_user_3 = 0x0400,			// Press F11 to invoke plugin's user function (3).
+	cdrawWindowControl_F12_user_cmd = 0x0800,		// Press F12 to invoke plugin's user command function (also triggers breakpoint in some IDEs).
+	cdrawWindowControl_ESC_command = 0x1000,		// Press ESC to enter and process command before passing it to plugin's command user function.
+	cdrawWindowControl_cursor_hide = 0x2000,		// Hide cursor.
+	cdrawWindowControl_cursor_lock = 0x4000,		// Lock cursor to window area.
+	cdrawWindowControl_active_unfocused = 0x8000,	// Keep window active if not in focus.
+	cdrawWindowControl_all = 0xffff					// All controls enabled.
+} cdrawWindowControl;
+
+/// <summary>
+/// Window descriptor.
+/// </summary>
 typedef struct cdrawWindow
 {
-	ptr_t p_handle;
-
+	/// <summary>
+	/// Internal window representation.
+	/// </summary>
+	ptr_t p_window;
+	/// <summary>
+	/// Plugin (can be attached via controls or manually).
+	/// </summary>
 	cdrawPlugin* p_plugin;
+	/// <summary>
+	/// Location of window on-screen.
+	/// </summary>
+	int16_t pos_x, pos_y;
+	/// <summary>
+	/// Dimensions of window on-screen.
+	/// </summary>
+	int16_t sz_w, sz_h;
+	/// <summary>
+	/// User controls.
+	/// </summary>
+	cdrawWindowControl control;
 } cdrawWindow;
 
 
@@ -85,6 +130,34 @@ extern "C" {
 	/// <param name="available_out_opt">Optional pointer to store remaining available instances.</param>
 	/// <returns>Zero if success; error code otherwise.</returns>
 	result_t cdrawApplicationStopMultipleInstance(ptr_t* const p_handle, uint32_t* const available_out_opt);
+
+	/// <summary>
+	/// Create and initialize a window.
+	/// </summary>
+	/// <param name="window">Target window.</param>
+	/// <param name="windowName">Name of window.</param>
+	/// <param name="windowPosX">Horizontal position of window.</param>
+	/// <param name="windowPosY">Vertical position of window.</param>
+	/// <param name="windowSzW">Width of window.</param>
+	/// <param name="windowSzH">Height of window.</param>
+	/// <param name="fullScreen">Option to start in full-screen.</param>
+	/// <param name="control">Set of window control options.</param>
+	/// <returns>Zero if success; error code otherwise.</returns>
+	result_t cdrawWindowCreate(cdrawWindow* const window, label_t const windowName, int16_t const windowPosX, int16_t const windowPosY, int16_t const windowSzW, int16_t const windowSzH, bool const fullScreen, cdrawWindowControl const control);
+
+	/// <summary>
+	/// Destroy and release a window.
+	/// </summary>
+	/// <param name="window">Target window.</param>
+	/// <returns>Zero if success; error code otherwise.</returns>
+	result_t cdrawWindowRelease(cdrawWindow* const window);
+
+	/// <summary>
+	/// Enter a window's main loop to handle events.
+	/// </summary>
+	/// <param name="window">Target window.</param>
+	/// <returns>Zero if success; error code otherwise.</returns>
+	result_t cdrawWindowLoop(cdrawWindow* const window);
 
 	/// <summary>
 	/// Attach plugin to window for automated event processing.
