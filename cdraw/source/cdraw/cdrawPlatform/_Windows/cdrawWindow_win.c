@@ -38,6 +38,7 @@ typedef struct cdrawWindow_win
 	BOOL buildState;				// Hot-build tracker.
 	BOOL mouseState;				// Mouse hovering tracker.
 	TRACKMOUSEEVENT mouseTrack;		// Mouse tracking for entering/exiting window.
+	ptrk_t pluginOwner;				// Original owner of plugin if we have one attached externally.
 } cdrawWindow_win;
 
 typedef struct cdrawWindowPlatform_win
@@ -53,6 +54,21 @@ typedef struct cdrawWindowPlatform_win
 	int8_t res_dialog;									// Dialog box resource.
 } cdrawWindowPlatform_win;
 static cdrawWindowPlatform_win gWindowPlatform;			// Global platform instance.
+
+
+enum
+{
+	cdrawWinCtrlMsg = WM_USER,
+	cdrawWinCtrlMsg_load,
+	cdrawWinCtrlMsg_reload,
+	cdrawWinCtrlMsg_unload,
+	cdrawWinCtrlMsg_debug,
+	cdrawWinCtrlMsg_build,
+	cdrawWinCtrlMsg_rebuild,
+	cdrawWinCtrlMsg_copy,
+	cdrawWinCtrlMsg_cmd,
+};
+
 
 
 CDRAW_INL bool cdrawWindowInternalPlatformReady_win()
@@ -96,15 +112,603 @@ CDRAW_INL bool cdrawWindowInternalInfoRelease_win()
 	return true;
 }
 
-result_t cdrawWindowInternalUnlockPDB_win(label_t const sdkDirStr, label_t const cfgDirStr, label_t const projName);
+bool cdrawWindowInternalUnlockPDB_win(label_t const sdkDirStr, label_t const cfgDirStr, label_t const projName);
+
+#if CDRAW_DEBUG
+#define cfgStr "Debug"
+#else // #if CDRAW_DEBUG
+#define cfgStr "Release"
+#endif // #else // #if CDRAW_DEBUG
+static bool cdrawWindowInternalBuild(cdrawWindow* const window, bool const rebuild)
+{
+	bool status = true;
+	cdrawWindow_win* p_window = (cdrawWindow_win*)window->p_window;
+	if (!p_window->buildState)
+	{
+		p_window->buildState = 1;
+		{
+			byte_t bat[256] = { 0 };
+			byte_t dir[256] = { 0 };
+			byte_t cmd[1024] = { 0 };
+			cstrk_t const statusText[2] = { "failed", "succeeded" };
+			cstrk_t const proj = ("cdrawPlugin");
+			cstrk_t const cfg = (cfgStr "|x" tokenstr(CDRAW_BITWIDTH));
+			cstrk_t const sw = (rebuild ? "Rebuild" : "Build");
+			cstrk_t const log = ("cdraw-build.txt");
+
+			int16_t i = -1;
+			int16_t const pdbrmAttempts = 127;
+
+			// utility path
+			sprintf(bat, "%s\\_dev\\Windows\\_build", gWindowPlatform.dir_sdk);
+
+			// project path
+			sprintf(dir, "%s\\project\\vcxproj\\VisualStudio\\%s\\%s.vcxproj", gWindowPlatform.dir_sdk, proj, proj);
+
+			// call batch: call "BATCH" "DEVENV" "PROJ" "CFG" "LOG" "SWITCH" "STOPCOPY"
+			//		batch: call "DEVENV" "PROJ" /SWITCH(b/rb) "CFG(cfg|arch)" /Out "LOG"
+			sprintf(cmd, "call \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" \"%s\" ", bat, gWindowPlatform.dir_build, dir, cfg, log, sw, "YES");
+
+			// build
+			printf("\n----------------------------------------------------------------\n");
+			printf("cdraw Player: Debug info removal attempt...");
+			printf("\n----------------------------------------------------------------\n");
+			for (i = 0; i < pdbrmAttempts && !status; ++i)
+				status = cdrawWindowInternalUnlockPDB_win(gWindowPlatform.dir_sdk, gWindowPlatform.tag_cfg, proj);
+			printf("  Attempt %s (%u/%u). \n", statusText[status], i, pdbrmAttempts);
+			if (status && cdrawWindowInternalUnlockPDB_win(gWindowPlatform.dir_sdk, gWindowPlatform.tag_cfg, proj))
+				printf("  Debug info removal confirmed. \n");
+			printf("\n----------------------------------------------------------------\n");
+			printf("cdraw Player: Debug info removal complete.");
+			printf("\n----------------------------------------------------------------\n");
+			printf("\n----------------------------------------------------------------\n");
+			printf("cdraw Player: Hotbuild [%s] -> [%s]...", sw, gWindowPlatform.tag_cfg);
+			printf("\n----------------------------------------------------------------\n");
+			printf("  Building, please wait... \n");
+			status = (system(cmd) == 0);
+			printf("  Build %s. \n", statusText[status]);
+			printf("\n----------------------------------------------------------------\n");
+			printf("cdraw Player: Hotbuild complete.");
+			printf("\n----------------------------------------------------------------\n");
+
+			// post copy message to window
+			PostMessageA(p_window->hWnd, cdrawWinCtrlMsg_copy, 0, (LPARAM)status);
+		}
+		p_window->buildState = 0;
+	}
+	return status;
+}
+
+static result_t __stdcall cdrawWindowInternalBuildThread(cdrawWindow* const window)
+{
+	return cdrawWindowInternalBuild(window, false);
+}
+
+static result_t __stdcall cdrawWindowInternalRebuildThread(cdrawWindow* const window)
+{
+	return cdrawWindowInternalBuild(window, true);
+}
+
+static bool cdrawWindowInternalCreateBuildWarning(cdrawWindow* const window)
+{
+	cdrawWindow_win* const p_window = (cdrawWindow_win*)window->p_window;
+	if (p_window->buildState)
+	{
+		bool const hideCursor = (window->control & cdrawWindowControl_cursor_hide);
+
+		// reveal cursor
+		if (hideCursor)
+			ShowCursor(TRUE);
+
+		// warning
+		MessageBoxA(p_window->hWnd, "Please wait for build operation to finish.", "cdraw Player Application: Building", (MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND));
+
+		// reveal cursor
+		if (hideCursor)
+			ShowCursor(FALSE);
+
+		// done
+		return false;
+	}
+	return true;
+}
+
+static bool cdrawWindowInternalCopyBuild(cdrawWindow* const window)
+{
+	bool status = true;
+	cdrawWindow_win* const p_window = (cdrawWindow_win*)window->p_window;
+
+	byte_t bat[256] = { 0 };
+	byte_t cmd[1024] = { 0 };
+	label_t const proj = "cdrawPlugin";
+
+	// utility path
+	sprintf(bat, "%s\\_dev\\Windows\\cdraw_copybuild", gWindowPlatform.dir_sdk);
+
+	// call batch: call BATCH LIBPATH BINPATH FILE FILE DATAPATH
+	//	assemble: bat cfg cfg proj proj proj cfg
+	sprintf(cmd, "call \"%s\" \".\\lib%s\\\" \".\\bin%s\\%s\\\" \"%s.dll\" \"%s.dll\" \".\\bin%s\\data\\\" ", bat, gWindowPlatform.tag_cfg, gWindowPlatform.tag_cfg, proj, proj, proj, gWindowPlatform.tag_cfg);
+
+	// call copy utility
+	printf("\n----------------------------------------------------------------\n");
+	printf("cdraw Player: Deferred plugin copy attempt...");
+	printf("\n----------------------------------------------------------------\n");
+	status = (system(cmd) == 0);
+	printf("\n----------------------------------------------------------------\n");
+	printf("cdraw Player: Plugin copy complete.");
+	printf("\n----------------------------------------------------------------\n");
+
+	// done
+	return status;
+}
+
+static void cdrawWindowInternalCreateInfo(cdrawWindow* const window)
+{
+	bool const hideCursor = (window->control & cdrawWindowControl_cursor_hide);
+	bool const enterCmd = (window->control & cdrawWindowControl_ESC_command);
+
+	byte_t buffer[1024] = { 0 }, * bufferPtr = buffer;
+	cstrk_t const info[] = {
+		"cdraw Player Application: About",
+		"C-based cross-platform lightweight rendering framework.",
+		"Copyright 2023 Daniel S. Buckstein",
+	};
+	bufferPtr += sprintf(bufferPtr, "%s\n%s\n\n", info[1], info[2]);
+
+	cdrawWindowControl const winCtrlAll =
+		cdrawWindowControl_F1_info | cdrawWindowControl_F2_load | cdrawWindowControl_F3_reload | cdrawWindowControl_F4_unload |
+		cdrawWindowControl_F5_debug | cdrawWindowControl_F6_build | cdrawWindowControl_F7_rebuild | cdrawWindowControl_F8_fullscreen |
+		cdrawWindowControl_F9_user_1 | cdrawWindowControl_F10_user_2 | cdrawWindowControl_F11_user_3 | cdrawWindowControl_F12_user_cmd;
+	cdrawWindowControl winCtrl = cdrawWindowControl_F1_info;
+	uint32_t winCtrlCt = 0;
+	cstrk_t const ctrlBtn[] = {
+		"F1", "F2", "F3", "F4",
+		"F5", "F6", "F7", "F8",
+		"F9", "F10", "F11", "F12",
+	};
+	cstrk_t const ctrlCmd[] = {
+		" or cmd \'cdrawinfo\'", " or cmd \'cdrawload\'", " or cmd \'cdrawreload\'", " or cmd \'cdrawunload\'",
+		" or cmd \'cdrawdebug\'", " or cmd \'cdrawbuild\'", " or cmd \'cdrawrebuild\'", " or cmd \'cdrawfullscreen\'",
+		" or cmd \'cdrawuser1\'", " or cmd \'cdrawuser2\'", " or cmd \'cdrawuser3\'", " or cmd \'cdrawusercmd\'",
+	};
+	cstrk_t const ctrlDesc[] = {
+		"About dialog (you are here)",
+		"Plugin menu dialog",
+		"Reload current plugin",
+		"Unload current plugin",
+		"Load and run debug plugin",
+		"Hot build debug plugin",
+		"Hot rebuild debug plugin",
+		"Toggle full-screen",
+		"User 1",
+		"User 2",
+		"User 3",
+		"User 4, no cmd; VS break",
+	};
+
+	// print window features
+	if (window->control & winCtrlAll)
+	{
+		bufferPtr += sprintf(bufferPtr, "Window controls: \n");
+		while (winCtrl < cdrawWindowControl_ESC_command)
+		{
+			if (window->control & winCtrl)
+				bufferPtr += sprintf(bufferPtr, "  %s%s: %s \n", ctrlBtn[winCtrlCt],
+					enterCmd ? ctrlCmd[winCtrlCt] : "", ctrlDesc[winCtrlCt]);
+			winCtrl <<= 1;
+			++winCtrlCt;
+		}
+		if (enterCmd)
+		{
+			bufferPtr += sprintf(bufferPtr, "  %s\n  %s\n",
+				"ESC: Enter and send cmd to window or user 4",
+				"cmd cdraw EXIT: Quit application");
+		}
+		bufferPtr += sprintf(bufferPtr, "\n");
+	}
+	else
+		bufferPtr += sprintf(bufferPtr, "No window controls.\n\n");
+
+	// print plugin info
+	if (window->p_plugin)
+	{
+		bufferPtr += sprintf(bufferPtr, "Plugin: ");
+		cdrawPluginInfoPrint(&window->p_plugin->info, &bufferPtr);
+		bufferPtr += sprintf(bufferPtr, "\n");
+	}
+	else
+		bufferPtr += sprintf(bufferPtr, "No plugin attached.\n\n");
+
+	// reveal cursor
+	if (hideCursor)
+		ShowCursor(TRUE);
+
+	// present message box
+	cdrawWindow_win const* p_window = (cdrawWindow_win*)window->p_window;
+	MessageBoxA(p_window->hWnd, buffer, *info, (MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND));
+
+	// hide cursor
+	if (hideCursor)
+		ShowCursor(FALSE);
+}
+
+static LRESULT __stdcall cdrawWindowInternalEventProcessList(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	typedef struct cdrawWindowDialog
+	{
+		HWND box, text;
+		cdrawPluginInfo* pluginInfo;
+		size_t pluginInfoCount;
+		cdrawWindowControl winCtrl;
+	} cdrawWindowDialog;
+	cdrawWindowDialog* dlg = (cdrawWindowDialog*)GetWindowLongPtrA(hDlg, GWLP_USERDATA);
+
+	word_t const value = LOWORD(wParam), cmd = HIWORD(wParam);
+	switch (message)
+	{
+		// used instead of WM_CREATE for dialog boxes
+	case WM_INITDIALOG: {
+		HINSTANCE const inst = (HINSTANCE)GetWindowLongPtrA(hDlg, GWLP_HINSTANCE);
+		cdrawWindowControl const winCtrl = (cdrawWindowControl)lParam;
+		byte_t caption[256] = { 0 };
+		RECT rect = { 0 };
+		HWND box = 0, text = 0;
+		cdrawPluginInfo* pluginInfo = 0;
+		size_t pluginInfoCount = 0, i = 0;
+		int32_t pos = -1;
+
+		GetWindowTextA(hDlg, caption, sizeof(caption));
+		switch (winCtrl)
+		{
+		case cdrawWindowControl_F2_load: {
+			// relative path to plugin info resource
+			cstrk_t const cdraw_PLUGIN_INFO_PATH = "../../../../resource/_plugin/cdraw_plugin_info.txt";
+
+			// load plugin data
+			if (result_isclean(cdrawPluginInfoListLoad(&pluginInfo, &pluginInfoCount, cdraw_PLUGIN_INFO_PATH)) && pluginInfoCount)
+			{
+				int32_t w, h;
+
+				// create plugin box
+				strcat(caption, "Load Plugin");
+				GetWindowRect(hDlg, &rect);
+				box = CreateWindowExA(0, "LISTBOX", 0,
+					(WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_AUTOVSCROLL | LBS_NOTIFY),
+					(8), (8), (w = (rect.right - rect.left - 304)), (h = (rect.bottom - rect.top - 96)),
+					hDlg, 0, inst, NULL);
+				SetFocus(box);
+
+				// create info display box
+				text = CreateWindowExA(0, "STATIC", 0,
+					(WS_CHILD | WS_VISIBLE | SS_LEFT),
+					(w + 16), (8), w, h,
+					hDlg, 0, inst, NULL);
+				SetWindowTextA(text, "Select plugin info to display.");
+
+				// populate list
+				for (i = 0; i < pluginInfoCount; ++i)
+				{
+					pos = (int32_t)SendMessageA(box, LB_ADDSTRING, 0, (LPARAM)pluginInfo[i].name);
+					if (pos >= 0)
+						SendMessageA(box, LB_SETITEMDATA, pos, (LPARAM)i);
+				}
+			}
+			// if empty, display warning and close dialog before it appears
+			else
+			{
+				MessageBoxA(hDlg, "No plugin information available.", "cdraw Player Application: Load Plugin Failed", (MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND));
+				EndDialog(hDlg, value);
+				return TRUE;
+			}
+		}	break;
+		case cdrawWindowControl_ESC_command: {
+			int32_t w, h;
+
+			// create command box
+			strcat(caption, "Enter Command");
+			GetWindowRect(hDlg, &rect);
+			box = CreateWindowExA(0, "EDIT", 0,
+				(WS_CHILD | WS_VISIBLE | WS_VSCROLL | ES_LEFT | ES_MULTILINE | ES_WANTRETURN | ES_AUTOVSCROLL),
+				(8), (8), (w = (rect.right - rect.left - 32)), (h = (rect.bottom - rect.top - 96)),
+				hDlg, 0, inst, NULL);
+			SetFocus(box);
+
+			// create info display box
+			text = CreateWindowExA(0, "STATIC", 0,
+				(WS_CHILD | WS_VISIBLE | SS_LEFT),
+				(8), (h + 24), 256, 16,
+				hDlg, 0, inst, NULL);
+			SetWindowTextA(text, "Enter command.");
+		}	break;
+		}
+		dlg = (cdrawWindowDialog*)malloc(sizeof(cdrawWindowDialog));
+		if (dlg)
+		{
+			dlg->box = box;
+			dlg->text = text;
+			dlg->pluginInfo = pluginInfo;
+			dlg->pluginInfoCount = pluginInfoCount;
+			dlg->winCtrl = winCtrl;
+			SetWindowTextA(hDlg, caption);
+			SetWindowLongPtrA(hDlg, GWLP_USERDATA, (LONG_PTR)dlg);
+			return TRUE;
+		}
+		return FALSE;
+	}
+	case WM_CLOSE: {
+		if (dlg->winCtrl == cdrawWindowControl_F2_load)
+			cdrawPluginInfoListRelease(&dlg->pluginInfo);
+		free(dlg);
+		EndDialog(hDlg, value);
+		return TRUE;
+	}
+	case WM_COMMAND:
+		switch (cmd)
+		{
+		case EN_CHANGE:
+			if (dlg->winCtrl == cdrawWindowControl_ESC_command)
+			{
+				// toggle OK button
+				if (SendMessageA(dlg->box, WM_GETTEXTLENGTH, 0, 0))
+				{
+					EnableWindow(GetDlgItem(hDlg, IDOK), TRUE);
+					SetWindowTextA(dlg->text, "Press OK to send command.");
+				}
+				else
+				{
+					EnableWindow(GetDlgItem(hDlg, IDOK), FALSE);
+					SetWindowTextA(dlg->text, "Enter command.");
+				}
+				return TRUE;
+			}
+			break;
+		case LBN_SELCHANGE:
+		case LBN_DBLCLK:
+			if (dlg->winCtrl == cdrawWindowControl_F2_load)
+			{
+				cdrawPluginInfo const* info = 0;
+				byte_t buf[512] = { 0 };
+				int32_t i = -1;
+
+				// display info in text box
+				i = (int32_t)SendMessageA(dlg->box, LB_GETCURSEL, 0, 0);
+				if (i >= 0)
+				{
+					i = (int32_t)SendMessageA(dlg->box, LB_GETITEMDATA, i, 0);
+					info = dlg->pluginInfo + i;
+					sprintf(buf, "Press OK to load plugin: \n\n\"%s\" \n  By %s \n  Ver. %s \n%s \n",
+						info->name, info->author, info->version, info->details);
+					SetWindowTextA(dlg->text, buf);
+
+					// enable OK button
+					EnableWindow(GetDlgItem(hDlg, IDOK), TRUE);
+				}
+				return TRUE;
+			}
+			break;
+		case LBN_SELCANCEL: {
+			SetWindowTextA(dlg->text, "Select plugin info to display.");
+		}	break;
+
+		default:
+			switch (value)
+			{
+			case IDOK: {
+				//	send command to parent window
+				HWND hWnd = GetParent(hDlg);
+				switch (dlg->winCtrl)
+				{
+				case cdrawWindowControl_F2_load: {
+					//	send info structure at selected index
+					cdrawPluginInfo const* info = 0;
+					int32_t i = (int32_t)SendMessageA(dlg->box, LB_GETCURSEL, 0, 0);
+					if (i >= 0)
+					{
+						i = (int32_t)SendMessageA(dlg->box, LB_GETITEMDATA, i, 0);
+						info = dlg->pluginInfo + i;
+						SendMessageA(hWnd, cdrawWinCtrlMsg_unload, (WPARAM)true, 0);
+						SendMessageA(hWnd, cdrawWinCtrlMsg_load, (WPARAM)i, (LPARAM)info);
+					}
+					else
+					{
+						MessageBoxA(hDlg, "Error: Invalid plugin info.", "cdraw Player Application: Load Plugin Failed", (MB_OK | MB_ICONHAND | MB_SETFOREGROUND));
+					}
+				}	break;
+				case cdrawWindowControl_ESC_command: {
+					//	send command string
+					int32_t const i = GetWindowTextLengthA(dlg->box);
+					if (i > 0)
+					{
+						cstr_t buf = (cstr_t)malloc((size_t)i + 1);
+						if (buf)
+						{
+							buf[i] = 0;
+							GetWindowTextA(dlg->box, buf, (i + 1));
+							SendMessageA(hWnd, cdrawWinCtrlMsg_cmd, (WPARAM)i, (LPARAM)buf);
+							free(buf);
+						}
+					}
+				}	break;
+				}
+				// fall through to close
+			}
+			case IDCLOSE:
+			case IDCANCEL:
+				// exit dialog
+				if (dlg->winCtrl == cdrawWindowControl_F2_load)
+					cdrawPluginInfoListRelease(&dlg->pluginInfo);
+				free(dlg);
+				EndDialog(hDlg, value);
+				return TRUE;
+			}
+			break;
+		}
+	}
+
+	// do not pass unprocessed messages to DefDlgProc, recursive
+	return FALSE;
+}
+
+static void cdrawWindowInternalCreateDialog(cdrawWindow* const window, cdrawWindowControl const purpose)
+{
+	cdrawWindow_win* const p_window = (cdrawWindow_win*)window->p_window;
+	int8_t const dialogID = gWindowPlatform.res_dialog;
+	bool const hideCursor = (window->control & cdrawWindowControl_cursor_hide);
+	LPCSTR const dialogRes = MAKEINTRESOURCEA(dialogID);
+
+	// reveal cursor
+	if (hideCursor)
+		ShowCursor(TRUE);
+
+	// present dialog box
+	DialogBoxParamA(gWindowPlatform.info.hInstance, dialogRes, p_window->hWnd, cdrawWindowInternalEventProcessList, (LPARAM)purpose);
+
+	// hide cursor
+	if (hideCursor)
+		ShowCursor(FALSE);
+}
+
+static void cdrawWindowInternalToggleFullScreen(cdrawWindow* const window)
+{
+	MONITORINFO monitorArea = { sizeof(MONITORINFO) };
+	RECT displayArea = { 0 };
+
+	cdrawWindow_win* const p_window = (cdrawWindow_win*)window->p_window;
+	HWND hWnd = p_window->hWnd;
+	dword_t style = (dword_t)GetWindowLongPtrA(hWnd, GWL_STYLE), styleEx = (dword_t)GetWindowLongPtrA(hWnd, GWL_EXSTYLE);
+
+	// full-screen if original display area is not all zeros
+	if (p_window->restoreArea.left | p_window->restoreArea.top | p_window->restoreArea.right | p_window->restoreArea.bottom)
+	{
+		// full-screen to windowed
+		styleEx |= WS_EX_WINDOWEDGE;
+		style |= WS_OVERLAPPEDWINDOW;
+		displayArea = p_window->restoreArea;
+		memset(&p_window->restoreArea, 0, sizeof(p_window->restoreArea));
+	}
+	else
+	{
+		// windowed to full-screen
+		styleEx &= ~WS_EX_WINDOWEDGE;
+		style &= ~WS_OVERLAPPEDWINDOW;
+		GetWindowRect(hWnd, &p_window->restoreArea);
+		GetMonitorInfoA(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST), &monitorArea);
+		displayArea = monitorArea.rcMonitor;
+		//GetWindowRect(GetDesktopWindow(), &displayArea);
+		//AdjustWindowRectEx(&displayArea, style, false, styleEx);
+	}
+
+	// perform resize
+	SetWindowLongPtrA(hWnd, GWL_EXSTYLE, styleEx);
+	SetWindowLongPtrA(hWnd, GWL_STYLE, style);
+	MoveWindow(hWnd, displayArea.left, displayArea.top, (displayArea.right - displayArea.left), (displayArea.bottom - displayArea.top), TRUE);
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF1(cdrawWindow* const window)
+{
+	cdrawWindowInternalCreateInfo(window);
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF2(cdrawWindow* const window)
+{
+	if (cdrawWindowInternalCreateBuildWarning(window))
+	{
+		cdrawWindowInternalCreateDialog(window, cdrawWindowControl_F2_load);
+	}
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF3(cdrawWindow* const window)
+{
+	if (cdrawWindowInternalCreateBuildWarning(window))
+	{
+		cdrawWindow_win const* p_window = (cdrawWindow_win*)window->p_window;
+		SendMessageA(p_window->hWnd, cdrawWinCtrlMsg_reload, 0, 0);
+	}
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF4(cdrawWindow* const window)
+{
+	if (cdrawWindowInternalCreateBuildWarning(window))
+	{
+		cdrawWindow_win const* p_window = (cdrawWindow_win*)window->p_window;
+		SendMessageA(p_window->hWnd, cdrawWinCtrlMsg_unload, (WPARAM)true, 0);
+	}
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF5(cdrawWindow* const window)
+{
+	if (cdrawWindowInternalCreateBuildWarning(window))
+	{
+		cdrawWindow_win const* p_window = (cdrawWindow_win*)window->p_window;
+		SendMessageA(p_window->hWnd, cdrawWinCtrlMsg_debug, (WPARAM)true, 0);
+	}
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF6(cdrawWindow* const window)
+{
+	if (cdrawWindowInternalCreateBuildWarning(window))
+	{
+		cdrawWindow_win const* p_window = (cdrawWindow_win*)window->p_window;
+		SendMessageA(p_window->hWnd, cdrawWinCtrlMsg_build, 0, 0);
+	}
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF7(cdrawWindow* const window)
+{
+	if (cdrawWindowInternalCreateBuildWarning(window))
+	{
+		cdrawWindow_win const* p_window = (cdrawWindow_win*)window->p_window;
+		SendMessageA(p_window->hWnd, cdrawWinCtrlMsg_rebuild, 0, 0);
+	}
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF8(cdrawWindow* const window)
+{
+	cdrawWindowInternalToggleFullScreen(window);
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF9(cdrawWindow* const window)
+{
+	cdrawWindow_win const* p_window = (cdrawWindow_win*)window->p_window;
+	if (window->p_plugin && p_window->pluginOwner)
+		cdrawPluginCallOnUser1(window->p_plugin, p_window->pluginOwner);
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF10(cdrawWindow* const window)
+{
+	cdrawWindow_win const* p_window = (cdrawWindow_win*)window->p_window;
+	if (window->p_plugin && p_window->pluginOwner)
+		cdrawPluginCallOnUser2(window->p_plugin, p_window->pluginOwner);
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF11(cdrawWindow* const window)
+{
+	cdrawWindow_win const* p_window = (cdrawWindow_win*)window->p_window;
+	if (window->p_plugin && p_window->pluginOwner)
+		cdrawPluginCallOnUser3(window->p_plugin, p_window->pluginOwner);
+}
+
+CDRAW_INL void cdrawWindowInternalHandleF12(cdrawWindow* const window)
+{
+	cdrawWindow_win const* p_window = (cdrawWindow_win*)window->p_window;
+	if (window->p_plugin && p_window->pluginOwner)
+		cdrawPluginCallOnUserCmd(window->p_plugin, p_window->pluginOwner, 0, NULL);
+}
+
+CDRAW_INL void cdrawWindowInternalHandleESC(cdrawWindow* const window)
+{
+	cdrawWindowInternalCreateDialog(window, cdrawWindowControl_ESC_command);
+}
 
 static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	cdrawWindow* window = (cdrawWindow*)GetWindowLongPtrA(hWnd, GWLP_USERDATA);
+	cdrawWindow* window;
 	cdrawWindow_win* p_window;
 	switch (message)
 	{
+		// INITIAL WINDOW CREATION
 	case WM_NCCREATE: {
+		window = (cdrawWindow*)GetWindowLongPtrA(hWnd, GWLP_USERDATA);
 		cdraw_assert(window == NULL);
 		p_window = (cdrawWindow_win*)malloc(sizeof(cdrawWindow_win));
 		if (p_window)
@@ -124,43 +728,129 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 			++gWindowPlatform.windowCount;
 		}
 	}	break;
+	
+		// FINISH WINDOW CREATION
 	case WM_CREATE: {
-		// NOTHING ELSE TO DO
+		// NOTHING ELSE TO DO - would set up rendering here if the window owned a context
 	}	break;
+
+		// WINDOW CLOSED
 	case WM_CLOSE: {
 		// recursively take down windows
 		DestroyWindow(hWnd);
 	}	break;
+	
+		// WINDOW DESTROYED - would clean up rendering here
 	case WM_DESTROY: {
-		if (window->p_plugin && window->p_plugin->p_owner == window)
-			cdrawPluginUnload(window->p_plugin, window);
+		window = (cdrawWindow*)GetWindowLongPtrA(hWnd, GWLP_USERDATA);
+		cdraw_assert(window);
 		p_window = (cdrawWindow_win*)window->p_window;
-		if (p_window)
+		cdraw_assert(p_window);
+
+		if (window->p_plugin && p_window->pluginOwner)
 		{
-			ReleaseDC(hWnd, p_window->hDC);
-			free(p_window);
-			window->p_window = NULL;
+			cdrawWindowPluginDetach(window);
+			if (p_window->pluginOwner == p_window)
+				cdrawPluginUnload(window->p_plugin, p_window->pluginOwner);
 		}
+
+		ReleaseDC(hWnd, p_window->hDC);
+		free(p_window);
+		window->p_window = NULL;
 
 		// terminate loop if all windows closed
 		--gWindowPlatform.windowCount;
 		if (gWindowPlatform.windowCount <= 0)
 			PostQuitMessage(0);
 	}	break;
-	case WM_PAINT: {
 
+		// DISPLAY REFRESH
+	case WM_PAINT: {
+		PAINTSTRUCT paint;
+		RECT area;
+		HDC hDC;
+		BOOL result = GetUpdateRect(hWnd, &area, 0);
+		hDC = BeginPaint(hWnd, &paint);
+		result = FillRect(hDC, &area, (HBRUSH)(COLOR_WINDOW));
+		result = EndPaint(hWnd, &paint);
+
+		window = (cdrawWindow*)GetWindowLongPtrA(hWnd, GWLP_USERDATA);
+		cdraw_assert(window);
+		p_window = (cdrawWindow_win*)window->p_window;
+		cdraw_assert(p_window);
+		if (window->p_plugin && p_window->pluginOwner)
+			cdrawPluginCallOnDisplay(window->p_plugin, p_window->pluginOwner);
 	}	break;
+
+		// MENU OR ACCELERATOR
+	case WM_COMMAND: {
+		word_t const value = LOWORD(wParam);
+		word_t const base = gWindowPlatform.res_control_base;
+		window = (cdrawWindow*)GetWindowLongPtrA(hWnd, GWLP_USERDATA);
+		cdraw_assert(window);
+		p_window = (cdrawWindow_win*)window->p_window;
+		cdraw_assert(p_window);
+		switch (value - base)
+		{
+		case 0: // F1: info dialog
+			if (window->control & cdrawWindowControl_F1_info)
+				cdrawWindowInternalHandleF1(window);
+			break;
+		case 1: // F2: load plugin dialog
+			if (window->control & cdrawWindowControl_F2_load)
+				cdrawWindowInternalHandleF2(window);
+			break;
+		case 2: // F3: reload plugin
+			if (window->control & cdrawWindowControl_F3_reload)
+				cdrawWindowInternalHandleF3(window);
+			break;
+		case 3: // F4: unload plugin
+			if (window->control & cdrawWindowControl_F4_unload)
+				cdrawWindowInternalHandleF4(window);
+			break;
+		case 4: // F5: debug plugin
+			if (window->control & cdrawWindowControl_F5_debug)
+				cdrawWindowInternalHandleF5(window);
+			break;
+		case 5: // F6: hot-build plugin
+			if (window->control & cdrawWindowControl_F6_build)
+				cdrawWindowInternalHandleF6(window);
+			break;
+		case 6: // F7: hot-rebuild plugin
+			if (window->control & cdrawWindowControl_F7_rebuild)
+				cdrawWindowInternalHandleF7(window);
+			break;
+		case 7: // F8: toggle full-screen
+			if (window->control & cdrawWindowControl_F8_fullscreen)
+				cdrawWindowInternalHandleF8(window);
+			break;
+		case 8: // F9: user 1
+			if (window->control & cdrawWindowControl_F9_user_1)
+				cdrawWindowInternalHandleF9(window);
+			break;
+		case 9: // F10: user 2
+			if (window->control & cdrawWindowControl_F10_user_2)
+				cdrawWindowInternalHandleF10(window);
+			break;
+		case 10: // F11: user 3
+			if (window->control & cdrawWindowControl_F11_user_3)
+				cdrawWindowInternalHandleF11(window);
+			break;
+		case 11: // F12: user 4
+			if (window->control & cdrawWindowControl_F12_user_cmd)
+				cdrawWindowInternalHandleF12(window);
+			break;
+		case 12: // ESC: command dialog
+			if (window->control & cdrawWindowControl_ESC_command)
+				cdrawWindowInternalHandleESC(window);
+			break;
+		}
+	}	break;
+
 	default:
 		break;
 	}
 	return DefWindowProcA(hWnd, message, wParam, lParam);
-}
-
-static LRESULT CALLBACK cdrawWindowInternalEventProcessList(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-
-	// do not pass unprocessed messages to DefDlgProc, recursive
-	return FALSE;
 }
 
 bool cdrawWindowInternalPlatformInit_win(HINSTANCE const inst,
@@ -213,7 +903,6 @@ bool cdrawWindowInternalPlatformTerm_win(HINSTANCE const inst)
 	return true;
 }
 
-
 static result_t cdrawApplicationInternalStartSingleInstance(ptr_t* const handle_out, label_t const instanceName, int32_t* const index_out_opt)
 {
 	result_init();
@@ -255,8 +944,8 @@ static void cdrawWindowInternalLockCursor(cdrawWindow* const window)
 	{
 		cdrawWindow_win* const p_window = (cdrawWindow_win*)window->p_window;
 		HWND const handle = p_window->hWnd;
-		POINT corner_tl, corner_br;
-		RECT displayArea;
+		POINT corner_tl = { 0 }, corner_br = { 0 };
+		RECT displayArea = { 0 };
 		GetClientRect(handle, &displayArea);
 		corner_tl.x = displayArea.left;
 		corner_tl.y = displayArea.top;
@@ -276,60 +965,6 @@ static void cdrawWindowInternalLockCursor(cdrawWindow* const window)
 	}
 }
 
-static void cdrawWindowInternalToggleFullScreen(cdrawWindow* const window)
-{
-	MONITORINFO monitorArea = { sizeof(MONITORINFO) };
-	RECT displayArea = { 0 };
-
-	cdrawWindow_win* const p_window = (cdrawWindow_win*)window->p_window;
-	HWND hWnd = p_window->hWnd;
-	dword_t style = (dword_t)GetWindowLongPtrA(hWnd, GWL_STYLE), styleEx = (dword_t)GetWindowLongPtrA(hWnd, GWL_EXSTYLE);
-
-	// full-screen if original display area is not all zeros
-	if (p_window->restoreArea.left | p_window->restoreArea.top | p_window->restoreArea.right | p_window->restoreArea.bottom)
-	{
-		// full-screen to windowed
-		styleEx |= WS_EX_WINDOWEDGE;
-		style |= WS_OVERLAPPEDWINDOW;
-		displayArea = p_window->restoreArea;
-		memset(&p_window->restoreArea, 0, sizeof(p_window->restoreArea));
-	}
-	else
-	{
-		// windowed to full-screen
-		styleEx &= ~WS_EX_WINDOWEDGE;
-		style &= ~WS_OVERLAPPEDWINDOW;
-		GetWindowRect(hWnd, &p_window->restoreArea);
-		GetMonitorInfoA(MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST), &monitorArea);
-		displayArea = monitorArea.rcMonitor;
-		//GetWindowRect(GetDesktopWindow(), &displayArea);
-		//AdjustWindowRectEx(&displayArea, style, false, styleEx);
-	}
-
-	// perform resize
-	SetWindowLongPtrA(hWnd, GWL_EXSTYLE, styleEx);
-	SetWindowLongPtrA(hWnd, GWL_STYLE, style);
-	MoveWindow(hWnd, displayArea.left, displayArea.top, (displayArea.right - displayArea.left), (displayArea.bottom - displayArea.top), TRUE);
-}
-
-static void cdrawWindowInternalCreateDialog(cdrawWindow* const window, cdrawWindowControl const purpose)
-{
-	cdrawWindow_win* const p_window = (cdrawWindow_win*)window->p_window;
-	int8_t const dialogID = gWindowPlatform.res_dialog;
-	bool const hideCursor = (window->control & cdrawWindowControl_cursor_hide);
-	LPCSTR const dialogRes = MAKEINTRESOURCEA(dialogID);
-
-	// reveal cursor
-	if (hideCursor)
-		ShowCursor(TRUE);
-
-	// present dialog box
-	DialogBoxParamA(gWindowPlatform.info.hInstance, dialogRes, p_window->hWnd, cdrawWindowInternalEventProcessList, (LPARAM)purpose);
-
-	// hide cursor
-	if (hideCursor)
-		ShowCursor(FALSE);
-}
 
 /******************************************************************************
 * Public functions.
@@ -580,8 +1215,8 @@ result_t cdrawWindowLoop(ptr_t const data_opt)
 			p_window = window ? (cdrawWindow_win*)window->p_window : NULL;
 
 			// idle callback
-			if (window && window->p_plugin)
-				result = cdrawPluginCallOnIdle(window->p_plugin, window->p_plugin->p_owner);
+			if (window && window->p_plugin && p_window->pluginOwner)
+				result = cdrawPluginCallOnIdle(window->p_plugin, p_window->pluginOwner);
 
 			// if the result is positive, plugin threw a flag or warning
 			if (result_haswarns(result))

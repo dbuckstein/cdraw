@@ -68,7 +68,7 @@
 //-----------------------------------------------------------------------------
 
 // release the PDB in a chaotic fashion (see sources at top of file)
-result_t cdrawWindowInternalUnlockPDB_win(label_t const sdkDirStr, label_t const cfgDirStr, label_t const projName)
+bool cdrawWindowInternalUnlockPDB_win(label_t const sdkDirStr, label_t const cfgDirStr, label_t const projName)
 {
 	typedef NTSTATUS(NTAPI* _NtQuerySystemInformation)(
 		ULONG SystemInformationClass,
@@ -152,7 +152,7 @@ result_t cdrawWindowInternalUnlockPDB_win(label_t const sdkDirStr, label_t const
 
 
 	// data
-	result_t result = 0;
+	bool result = false;
 	byte_t pdbName[512] = ".pdb";
 	word_t pdbNamew[512] = L".pdb";
 	byte_t pdb[1024] = ".pdb";
@@ -265,7 +265,7 @@ result_t cdrawWindowInternalUnlockPDB_win(label_t const sdkDirStr, label_t const
 														// create and immediately close pdb file
 														dupHandle = CreateFileA(pdb, GENERIC_READ | GENERIC_WRITE, 0, 0, OPEN_EXISTING, FILE_FLAG_DELETE_ON_CLOSE, 0);
 														if (dupHandle)
-															result = CloseHandle(dupHandle);
+															result = (CloseHandle(dupHandle) != 0);
 
 														// done
 														j = handleInfo->HandleCount;
@@ -296,7 +296,7 @@ result_t cdrawWindowInternalUnlockPDB_win(label_t const sdkDirStr, label_t const
 			}
 			// if no processes are holding the file, we must be done... right?
 			else if (nProcInfo == 0)
-				result = 1;
+				result = true;
 		}
 
 		// end session

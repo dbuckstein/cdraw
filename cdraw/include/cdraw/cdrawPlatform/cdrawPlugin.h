@@ -220,7 +220,7 @@ extern "C" {
 	result_t cdrawPluginUnload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 	/// <summary>
-	/// Call to safely invoke window attach callback with format: func(ptr_t data, int32_t w, int32_t h, int32_t x, int32_t y).
+	/// Call to safely invoke window attach callback with format: func(ptr_t data, int32_t w, int32_t h, int32_t x, int32_t y, ptrk_t windowPlatform_opt).
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
@@ -228,32 +228,36 @@ extern "C" {
 	/// <param name="h">Vertical dimension (height).</param>
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
+	/// <param name="windowPlatform_opt">Optional pointer to window platform data.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>	
-	result_t cdrawPluginCallOnWindowAttach(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const w, int32_t const h, int32_t const x, int32_t const y);
+	result_t cdrawPluginCallOnWindowAttach(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const w, int32_t const h, int32_t const x, int32_t const y, ptrk_t const windowPlatform_opt);
 	
 	/// <summary>
-	/// Call to safely invoke window detach callback with format: func(ptr_t data).
+	/// Call to safely invoke window detach callback with format: func(ptr_t data, ptrk_t windowPlatform_opt).
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
+	/// <param name="windowPlatform_opt">Optional pointer to window platform data.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>	
-	result_t cdrawPluginCallOnWindowDetach(cdrawPlugin const* const plugin, ptrk_t const caller);
+	result_t cdrawPluginCallOnWindowDetach(cdrawPlugin const* const plugin, ptrk_t const caller, ptrk_t const windowPlatform_opt);
 	
 	/// <summary>
-	/// Call to safely invoke window activate callback with format: func(ptr_t data)
+	/// Call to safely invoke window activate callback with format: func(ptr_t data, ptrk_t windowPlatform_opt)
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
+	/// <param name="windowPlatform_opt">Optional pointer to window platform data.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>	
-	result_t cdrawPluginCallOnWindowActivate(cdrawPlugin const* const plugin, ptrk_t const caller);
+	result_t cdrawPluginCallOnWindowActivate(cdrawPlugin const* const plugin, ptrk_t const caller, ptrk_t const windowPlatform_opt);
 	
 	/// <summary>
-	/// Call to safely invoke window deactivate callback with format: func(ptr_t data)
+	/// Call to safely invoke window deactivate callback with format: func(ptr_t data, ptrk_t windowPlatform_opt)
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
+	/// <param name="windowPlatform_opt">Optional pointer to window platform data.</param>
 	/// <returns>Zero if success, error code otherwise.</returns>	
-	result_t cdrawPluginCallOnWindowDeactivate(cdrawPlugin const* const plugin, ptrk_t const caller);
+	result_t cdrawPluginCallOnWindowDeactivate(cdrawPlugin const* const plugin, ptrk_t const caller, ptrk_t const windowPlatform_opt);
 	
 	/// <summary>
 	/// Call to safely invoke window resize callback with format: func(ptr_t data, int32_t w, int32_t h)

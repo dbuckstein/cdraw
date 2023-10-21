@@ -544,43 +544,43 @@ result_t cdrawPluginCallPreUnload(cdrawPlugin* const plugin, ptrk_t const caller
 	result_return();
 }
 
-result_t cdrawPluginCallOnWindowAttach(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const w, int32_t const h, int32_t const x, int32_t const y)
+result_t cdrawPluginCallOnWindowAttach(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const w, int32_t const h, int32_t const x, int32_t const y, ptrk_t const windowPlatform_opt)
 {
 	result_init();
 	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_win_attach, errcode_plugin_callback);
-	result_inc(plugin->cb_win_attach(plugin->p_data, w, h, x, y));
+	result_inc(plugin->cb_win_attach(plugin->p_data, w, h, x, y, windowPlatform_opt));
 	result_return();
 }
 
-result_t cdrawPluginCallOnWindowDetach(cdrawPlugin const* const plugin, ptrk_t const caller)
+result_t cdrawPluginCallOnWindowDetach(cdrawPlugin const* const plugin, ptrk_t const caller, ptrk_t const windowPlatform_opt)
 {
 	result_init();
 	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_win_detach, errcode_plugin_callback);
-	result_inc(plugin->cb_win_detach(plugin->p_data));
+	result_inc(plugin->cb_win_detach(plugin->p_data, windowPlatform_opt));
 	result_return();
 }
 
-result_t cdrawPluginCallOnWindowActivate(cdrawPlugin const* const plugin, ptrk_t const caller)
+result_t cdrawPluginCallOnWindowActivate(cdrawPlugin const* const plugin, ptrk_t const caller, ptrk_t const windowPlatform_opt)
 {
 	result_init();
 	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_win_activate, errcode_plugin_callback);
-	result_inc(plugin->cb_win_activate(plugin->p_data));
+	result_inc(plugin->cb_win_activate(plugin->p_data, windowPlatform_opt));
 	result_return();
 }
 
-result_t cdrawPluginCallOnWindowDeactivate(cdrawPlugin const* const plugin, ptrk_t const caller)
+result_t cdrawPluginCallOnWindowDeactivate(cdrawPlugin const* const plugin, ptrk_t const caller, ptrk_t const windowPlatform_opt)
 {
 	result_init();
 	asserterr(plugin && (plugin->id != -1) && plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	asserterr_ptr(plugin->cb_win_deactivate, errcode_plugin_callback);
-	result_inc(plugin->cb_win_deactivate(plugin->p_data));
+	result_inc(plugin->cb_win_deactivate(plugin->p_data, windowPlatform_opt));
 	result_return();
 }
 
