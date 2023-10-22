@@ -31,10 +31,10 @@ extern "C" {
 	CDRAW_DYLIB_SYMBOL result_t cb_reload_pre(ptr_t* const data_inout);
 	CDRAW_DYLIB_SYMBOL result_t cb_reload_post(ptr_t* const data_inout);
 	CDRAW_DYLIB_SYMBOL result_t cb_unload_pre(ptr_t* const data_inout);
-	CDRAW_DYLIB_SYMBOL result_t cb_win_attach(ptr_t const data, int32_t const w, int32_t const h, int32_t const x, int32_t const y);
-	CDRAW_DYLIB_SYMBOL result_t cb_win_detach(ptr_t const data);
-	CDRAW_DYLIB_SYMBOL result_t cb_win_activate(ptr_t const data);
-	CDRAW_DYLIB_SYMBOL result_t cb_win_deactivate(ptr_t const data);
+	CDRAW_DYLIB_SYMBOL result_t cb_win_attach(ptr_t const data, int32_t const w, int32_t const h, int32_t const x, int32_t const y, ptrk_t const windowPlatform_opt);
+	CDRAW_DYLIB_SYMBOL result_t cb_win_detach(ptr_t const data, ptrk_t const windowPlatform_opt);
+	CDRAW_DYLIB_SYMBOL result_t cb_win_activate(ptr_t const data, ptrk_t const windowPlatform_opt);
+	CDRAW_DYLIB_SYMBOL result_t cb_win_deactivate(ptr_t const data, ptrk_t const windowPlatform_opt);
 	CDRAW_DYLIB_SYMBOL result_t cb_win_resize(ptr_t const data, int32_t const w, int32_t const h);
 	CDRAW_DYLIB_SYMBOL result_t cb_win_move(ptr_t const data, int32_t const x, int32_t const y);
 	CDRAW_DYLIB_SYMBOL result_t cb_display(ptr_t const data);
@@ -102,28 +102,28 @@ result_t cb_unload_pre(ptr_t* const data_inout)
 	return printf("\n" __FUNCTION__ "(%p) -> %p", data_inout, *data_inout);
 }
 
-result_t cb_win_attach(ptr_t const data, int32_t const w, int32_t const h, int32_t const x, int32_t const y)
+result_t cb_win_attach(ptr_t const data, int32_t const w, int32_t const h, int32_t const x, int32_t const y, ptrk_t const windowPlatform_opt)
 {
 
-	return printf("\n" __FUNCTION__ "(%p, %d, %d, %d, %d)", data, w, h, x, y);
+	return printf("\n" __FUNCTION__ "(%p, %d, %d, %d, %d, %p)", data, w, h, x, y, windowPlatform_opt);
 }
 
-result_t cb_win_detach(ptr_t const data)
+result_t cb_win_detach(ptr_t const data, ptrk_t const windowPlatform_opt)
 {
 
-	return printf("\n" __FUNCTION__ "(%p)", data);
+	return printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
 }
 
-result_t cb_win_activate(ptr_t const data)
+result_t cb_win_activate(ptr_t const data, ptrk_t const windowPlatform_opt)
 {
 
-	return printf("\n" __FUNCTION__ "(%p)", data);
+	return printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
 }
 
-result_t cb_win_deactivate(ptr_t const data)
+result_t cb_win_deactivate(ptr_t const data, ptrk_t const windowPlatform_opt)
 {
 
-	return printf("\n" __FUNCTION__ "(%p)", data);
+	return printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
 }
 
 result_t cb_win_resize(ptr_t const data, int32_t const w, int32_t const h)
@@ -141,13 +141,13 @@ result_t cb_win_move(ptr_t const data, int32_t const x, int32_t const y)
 result_t cb_display(ptr_t const data)
 {
 
-	return printf("\n" __FUNCTION__ "(%p)", data);
+	return 0;// printf("\n" __FUNCTION__ "(%p)", data);
 }
 
 result_t cb_idle(ptr_t const data)
 {
 
-	return printf("\n" __FUNCTION__ "(%p)", data);
+	return 0;// printf("\n" __FUNCTION__ "(%p)", data);
 }
 
 result_t cb_virtkey_press(ptr_t const data, int32_t const virtkey)
@@ -159,7 +159,7 @@ result_t cb_virtkey_press(ptr_t const data, int32_t const virtkey)
 result_t cb_virtkey_hold(ptr_t const data, int32_t const virtkey)
 {
 
-	return printf("\n" __FUNCTION__ "(%p, %d)", data, virtkey);
+	return 0;// printf("\n" __FUNCTION__ "(%p, %d)", data, virtkey);
 }
 
 result_t cb_virtkey_release(ptr_t const data, int32_t const virtkey)
@@ -177,7 +177,7 @@ result_t cb_key_press(ptr_t const data, int32_t const key)
 result_t cb_key_hold(ptr_t const data, int32_t const key)
 {
 
-	return printf("\n" __FUNCTION__ "(%p, %d)", data, key);
+	return 0;// printf("\n" __FUNCTION__ "(%p, %d)", data, key);
 }
 
 result_t cb_key_release(ptr_t const data, int32_t const key)
@@ -213,13 +213,13 @@ result_t cb_mouse_wheel(ptr_t const data, int32_t const delta, int32_t const x, 
 result_t cb_mouse_move(ptr_t const data, int32_t const x, int32_t const y)
 {
 
-	return printf("\n" __FUNCTION__ "(%p, %d, %d)", data, x, y);
+	return 0;// printf("\n" __FUNCTION__ "(%p, %d, %d)", data, x, y);
 }
 
 result_t cb_mouse_drag(ptr_t const data, int32_t const x, int32_t const y)
 {
 
-	return printf("\n" __FUNCTION__ "(%p, %d, %d)", data, x, y);
+	return 0;// printf("\n" __FUNCTION__ "(%p, %d, %d)", data, x, y);
 }
 
 result_t cb_mouse_enter(ptr_t const data, int32_t const x, int32_t const y)

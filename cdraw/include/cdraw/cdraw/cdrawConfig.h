@@ -145,6 +145,7 @@ typedef uint64_t							qword_t;	// Quad-word type (8 bytes).
 
 
 typedef uint32_t							bitflag_t[8];												// Convenient storage type for 256 bits.
+typedef uint32_t							hbitflag_t[4];												// Convenient storage type for 128 bits.
 #define flagraise(x,bits)					((x) |= (bits))												// Activate specified bits.
 #define flaglower(x,bits)					((x) &=~(bits))												// Deactivate specified bits.
 #define flagcheck(x,bits)					((x) &  (bits))												// Non-zero if specified bits are turned on.
