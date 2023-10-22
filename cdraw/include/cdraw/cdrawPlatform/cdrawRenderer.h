@@ -22,6 +22,59 @@
 #ifndef _CDRAW_RENDERER_H_
 #define _CDRAW_RENDERER_H_
 
+#include "cdrawWindow.h"
+
+/******************************************************************************
+* Public interfaces.
+******************************************************************************/
+
+/// <summary>
+/// Rendering API choices.
+/// </summary>
+typedef enum cdrawRenderAPI
+{
+	cdrawRenderAPI_none,		// No rendering.
+	cdrawRenderAPI_software,	// Custom software renderer.
+	cdrawRenderAPI_Vulkan,		// Modern Vulkan renderer.
+	cdrawRenderAPI_OpenGL,		// Modern OpenGL renderer.
+	cdrawRenderAPI_Direct3D,	// Modern Direct3D renderer (Microsoft native).
+	cdrawRenderAPI_Metal,		// Modern Metal renderer (Apple native).
+} cdrawRenderAPI;
+
+
+/// <summary>
+/// Portable renderer handle.
+/// </summary>
+typedef struct cdrawRenderer
+{
+	/// <summary>
+	/// Selected API renderer data.
+	/// </summary>
+	ptr_t p_renderer;
+	/// <summary>
+	/// Selected API renderer data for specific platform.
+	/// </summary>
+	ptr_t p_renderer_platform;
+	/// <summary>
+	/// Selected rendering API.
+	/// </summary>
+	cdrawRenderAPI renderAPI;
+} cdrawRenderer;
+
+
+/******************************************************************************
+* Functions.
+******************************************************************************/
+
+#ifdef __cplusplus
+extern "C" {
+#endif // #ifdef __cplusplus
+
+
+
+#ifdef __cplusplus
+}
+#endif // #ifdef __cplusplus
 
 
 #endif // #ifndef _CDRAW_RENDERER_H_

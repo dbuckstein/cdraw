@@ -22,6 +22,12 @@
     <Filter Include="Header Files\cdrawPlatform">
       <UniqueIdentifier>{a00cd3a0-c16d-4c02-81ae-2070281495d8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\_Windows\cdrawRenderer_win">
+      <UniqueIdentifier>{81720451-ef16-459c-aa59-24774c648b96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\cdrawRenderer">
+      <UniqueIdentifier>{cf8ce075-5101-4f8e-8032-a7bd4a479b46}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform.c">
@@ -47,6 +53,30 @@
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawWindow_win_pdb.c">
       <Filter>Source Files\_Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win.c">
+      <Filter>Source Files\_Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_sw.c">
+      <Filter>Source Files\_Windows\cdrawRenderer_win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_vk.c">
+      <Filter>Source Files\_Windows\cdrawRenderer_win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_d3d.c">
+      <Filter>Source Files\_Windows\cdrawRenderer_win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_gl.c">
+      <Filter>Source Files\_Windows\cdrawRenderer_win</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_sw.c">
+      <Filter>Source Files\common\cdrawRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk.c">
+      <Filter>Source Files\common\cdrawRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_gl.c">
+      <Filter>Source Files\common\cdrawRenderer</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

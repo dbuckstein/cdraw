@@ -92,7 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN$(PlatformArchitecture);WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;_LIB;%(PreprocessorDefinitions);_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(cdraw)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(cdraw)include\;$(vk_sdk_path)\include\;$(glew_path)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -100,6 +100,13 @@
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>vulkan-1.lib;opengl32.lib;glew32.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(vk_sdk_path)\lib$(PlatformArchitecture.Replace('64',''))\;$(glew_path)\lib\Release\$(PlatformName)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4006 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -109,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN$(PlatformArchitecture);WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;_LIB;%(PreprocessorDefinitions);NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(cdraw)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(cdraw)include\;$(vk_sdk_path)\include\;$(glew_path)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -119,6 +126,13 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>vulkan-1.lib;opengl32.lib;glew32.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(vk_sdk_path)\lib$(PlatformArchitecture.Replace('64',''))\;$(glew_path)\lib\Release\$(PlatformName)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4006 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -126,7 +140,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN$(PlatformArchitecture);WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;_LIB;%(PreprocessorDefinitions);_DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(cdraw)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(cdraw)include\;$(vk_sdk_path)\include\;$(glew_path)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -134,6 +148,13 @@
       </SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>vulkan-1.lib;opengl32.lib;glew32.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(vk_sdk_path)\lib$(PlatformArchitecture.Replace('64',''))\;$(glew_path)\lib\Release\$(PlatformName)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4006 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -143,7 +164,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN$(PlatformArchitecture);WIN32_LEAN_AND_MEAN;_CRT_SECURE_NO_WARNINGS;_LIB;%(PreprocessorDefinitions);NDEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(cdraw)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(cdraw)include\;$(vk_sdk_path)\include\;$(glew_path)\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -153,13 +174,28 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <Lib>
+      <AdditionalDependencies>vulkan-1.lib;opengl32.lib;glew32.lib;d3d12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(vk_sdk_path)\lib$(PlatformArchitecture.Replace('64',''))\;$(glew_path)\lib\Release\$(PlatformName)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>/ignore:4006 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawPlugin.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_gl.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_sw.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawTimer.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawConsole_win.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawPlugin_win.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_d3d.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_gl.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_sw.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_vk.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawTimer_win.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawWindow_win.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawWindow_win_pdb.c" />
