@@ -41,6 +41,7 @@ typedef struct cdrawWindow_win
 	BOOL mouseState;				// Mouse hovering tracker.
 	TRACKMOUSEEVENT mouseTrack;		// Mouse tracking for entering/exiting window.
 	ptrk_t pluginOwner;				// Original owner of plugin if we have one attached externally.
+	cdrawPlugin pluginDebug;		// Debug plugin instance.
 } cdrawWindow_win;
 
 typedef struct cdrawWindowPlatform_win
@@ -75,6 +76,7 @@ enum
 #define p_window										((cdrawWindow_win*)window->p_window)
 #define cdraw_window_valid()							cdraw_assert(window && p_window)
 #define cdraw_window_cancallback()						(window->p_plugin && p_window->pluginOwner)
+#define cdraw_window_ownsplugin()						(p_window->pluginOwner == p_window)
 #define cdraw_window_callback(callback,...)				\
 		if (cdraw_window_cancallback())					\
 			callback(window->p_plugin, p_window->pluginOwner, __VA_ARGS__)
@@ -197,7 +199,7 @@ static result_t __stdcall cdrawWindowInternalRebuildThread(cdrawWindow* const wi
 	return cdrawWindowInternalBuild(window, true);
 }
 
-static bool cdrawWindowInternalCreateBuildWarning(cdrawWindow* const window)
+static bool cdrawWindowInternalCreateBuildWarning(cdrawWindow const* const window)
 {
 	if (p_window->buildState)
 	{
@@ -218,6 +220,16 @@ static bool cdrawWindowInternalCreateBuildWarning(cdrawWindow* const window)
 		return false;
 	}
 	return true;
+}
+
+static void cdrawWindowInternalCreatePluginWarning(cdrawWindow const* const window)
+{
+	bool const hideCursor = (window->control & cdrawWindowControl_cursor_hide);
+	if (hideCursor)
+		ShowCursor(TRUE);
+	MessageBoxA(p_window->hWnd, "Window cannot perform operation while externally managed plugin is attached; detach first.", "cdraw Player Application: Plugin", (MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND));
+	if (hideCursor)
+		ShowCursor(FALSE);
 }
 
 static bool cdrawWindowInternalCopyBuild(cdrawWindow* const window)
@@ -308,7 +320,7 @@ static void cdrawWindowInternalCreateInfo(cdrawWindow* const window)
 		{
 			bufferPtr += sprintf(bufferPtr, "  %s\n  %s\n",
 				"ESC: Enter and send cmd to window or user 4",
-				"cmd cdraw EXIT: Quit application");
+				"cmd cdrawexit: Quit application");
 		}
 		bufferPtr += sprintf(bufferPtr, "\n");
 	}
@@ -640,9 +652,7 @@ CDRAW_INL void cdrawWindowInternalHandleF1(cdrawWindow* const window)
 CDRAW_INL void cdrawWindowInternalHandleF2(cdrawWindow* const window)
 {
 	if (cdrawWindowInternalCreateBuildWarning(window))
-	{
 		cdrawWindowInternalCreateDialog(window, cdrawWindowControl_F2_load);
-	}
 }
 
 CDRAW_INL void cdrawWindowInternalHandleF3(cdrawWindow* const window)
@@ -746,8 +756,14 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		// WINDOW DESTROYED - would clean up rendering here
 	case WM_DESTROY: {
 		cdraw_window_valid();
-		if (p_window->pluginOwner == p_window)
-			cdraw_window_callback(cdrawPluginUnload);
+		if (cdraw_window_ownsplugin())
+		{
+			if (result_isclean(cdrawPluginUnload(window->p_plugin, p_window)))
+			{
+				window->p_plugin = NULL;
+				p_window->pluginOwner = NULL;
+			}
+		}
 
 		ReleaseDC(hWnd, p_window->hDC);
 		free(p_window);
@@ -861,6 +877,8 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		int16_t const x = LOWORD(lParam);
 		int16_t const y = HIWORD(lParam);
 		cdraw_window_valid();
+		window->pos_x = x;
+		window->pos_y = y;
 		if (window->control & cdrawWindowControl_cursor_lock)
 			cdrawWindowInternalLockCursor(window);
 		cdraw_window_callback(cdrawPluginCallOnWindowMove, x, y);
@@ -871,6 +889,8 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		int16_t const w = LOWORD(lParam);
 		int16_t const h = HIWORD(lParam);
 		cdraw_window_valid();
+		window->sz_w = w;
+		window->sz_h = h;
 		if (window->control & cdrawWindowControl_cursor_lock)
 			cdrawWindowInternalLockCursor(window);
 		cdraw_window_callback(cdrawPluginCallOnWindowResize, w, h);
@@ -1043,7 +1063,173 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		p_window->mouseState = false;
 	}	break;
 
-		// CUSTOM
+		// hard-load plugin; unload first
+	case cdrawWinCtrlMsg_load: {
+		cdrawPluginInfo const* info = (cdrawPluginInfo*)lParam;
+		int32_t const pluginID = (int32_t)wParam;
+		cdraw_window_valid();
+		SendMessageA(hWnd, cdrawWinCtrlMsg_unload, wParam, lParam);
+		if (!window->p_plugin)
+		{
+			if (result_isclean(cdrawPluginLoad(&p_window->pluginDebug, info, pluginID, p_window)))
+			{
+				// clip cursor
+				if (window->control & cdrawWindowControl_cursor_lock)
+					cdrawWindowInternalLockCursor(window);
+
+				window->p_plugin = &p_window->pluginDebug;
+				p_window->pluginOwner = p_window;
+				cdrawPluginCallOnWindowAttach(window->p_plugin, p_window, window->sz_w, window->sz_h, window->pos_x, window->pos_y, p_window);
+			}
+		}
+	}	break;
+		
+		// reload plugin
+	case cdrawWinCtrlMsg_reload: {
+		cdraw_window_valid();
+		if (cdraw_window_ownsplugin())
+		{
+			if (result_isclean(cdrawPluginReload(window->p_plugin, p_window)))
+			{
+			}
+		}
+		else
+		{
+			cdrawWindowInternalCreatePluginWarning(window);
+		}
+	}	break;
+
+		// unload plugin
+	case cdrawWinCtrlMsg_unload: {
+		cdraw_window_valid();
+		if (cdraw_window_ownsplugin())
+		{
+			if (result_isclean(cdrawPluginUnload(window->p_plugin, p_window)))
+			{
+				window->p_plugin = NULL;
+				p_window->pluginOwner = NULL;
+			}
+		}
+		else
+		{
+			cdrawWindowInternalCreatePluginWarning(window);
+		}
+	}	break;
+
+		// load debug plugin - unload first if not debug plugin
+	case cdrawWinCtrlMsg_debug: {
+		cdraw_window_valid();
+		ptrdiff_t const currentID = window->p_plugin->id;
+		if (currentID >= 0)
+			SendMessageA(hWnd, cdrawWinCtrlMsg_unload, wParam, lParam);
+
+		// load debug (default)
+		if (!window->p_plugin)
+		{
+			cdrawPluginInfo info;
+			cdrawPluginInfoReset(&info);
+			SendMessageA(hWnd, cdrawWinCtrlMsg_load, (WPARAM)(INT_MIN), (LPARAM)(&info));
+		}
+	}	break;
+
+		// launch build thread
+	case cdrawWinCtrlMsg_build: {
+		CreateThread(0, 0, cdrawWindowInternalBuildThread, window, 0, 0);
+	}	break;
+
+		// launch rebuild thread
+	case cdrawWinCtrlMsg_rebuild: {
+		CreateThread(0, 0, cdrawWindowInternalRebuildThread, window, 0, 0);
+	}	break;
+
+		// perform reload and copy dylib
+	case cdrawWinCtrlMsg_copy: {
+		cdraw_window_valid();
+		bool const success = (bool)lParam;
+		if (success)
+		{
+			if (cdraw_window_ownsplugin())
+			{
+				// always unload
+				cdrawPluginUnload(window->p_plugin, p_window);
+
+				// copy build
+				cdrawWindowInternalCopyBuild(window);
+
+				// load debug plugin
+				{
+					cdrawPluginInfo info;
+					cdrawPluginInfoReset(&info);
+					cdrawPluginLoad(window->p_plugin, &window->p_plugin->info, INT_MIN, p_window);
+				}
+			}
+			else
+			{
+				cdrawWindowInternalCreatePluginWarning(window);
+			}
+		}
+	}	break;
+		
+		// capture and send command
+	case cdrawWinCtrlMsg_cmd: {
+		cstrk_t const cmd = (cstrk_t)lParam;
+		int32_t const len = (int32_t)wParam;
+
+		// process command locally first, sending only if not captured
+		if (cmd && (len > 0))
+		{
+			cdraw_window_valid();
+			cdraw_window_callback(cdrawPluginCallOnUserCmd, 1, &cmd);
+			if (len < sizeof(label_t))
+			{
+				label_t cmd_short;
+				int32_t i;
+				for (i = 0; i < len; ++i)
+					cmd_short[i] = tolower(cmd[i]);
+				cmd_short[i] = 0;
+
+				// quit app (in case of emergency)
+				if (!strcmp(cmd_short, "cdrawexit"))
+					PostQuitMessage(0);
+				// info box
+				else if (!strcmp(cmd_short, "cdrawinfo"))
+					cdrawWindowInternalHandleF1(window);
+				// load dialog
+				else if (!strcmp(cmd_short, "cdrawload"))
+					cdrawWindowInternalHandleF2(window);
+				// reload
+				else if (!strcmp(cmd_short, "cdrawreload"))
+					cdrawWindowInternalHandleF3(window);
+				// unload
+				else if (!strcmp(cmd_short, "cdrawunload"))
+					cdrawWindowInternalHandleF4(window);
+				// debug
+				else if (!strcmp(cmd_short, "cdrawdebug"))
+					cdrawWindowInternalHandleF5(window);
+				// build
+				else if (!strcmp(cmd_short, "cdrawbuild"))
+					cdrawWindowInternalHandleF6(window);
+				// rebuild
+				else if (!strcmp(cmd_short, "cdrawrebuild"))
+					cdrawWindowInternalHandleF7(window);
+				// fullscreen
+				else if (!strcmp(cmd_short, "cdrawfullscreen"))
+					cdrawWindowInternalHandleF8(window);
+				// user1
+				else if (!strcmp(cmd_short, "cdrawuser1"))
+					cdrawWindowInternalHandleF9(window);
+				// user2
+				else if (!strcmp(cmd_short, "cdrawuser2"))
+					cdrawWindowInternalHandleF10(window);
+				// user3
+				else if (!strcmp(cmd_short, "cdrawuser3"))
+					cdrawWindowInternalHandleF11(window);
+				// user4
+				else if (!strcmp(cmd_short, "cdrawusercmd"))
+					cdrawWindowInternalHandleF12(window);
+			}
+		}
+	}	break;
 
 		// NONE
 	default:
