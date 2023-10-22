@@ -14,6 +14,10 @@
 *   limitations under the License.
 */
 
+/*
+* cdrawPlatform.c
+* Main source for platform library.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>

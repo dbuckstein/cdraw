@@ -14,6 +14,11 @@
 *   limitations under the License.
 */
 
+/*
+* cdrawMath.c
+* Main source for math library.
+*/
+
 #define CDRAW_ASSERT_TEST cdraw_assert_test_flag
 
 #include "cdraw/cdrawMath.h"

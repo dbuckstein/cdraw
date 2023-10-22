@@ -20,6 +20,7 @@
 */
 
 #include "cdraw/cdrawPlatform/cdrawTimer.h"
+#include "cdraw/cdrawCore/cdrawUtility.h"
 
 
 /******************************************************************************
@@ -94,40 +95,6 @@ CDRAW_INL result_t cdrawTimerInternalStepMulti(cdrawTimer* const timer, ctime_t 
 	// send back final time
 	*dt_track_out = dt_track;
 	return count;
-}
-
-CDRAW_INL int64_t cdrawTimerInternalReduceRationalGCD(int64_t numerator, int64_t denominator, int64_t* const numerator_out, int64_t* const denominator_out, int64_t* const gcd_out_opt)
-{
-	failassertret(numerator_out && denominator_out, 0);
-
-	int64_t i = 0, r = denominator, n = numerator, d = 0;
-
-	// iterate to find GCD
-	while (r)
-	{
-		d = r;		// previous remainder becomes denominator
-		r = n % d;	// calculate new remainder
-		n = d;		// previous denominator becomes numerator
-	}
-
-	// d now holds the GCD
-	if (d)
-	{
-		// reduce fraction
-		numerator /= d;
-		denominator /= d;
-
-		// calculate integer and remainder
-		i = numerator / denominator;
-		numerator %= denominator;
-	}
-
-	// store final numerator and denominator, return integer
-	*numerator_out = numerator;
-	*denominator_out = denominator;
-	if (gcd_out_opt)
-		*gcd_out_opt = d;
-	return i;
 }
 
 
@@ -328,7 +295,7 @@ result_t cdrawTimerSet(cdrawTimer* const timer, cdrawTimer const* const parent, 
 		//		-> parent->state.dtx = 500,000
 		//		-> parent->state.cps = 30,000,000
 		// calculate interval to handle remainder
-		timer->state.dtx = cdrawTimerInternalReduceRationalGCD(parent->state.cps, ticksPerSecond, &timer->t_track, &timer->t_scale, 0);
+		timer->state.dtx = cdrawUtilityReduceRationalGCD(parent->state.cps, ticksPerSecond, &timer->t_track, &timer->t_scale, 0);
 		asserterr(timer->state.dtx, errcode_timer_sample);
 		timer->state.t1 = timer->state.dtx = (timer->state.dtx * timer->t_scale + timer->t_track);
 		timer->state.t0 = timer->state.dt = timer->state.t = timer->t_track = 0;

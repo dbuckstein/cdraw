@@ -15,10 +15,15 @@
 */
 
 /*
-* cdrawCore.c
-* Main source for core library.
+* cdrawCore.h
+* Global root header for core library.
 */
 
-#define CDRAW_ASSERT_TEST cdraw_assert_test_flag
+#ifndef _CDRAW_CORE_H_
+#define _CDRAW_CORE_H_
 
-#include "cdraw/cdrawCore.h"
+
+#include "cdrawCore/cdrawUtility.h"
+
+
+#endif // #ifndef _CDRAW_CORE_H_

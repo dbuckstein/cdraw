@@ -32,7 +32,6 @@ result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const
 	result_init();
 	asserterr_ptr(renderer, errcode_invalidarg);
 	asserterr(renderer->p_renderer == NULL, errcode_invalidarg);
-	asserterr(renderer->p_renderer_platform == NULL, errcode_invalidarg);
 	asserterr(renderer->renderAPI == cdrawRenderAPI_none, errcode_invalidarg);
 	if (renderAPI == cdrawRenderAPI_none)
 		result_return();
@@ -60,7 +59,7 @@ result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const
 	result_return();
 }
 
-result_t cdrawRendererRelease_vk(cdrawRenderer* const renderer);
+result_t cdrawRendererRelease_win_vk(cdrawRenderer* const renderer);
 result_t cdrawRendererRelease(cdrawRenderer* const renderer)
 {
 	result_init();
@@ -68,7 +67,6 @@ result_t cdrawRendererRelease(cdrawRenderer* const renderer)
 	if (renderer->renderAPI == cdrawRenderAPI_none)
 		result_return();
 	asserterr_ptr(renderer->p_renderer, errcode_invalidarg);
-	asserterr_ptr(renderer->p_renderer_platform, errcode_invalidarg);
 	result_t result = 0;
 	switch (renderer->renderAPI)
 	{
@@ -76,7 +74,7 @@ result_t cdrawRendererRelease(cdrawRenderer* const renderer)
 		printf("\n cdrawRendererPrint: Software rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Vulkan:
-		result = cdrawRendererRelease_vk(renderer);
+		result = cdrawRendererRelease_win_vk(renderer);
 		break;
 	case cdrawRenderAPI_OpenGL:
 		printf("\n cdrawRendererPrint: OpenGL rendering has not yet been implemented for this platform.");
@@ -104,7 +102,6 @@ result_t cdrawRendererPrint(cdrawRenderer const* const renderer)
 		result_return();
 	}
 	asserterr_ptr(renderer->p_renderer, errcode_invalidarg);
-	asserterr_ptr(renderer->p_renderer_platform, errcode_invalidarg);
 	bool result = false;
 	switch (renderer->renderAPI)
 	{

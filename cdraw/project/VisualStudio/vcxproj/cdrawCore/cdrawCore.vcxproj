@@ -20,6 +20,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawCore.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawCore\common\cdrawUtility.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawCore.h" />
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawCore\cdrawUtility.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

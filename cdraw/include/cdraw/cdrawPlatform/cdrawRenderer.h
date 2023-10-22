@@ -55,13 +55,9 @@ typedef enum cdrawRenderAPI
 typedef struct cdrawRenderer
 {
 	/// <summary>
-	/// Selected API renderer data.
+	/// Selected API internal renderer data for specific platform.
 	/// </summary>
 	ptr_t p_renderer;
-	/// <summary>
-	/// Selected API renderer data for specific platform.
-	/// </summary>
-	ptr_t p_renderer_platform;
 	/// <summary>
 	/// Selected rendering API.
 	/// </summary>
