@@ -31,5 +31,16 @@
 #include "vulkan/vulkan.h"
 
 
+result_t cdrawRendererCreate_win_vk(cdrawRenderer* const renderer, ptrk_t const p_data)
+{
+	result_t result = 0;
+
+	// ****DUMMY
+	renderer->p_renderer = (ptr_t)(-1);
+	renderer->p_renderer_platform = (ptr_t)(-1);
+
+	return result;
+}
+
 
 #endif // #if !CDRAW_TARGET_WINDOWS

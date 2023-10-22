@@ -768,15 +768,8 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		// WINDOW DESTROYED - would clean up rendering here
 	case WM_DESTROY: {
 		cdraw_window_valid();
-		if (cdraw_window_ownsplugin())
-		{
-			if (result_isclean(cdrawPluginUnload(window->p_plugin, p_window)))
-			{
-				window->p_plugin = NULL;
-				p_window->pluginOwner = NULL;
-			}
-		}
-
+		SendMessageA(hWnd, cdrawWinCtrlMsg_unload, wParam, lParam);
+		
 		ReleaseDC(hWnd, p_window->hDC);
 		free(p_window);
 		p_window = NULL;
@@ -1140,6 +1133,7 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 			if (cdraw_window_ownsplugin())
 			{
 				window->p_plugin->id = INT_MAX;
+				cdrawPluginCallOnWindowDetach(window->p_plugin, p_window, p_window);
 				if (result_isclean(cdrawPluginUnload(window->p_plugin, p_window)))
 				{
 					window->p_plugin = NULL;

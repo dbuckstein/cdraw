@@ -26,3 +26,23 @@
 #include <string.h>
 
 #include "vulkan/vulkan.h"
+
+
+result_t cdrawRendererRelease_vk(cdrawRenderer* const renderer)
+{
+	result_t result = 0;
+
+	// ****DUMMY
+	renderer->p_renderer = NULL;
+	renderer->p_renderer_platform = NULL;
+
+	return result;
+}
+
+bool cdrawRendererPrint_vk(cdrawRenderer const* const renderer)
+{
+	uint32_t apiVersion;
+	VkResult const result = vkEnumerateInstanceVersion(&apiVersion);
+	printf("\n Vulkan API: %u.%u.%u", VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
+	return (result == VK_SUCCESS);
+}

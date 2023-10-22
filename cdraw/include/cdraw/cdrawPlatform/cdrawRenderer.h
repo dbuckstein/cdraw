@@ -22,11 +22,18 @@
 #ifndef _CDRAW_RENDERER_H_
 #define _CDRAW_RENDERER_H_
 
-#include "cdrawWindow.h"
+#include "cdraw/cdraw/cdrawConfig.h"
 
 /******************************************************************************
 * Public interfaces.
 ******************************************************************************/
+
+enum
+{
+	errcode_renderer_init = errcode_CUSTOM_BEGIN,	// Failure with initialization.
+	errcode_renderer_api,							// Failure with API call.
+};
+
 
 /// <summary>
 /// Rendering API choices.
@@ -70,6 +77,28 @@ typedef struct cdrawRenderer
 extern "C" {
 #endif // #ifdef __cplusplus
 
+	/// <summary>
+	/// Create and initialize internal resources for renderer of selected API.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="renderAPI">Desired rendering API (must be supported on local platform).</param>
+	/// <param name="p_data_opt">Optional pointer to platform data.</param>
+	/// <returns>Zero if success; error code otherwise.</returns>
+	result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, ptrk_t const p_data_opt);
+
+	/// <summary>
+	/// Release renderer by cleaning up and destroying all of its internal resources.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <returns>Zero if success; error code otherwise.</returns>
+	result_t cdrawRendererRelease(cdrawRenderer* const renderer);
+
+	/// <summary>
+	/// Print high-level information about renderer.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <returns>Zero if success; error code otherwise.</returns>
+	result_t cdrawRendererPrint(cdrawRenderer const* const renderer);
 
 
 #ifdef __cplusplus
