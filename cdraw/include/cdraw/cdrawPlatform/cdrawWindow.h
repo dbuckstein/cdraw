@@ -166,7 +166,7 @@ extern "C" {
 	/// <param name="window">Target window.</param>
 	/// <param name="plugin">Plugin to attach.</param>
 	/// <returns>Zero if success; error code otherwise.</returns>
-	result_t cdrawWindowPluginAttach(cdrawWindow* const window, cdrawPlugin const* const plugin);
+	result_t cdrawWindowPluginAttach(cdrawWindow* const window, cdrawPlugin* const plugin);
 
 	/// <summary>
 	/// Detach current (if any) plugin from window.

@@ -32,16 +32,28 @@
 * Private/internal data structures and functions.
 ******************************************************************************/
 
+/// <summary>
+/// Alternative keycodes.
+/// </summary>
+static const label_long_t gKeyAlt = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0 1\'3457\"908=<_>\?)!@#$%^&*(;:,+./2abcdefghijklmnopqrstuvwxyz]|[6-~ABCDEFGHIJKLMNOPQRSTUVWXYZ}\\{`";
+
+
+/// <summary>
+/// Internal data for Windows platform.
+/// </summary>
 typedef struct cdrawWindow_win
 {
-	HWND hWnd;						// Internal window handle.
-	HDC hDC;						// Internal device context handle.
+	struct {
+		HWND hWnd;					// Internal window handle.
+		HDC hDC;					// Internal device context handle.
+	};
 	RECT restoreArea;				// Non-full-screen area.
 	BOOL buildState;				// Hot-build tracker.
 	BOOL mouseState;				// Mouse hovering tracker.
 	TRACKMOUSEEVENT mouseTrack;		// Mouse tracking for entering/exiting window.
 	ptrk_t pluginOwner;				// Original owner of plugin if we have one attached externally.
 	cdrawPlugin pluginDebug;		// Debug plugin instance.
+	hbitflag_t keyState;			// State tracking for ASCII keys, since release is not always correct.
 } cdrawWindow_win;
 
 typedef struct cdrawWindowPlatform_win
@@ -153,7 +165,7 @@ static bool cdrawWindowInternalBuild(cdrawWindow* const window, bool const rebui
 			sprintf(bat, "%s\\_dev\\Windows\\_build", gWindowPlatform.dir_sdk);
 
 			// project path
-			sprintf(dir, "%s\\project\\vcxproj\\VisualStudio\\%s\\%s.vcxproj", gWindowPlatform.dir_sdk, proj, proj);
+			sprintf(dir, "%s\\project\\VisualStudio\\vcxproj\\%s\\%s.vcxproj", gWindowPlatform.dir_sdk, proj, proj);
 
 			// call batch: call "BATCH" "DEVENV" "PROJ" "CFG" "LOG" "SWITCH" "STOPCOPY"
 			//		batch: call "DEVENV" "PROJ" /SWITCH(b/rb) "CFG(cfg|arch)" /Out "LOG"
@@ -227,7 +239,7 @@ static void cdrawWindowInternalCreatePluginWarning(cdrawWindow const* const wind
 	bool const hideCursor = (window->control & cdrawWindowControl_cursor_hide);
 	if (hideCursor)
 		ShowCursor(TRUE);
-	MessageBoxA(p_window->hWnd, "Window cannot perform operation while externally managed plugin is attached; detach first.", "cdraw Player Application: Plugin", (MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND));
+	MessageBoxA(p_window->hWnd, "Window cannot complete operation while externally managed plugin is attached; detach first.", "cdraw Player Application: Plugin", (MB_OK | MB_ICONEXCLAMATION | MB_SETFOREGROUND));
 	if (hideCursor)
 		ShowCursor(FALSE);
 }
@@ -523,7 +535,7 @@ static LRESULT __stdcall cdrawWindowInternalEventProcessList(HWND hDlg, UINT mes
 					{
 						i = (int32_t)SendMessageA(dlg->box, LB_GETITEMDATA, i, 0);
 						info = dlg->pluginInfo + i;
-						SendMessageA(hWnd, cdrawWinCtrlMsg_unload, (WPARAM)true, 0);
+						//SendMessageA(hWnd, cdrawWinCtrlMsg_unload, (WPARAM)true, 0);
 						SendMessageA(hWnd, cdrawWinCtrlMsg_load, (WPARAM)i, (LPARAM)info);
 					}
 					else
@@ -860,11 +872,11 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		case WA_CLICKACTIVE: {
 			if (window->control & cdrawWindowControl_cursor_lock)
 				cdrawWindowInternalLockCursor(window);
-			if (window->control & cdrawWindowControl_active_unfocused)
+			if (!(window->control & cdrawWindowControl_active_unfocused))
 				cdraw_window_callback(cdrawPluginCallOnWindowActivate, p_window);
 		}	break;
 		case WA_INACTIVE: {
-			if (window->control & cdrawWindowControl_active_unfocused)
+			if (!(window->control & cdrawWindowControl_active_unfocused))
 				cdraw_window_callback(cdrawPluginCallOnWindowDeactivate, p_window);
 			if (window->control & cdrawWindowControl_cursor_lock)
 				cdrawWindowInternalLockCursor(NULL);
@@ -901,34 +913,50 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		int16_t const virtkey = LOWORD(wParam);
 		cdraw_window_valid();
 		if (HIWORD(lParam) & KF_REPEAT)
+		{
 			cdraw_window_callback(cdrawPluginCallOnVirtkeyHold, virtkey);
+		}
 		else
+		{
 			cdraw_window_callback(cdrawPluginCallOnVirtkeyPress, virtkey);
+		}
 	}	break;
 
 		// ASCII KEY DOWN - no up call
 	case WM_CHAR: {
-		int16_t const key = LOWORD(wParam);
+		int8_t const key = LOBYTE(LOWORD(wParam));
 		cdraw_window_valid();
 		if (HIWORD(lParam) & KF_REPEAT)
+		{
 			cdraw_window_callback(cdrawPluginCallOnKeyHold, key);
+		}
 		else
+		{
 			cdraw_window_callback(cdrawPluginCallOnKeyPress, key);
+		}
+		bitflagraise(p_window->keyState, key);
 	}	break;
 
 		// VIRTUAL KEY UP - determine ASCII equivalent
 	case WM_KEYUP: {
 		int16_t const virtkey = LOWORD(wParam);
+		UINT const key_map = MapVirtualKeyA(virtkey, MAPVK_VK_TO_CHAR);
+		int8_t key;
 		cdraw_window_valid();
-		if (cdraw_window_cancallback())
-		{
-			UINT const scanCode = MapVirtualKeyA(virtkey, MAPVK_VK_TO_VSC);
-			WORD key;
+		bool const canCallback = cdraw_window_cancallback();
+		if (canCallback)
 			cdrawPluginCallOnVirtkeyRelease(window->p_plugin, p_window->pluginOwner, virtkey);
-			ToAscii(virtkey, scanCode, NULL, &key, 0);
-			key = LOBYTE(key);
-			if (key)
+		if (key = LOBYTE(LOWORD(key_map)))
+		{
+			if (canCallback && bitflagcheck(p_window->keyState, key))
 				cdrawPluginCallOnKeyRelease(window->p_plugin, p_window->pluginOwner, key);
+			bitflaglower(p_window->keyState, key);
+			if (key = gKeyAlt[key])
+			{
+				if (canCallback && bitflagcheck(p_window->keyState, key))
+					cdrawPluginCallOnKeyRelease(window->p_plugin, p_window->pluginOwner, key);
+				bitflaglower(p_window->keyState, key);
+			}
 		}
 	}	break;
 
@@ -1060,6 +1088,7 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		GetCursorPos(&pos);
 		ScreenToClient(p_window->hWnd, &pos);
 		cdraw_window_valid();
+		cdraw_window_callback(cdrawPluginCallOnMouseLeave, pos.x, pos.y);
 		p_window->mouseState = false;
 	}	break;
 
@@ -1071,6 +1100,7 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		SendMessageA(hWnd, cdrawWinCtrlMsg_unload, wParam, lParam);
 		if (!window->p_plugin)
 		{
+			cdrawPluginReset(&p_window->pluginDebug);
 			if (result_isclean(cdrawPluginLoad(&p_window->pluginDebug, info, pluginID, p_window)))
 			{
 				// clip cursor
@@ -1087,49 +1117,61 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		// reload plugin
 	case cdrawWinCtrlMsg_reload: {
 		cdraw_window_valid();
-		if (cdraw_window_ownsplugin())
+		if (window->p_plugin)
 		{
-			if (result_isclean(cdrawPluginReload(window->p_plugin, p_window)))
+			if (cdraw_window_ownsplugin())
 			{
+				if (result_isclean(cdrawPluginReload(window->p_plugin, p_window)))
+				{
+				}
 			}
-		}
-		else
-		{
-			cdrawWindowInternalCreatePluginWarning(window);
+			else
+			{
+				cdrawWindowInternalCreatePluginWarning(window);
+			}
 		}
 	}	break;
 
 		// unload plugin
 	case cdrawWinCtrlMsg_unload: {
 		cdraw_window_valid();
-		if (cdraw_window_ownsplugin())
+		if (window->p_plugin)
 		{
-			if (result_isclean(cdrawPluginUnload(window->p_plugin, p_window)))
+			if (cdraw_window_ownsplugin())
 			{
-				window->p_plugin = NULL;
-				p_window->pluginOwner = NULL;
+				window->p_plugin->id = INT_MAX;
+				if (result_isclean(cdrawPluginUnload(window->p_plugin, p_window)))
+				{
+					window->p_plugin = NULL;
+					p_window->pluginOwner = NULL;
+				}
 			}
-		}
-		else
-		{
-			cdrawWindowInternalCreatePluginWarning(window);
+			else
+			{
+				cdrawWindowInternalCreatePluginWarning(window);
+			}
 		}
 	}	break;
 
 		// load debug plugin - unload first if not debug plugin
 	case cdrawWinCtrlMsg_debug: {
 		cdraw_window_valid();
-		ptrdiff_t const currentID = window->p_plugin->id;
-		if (currentID >= 0)
-			SendMessageA(hWnd, cdrawWinCtrlMsg_unload, wParam, lParam);
+		if (window->p_plugin)
+		{
+			ptrdiff_t const currentID = window->p_plugin->id;
+			if (currentID >= 0)
+				SendMessageA(hWnd, cdrawWinCtrlMsg_unload, wParam, lParam);
+		}
 
 		// load debug (default)
 		if (!window->p_plugin)
 		{
 			cdrawPluginInfo info;
 			cdrawPluginInfoReset(&info);
-			SendMessageA(hWnd, cdrawWinCtrlMsg_load, (WPARAM)(INT_MIN), (LPARAM)(&info));
+			SendMessageA(hWnd, cdrawWinCtrlMsg_load, (WPARAM)(INT_MAX), (LPARAM)(&info));
 		}
+		if (window->p_plugin)
+			window->p_plugin->id = INT_MIN;
 	}	break;
 
 		// launch build thread
@@ -1148,24 +1190,17 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		bool const success = (bool)lParam;
 		if (success)
 		{
-			if (cdraw_window_ownsplugin())
+			// hotload or load debug
+			if (window->p_plugin && cdraw_window_ownsplugin() && (window->p_plugin->id < 0))
 			{
-				// always unload
 				cdrawPluginUnload(window->p_plugin, p_window);
-
-				// copy build
 				cdrawWindowInternalCopyBuild(window);
-
-				// load debug plugin
-				{
-					cdrawPluginInfo info;
-					cdrawPluginInfoReset(&info);
-					cdrawPluginLoad(window->p_plugin, &window->p_plugin->info, INT_MIN, p_window);
-				}
+				cdrawPluginLoad(window->p_plugin, &window->p_plugin->info, INT_MIN, p_window);
 			}
 			else
 			{
-				cdrawWindowInternalCreatePluginWarning(window);
+				cdrawWindowInternalCopyBuild(window);
+				SendMessageA(hWnd, cdrawWinCtrlMsg_debug, wParam, lParam);
 			}
 		}
 	}	break;
@@ -1608,17 +1643,26 @@ result_t cdrawWindowLoop(ptr_t const data_opt)
 	result_return();
 }
 
-result_t cdrawWindowPluginAttach(cdrawWindow* const window, cdrawPlugin const* const plugin)
+result_t cdrawWindowPluginAttach(cdrawWindow* const window, cdrawPlugin* const plugin)
 {
 	result_init();
-
+	asserterr(window && p_window, errcode_invalidarg);
+	asserterr(plugin && plugin->p_handle, errcode_invalidarg);
+	failret(!window->p_plugin, errcode_window_init);
+	window->p_plugin = plugin;
+	p_window->pluginOwner = plugin->p_owner;
+	cdraw_window_callback(cdrawPluginCallOnWindowAttach, window->sz_w, window->sz_h, window->pos_x, window->pos_y, p_window);
 	result_return();
 }
 
 result_t cdrawWindowPluginDetach(cdrawWindow* const window)
 {
 	result_init();
-
+	asserterr(window && p_window, errcode_invalidarg);
+	failret(!cdraw_window_ownsplugin(), errcode_window_init);
+	cdraw_window_callback(cdrawPluginCallOnWindowDetach, p_window);
+	window->p_plugin = NULL;
+	p_window->pluginOwner = NULL;
 	result_return();
 }
 
