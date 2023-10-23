@@ -38,6 +38,37 @@
 ******************************************************************************/
 
 /// <summary>
+/// Complete description of Vulkan physical device.
+/// </summary>
+typedef struct cdrawVkPhysicalDevice
+{
+	/// <summary>
+	/// Device properties.
+	/// </summary>
+	VkPhysicalDeviceProperties deviceProp;
+
+	/// <summary>
+	/// Device memory properties.
+	/// </summary>
+	VkPhysicalDeviceMemoryProperties deviceMemProp;
+
+	/// <summary>
+	/// Queue family selected for graphics.
+	/// </summary>
+	VkQueueFamilyProperties queueFamilyProp_graphics;
+
+	/// <summary>
+	/// Device features.
+	/// </summary>
+	VkPhysicalDeviceFeatures deviceFeat;
+
+	/// <summary>
+	/// Device features actually requested/used.
+	/// </summary>
+	VkPhysicalDeviceFeatures deviceFeatUse;
+} cdrawVkPhysicalDevice;
+
+/// <summary>
 /// Vulkan renderer data for Windows platform.
 /// </summary>
 typedef struct cdrawRenderer_win_vk
@@ -68,12 +99,20 @@ typedef struct cdrawRenderer_win_vk
 	/// </summary>
 	VkDebugReportCallbackEXT debug;
 #endif // #if CDRAW_DEBUG
+
+	/// <summary>
+	/// Description of physical device used.
+	/// </summary>
+	cdrawVkPhysicalDevice physicalDevice;
 } cdrawRenderer_win_vk;
 
 
 int32_t cdrawRendererPrintLayer_vk(VkLayerProperties const* const layerProp, uint32_t const index, cstrk_t const prefix);
 int32_t cdrawRendererPrintExt_vk(VkExtensionProperties const* const extProp, uint32_t const index, cstrk_t const prefix);
-int32_t cdrawRendererEnumDeviceID_vk(uint32_t const id);
+int32_t cdrawRendererPrintPhysicalDevice_vk(VkPhysicalDeviceProperties const* const physicalDeviceProp, uint32_t const index, cstrk_t const prefix);
+int32_t cdrawRendererPrintQueueFamily_vk(VkQueueFamilyProperties const* const queueFamilyProp, uint32_t const index, cstrk_t const prefix);
+int32_t cdrawRendererPrintMemoryType_vk(VkMemoryType const* const memoryType, uint32_t const index, cstrk_t const prefix);
+int32_t cdrawRendererPrintMemoryHeap_vk(VkMemoryHeap const* const memoryHeap, uint32_t const index, cstrk_t const prefix);
 
 
 static bool cdrawRendererInternalAllocUse_vk(cdrawRenderer_win_vk* const p_renderer)
@@ -117,15 +156,15 @@ static VkBool32 cdrawRendererInternalDebugCallback_vk(
 {
 	// print debug info
 	if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
-		printf("cdraw Debug INFO (%s, #%d): %s \n", pLayerPrefix, messageCode, pMessage);
+		printf("\n cdraw Debug INFO (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
 	else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
-		printf("cdraw Debug WARNING (%s, #%d): %s \n", pLayerPrefix, messageCode, pMessage);
+		printf("\n cdraw Debug WARNING (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
 	else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
-		printf("cdraw Debug PERFORMANCE WARNING (%s, #%d): %s \n", pLayerPrefix, messageCode, pMessage);
+		printf("\n cdraw Debug PERFORMANCE WARNING (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
 	else if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
-		printf("cdraw Debug ERROR (%s, #%d): %s \n", pLayerPrefix, messageCode, pMessage);
+		printf("\n cdraw Debug ERROR (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
 	else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
-		printf("cdraw Debug DEBUG (%s, #%d): %s \n", pLayerPrefix, messageCode, pMessage);
+		printf("\n cdraw Debug DEBUG (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
 	// not handled
 	else
 		return VK_FALSE;
@@ -142,9 +181,9 @@ static bool cdrawRendererInternalInitInstance_win_vk(cdrawRenderer_win_vk* const
 	VkAllocationCallbacks const* const alloc = cdrawRendererInternalAllocInit_vk(p_renderer) ? &p_renderer->alloc : NULL;
 
 	// print prefixes
-	cstrk_t const pref1 = "\t   ", pref1A = "\t * ", pref2 = "\t\t   ", pref2A = "\t\t * ", pref3 = "\t\t\t   ", pref3A = "\t\t\t * ";
+	cstrk_t const pref1 = "\t    ", pref1A = "\t -> ", pref2 = "\t\t    ", pref2A = "\t\t -> ", pref3 = "\t\t\t    ", pref3A = "\t\t\t -> ";
 
-	// instance layers and extensions
+	// instance layers
 	cstrk_t const instLayerName_request[] = {
 #if CDRAW_DEBUG
 		"VK_LAYER_KHRONOS_validation",
@@ -172,6 +211,7 @@ static bool cdrawRendererInternalInitInstance_win_vk(cdrawRenderer_win_vk* const
 	uint32_t const instLayerName_require_count = cdrawUtilityPtrCount(instLayerName_require, buffer_len(instLayerName_require));
 	uint32_t const instLayerName_baseLen = buffer_len(instLayerName);
 
+	// instance extensions
 	cstrk_t const instExtName_request[] = {
 #if CDRAW_DEBUG
 		// included with KHR validation layer (3): 
@@ -201,7 +241,7 @@ static bool cdrawRendererInternalInitInstance_win_vk(cdrawRenderer_win_vk* const
 	int32_t layerIdx, extIdx;
 	cstrk_t name;
 
-	// get available instance layers
+	// get available instance layers; may be zero
 	result = vkEnumerateInstanceLayerProperties(&nInstLayer, NULL);
 	if (result == VK_SUCCESS && nInstLayer)
 	{
@@ -220,7 +260,7 @@ static bool cdrawRendererInternalInitInstance_win_vk(cdrawRenderer_win_vk* const
 						instLayerName[nInstLayerEnabled++] = instLayerName_request[layerIdx];
 				cdrawRendererPrintLayer_vk(&pInstLayerProp[layer], layer, (layerIdx >= 0 ? pref1A : pref1));
 
-				// get available instance extensions related to this layer
+				// get available instance extensions related to this layer; may be zero
 				result = vkEnumerateInstanceExtensionProperties(name, &nInstExt, NULL);
 				if (result == VK_SUCCESS && nInstExt)
 				{
@@ -261,7 +301,7 @@ static bool cdrawRendererInternalInitInstance_win_vk(cdrawRenderer_win_vk* const
 	// copy required extensions to final list, confirm count
 	for (ext = 0; ext < instExtName_require_count; ++ext)
 	{
-		name = instExtName_require[layer];
+		name = instExtName_require[ext];
 		if (cdrawUtilityStrFind(name, instExtName, nInstExtEnabled) < 0)
 			instExtName[nInstExtEnabled++] = instExtName_require[ext];
 	}
@@ -295,7 +335,9 @@ static bool cdrawRendererInternalInitInstance_win_vk(cdrawRenderer_win_vk* const
 		// create instance
 		result = vkCreateInstance(&instCreateInfo, alloc, &p_renderer->inst);
 		if (result == VK_SUCCESS)
+		{
 			cdraw_assert(p_renderer->inst);
+		}
 		else
 			result = VK_INCOMPLETE;
 	}
@@ -310,7 +352,39 @@ static bool cdrawRendererInternalInitDevice_vk(cdrawRenderer_win_vk* const p_ren
 	cdraw_assert(p_renderer && p_renderer->inst);
 	VkAllocationCallbacks const* const alloc = cdrawRendererInternalAllocUse_vk(p_renderer) ? &p_renderer->alloc : NULL;
 
-	/*// device layers deprecated
+	// print prefixes
+	cstrk_t const pref1 = "\t    ", pref1A = "\t -> ", pref2 = "\t\t    ", pref2A = "\t\t -> ", pref3 = "\t\t\t    ", pref3A = "\t\t\t -> ";
+
+	// limits
+	enum {
+		device_queue_family_queues_max = 16,		// hard limit
+		device_queue_family_compute_only_max = 8,	// hard limit
+	};
+	fp32_t queuePriority_graphics[device_queue_family_queues_max] = { 0 };
+
+	// temporary, to describe each family here
+	VkDeviceQueueCreateInfo const tmpQueueCreateInfo = {
+		VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+		NULL,
+		0,
+		-1,		// invalid family index
+		0,		// invalid queue count
+		NULL,	// invalid priority list
+	};
+
+	// device descriptors
+	VkPhysicalDeviceType const physicalDeviceSelectType_require =
+		(VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
+	int32_t physicalDeviceSelectIdx = -1;
+	VkPhysicalDevice physicalDeviceSelect = NULL;
+	VkPhysicalDeviceProperties physicalDeviceProp;
+
+	// queue family descriptors
+	VkQueueFlagBits const queueFamilySelectType_graphics_require =
+		(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT);
+	int32_t queueFamilySelectIdx_graphics = -1;
+
+	// device layers (deprecated)
 	cstrk_t const deviceLayerName_request[] = {
 #if CDRAW_DEBUG
 		"VK_LAYER_KHRONOS_validation",
@@ -325,8 +399,9 @@ static bool cdrawRendererInternalInitDevice_vk(cdrawRenderer_win_vk* const p_ren
 	cstrk_t deviceLayerName[buffer_len(deviceLayerName_request) + buffer_len(deviceLayerName_require)] = { NULL };
 	uint32_t const deviceLayerName_request_count = cdrawUtilityPtrCount(deviceLayerName_request, buffer_len(deviceLayerName_request));
 	uint32_t const deviceLayerName_require_count = cdrawUtilityPtrCount(deviceLayerName_require, buffer_len(deviceLayerName_require));
-	uint32_t const deviceLayerName_baseLen = buffer_len(deviceLayerName);*/
+	uint32_t const deviceLayerName_baseLen = buffer_len(deviceLayerName);
 
+	// device extensions
 	cstrk_t const deviceExtName_request[] = {
 #if CDRAW_DEBUG
 		// included with KHR validation layer (3): 
@@ -343,6 +418,232 @@ static bool cdrawRendererInternalInitDevice_vk(cdrawRenderer_win_vk* const p_ren
 	uint32_t const deviceExtName_request_count = cdrawUtilityPtrCount(deviceExtName_request, buffer_len(deviceExtName_request));
 	uint32_t const deviceExtName_require_count = cdrawUtilityPtrCount(deviceExtName_require, buffer_len(deviceExtName_require));
 	uint32_t const deviceExtName_baseLen = buffer_len(deviceExtName);
+
+	// iterators and counts
+	uint32_t device, nPhysicalDevice;
+	uint32_t layer, nDeviceLayer, nDeviceLayerEnabled = 0;
+	uint32_t ext, nDeviceExt, nDeviceExtEnabled = 0;
+	uint32_t family, nQueueFamily;
+	uint32_t memory;
+	VkPhysicalDevice* pPhysicalDevice;
+	VkLayerProperties* pDeviceLayerProp;
+	VkExtensionProperties* pDeviceExtProp;
+	VkQueueFamilyProperties* pQueueFamilyProp;
+	int32_t layerIdx, extIdx;
+	cstrk_t name;
+
+	// get physical devices
+	result = vkEnumeratePhysicalDevices(p_renderer->inst, &nPhysicalDevice, NULL);
+	if (result == VK_SUCCESS)
+	{
+		// should not be zero if we are to proceed
+		cdraw_assert(nPhysicalDevice);
+		pPhysicalDevice = (VkPhysicalDevice*)malloc(sizeof(VkPhysicalDevice) * nPhysicalDevice);
+		if (pPhysicalDevice)
+		{
+			result = vkEnumeratePhysicalDevices(p_renderer->inst, &nPhysicalDevice, pPhysicalDevice);
+			printf("\n\t pPhysicalDevice[%u]: { \"name\" [type] (apiVer; driverVer; vendorID; deviceID) }", nPhysicalDevice);
+			for (device = 0; device < nPhysicalDevice; ++device)
+			{
+				// find most capable device (e.g. discrete GPU should be priority)
+				vkGetPhysicalDeviceProperties(pPhysicalDevice[device], &physicalDeviceProp);
+				if (flagcheckexcl(physicalDeviceProp.deviceType, physicalDeviceSelectType_require)
+					&& physicalDeviceSelectIdx < 0)
+				{
+					physicalDeviceSelectIdx = device;
+					cdrawRendererPrintPhysicalDevice_vk(&physicalDeviceProp, physicalDeviceSelectIdx, pref1A);
+				}
+				else
+					cdrawRendererPrintPhysicalDevice_vk(&physicalDeviceProp, device, pref1);
+			}
+
+			// select physical device
+			if (physicalDeviceSelectIdx >= 0)
+			{
+				physicalDeviceSelect = pPhysicalDevice[physicalDeviceSelectIdx];
+			}
+
+			free(pPhysicalDevice);
+			pPhysicalDevice = NULL;
+		}
+
+		// setup logical device from selected physical device
+		if (physicalDeviceSelect)
+		{
+			// device layers; may be zero (deprecated for use in logical device)
+			result = vkEnumerateDeviceLayerProperties(physicalDeviceSelect, &nDeviceLayer, NULL);
+			if (result == VK_SUCCESS && nDeviceLayer)
+			{
+				pDeviceLayerProp = (VkLayerProperties*)malloc(sizeof(VkLayerProperties) * nDeviceLayer);
+				if (pDeviceLayerProp)
+				{
+					result = vkEnumerateDeviceLayerProperties(physicalDeviceSelect, &nDeviceLayer, pDeviceLayerProp);
+					printf("\n\t\t pDeviceLayerProp[%u]: ", nDeviceLayer);
+					for (layer = 0; layer < nDeviceLayer; ++layer)
+					{
+						// same logic as instance layers
+						layerIdx = -1;
+						name = pDeviceLayerProp[layer].layerName;
+						if (cdrawUtilityStrFind(name, deviceLayerName, nDeviceLayerEnabled) < 0)
+							if ((layerIdx = cdrawUtilityStrFind(name, deviceLayerName_request, deviceLayerName_request_count)) >= 0)
+								deviceLayerName[nDeviceLayerEnabled++] = deviceLayerName_request[layerIdx];
+						cdrawRendererPrintLayer_vk(&pDeviceLayerProp[layer], layer, (layerIdx >= 0 ? pref2A : pref2));
+
+						// device extensions; may be zero
+						result = vkEnumerateDeviceExtensionProperties(physicalDeviceSelect, name, &nDeviceExt, NULL);
+						if (result == VK_SUCCESS && nDeviceExt)
+						{
+							pDeviceExtProp = (VkExtensionProperties*)malloc(sizeof(VkExtensionProperties) * nDeviceExt);
+							if (pDeviceExtProp)
+							{
+								result = vkEnumerateDeviceExtensionProperties(physicalDeviceSelect, name, &nDeviceExt, pDeviceExtProp);
+								printf("\n\t\t\t pDeviceExtProp[%u]:", nDeviceExt);
+								for (ext = 0; ext < nDeviceExt; ++ext)
+								{
+									// same logic as instance extensions
+									extIdx = -1;
+									name = pDeviceExtProp[ext].extensionName;
+									if (cdrawUtilityStrFind(name, deviceExtName, nDeviceExtEnabled) < 0)
+										if ((extIdx = cdrawUtilityStrFind(name, deviceExtName_request, deviceExtName_request_count)) >= 0)
+											deviceExtName[nDeviceExtEnabled++] = deviceExtName_request[extIdx];
+									cdrawRendererPrintExt_vk(&pDeviceExtProp[ext], ext, (extIdx >= 0 ? pref3A : pref3));
+								}
+								free(pDeviceExtProp);
+								pDeviceExtProp = NULL;
+							}
+						}
+					}
+					free(pDeviceLayerProp);
+					pDeviceLayerProp = NULL;
+				}
+			}
+
+			for (layer = 0; layer < deviceLayerName_require_count; ++layer)
+			{
+				name = deviceLayerName_require[layer];
+				if (cdrawUtilityStrFind(name, deviceLayerName, nDeviceLayerEnabled) < 0)
+					deviceLayerName[nDeviceLayerEnabled++] = deviceLayerName_require[layer];
+			}
+			cdraw_assert(nDeviceLayerEnabled == cdrawUtilityPtrCount(deviceLayerName, deviceLayerName_baseLen));
+
+			for (ext = 0; ext < deviceExtName_require_count; ++ext)
+			{
+				name = deviceExtName_require[ext];
+				if (cdrawUtilityStrFind(name, deviceExtName, nDeviceExtEnabled) < 0)
+					deviceExtName[nDeviceExtEnabled++] = deviceExtName_require[ext];
+			}
+			cdraw_assert(nDeviceExtEnabled == cdrawUtilityPtrCount(deviceExtName, deviceExtName_baseLen));
+
+			// set up queue family info
+			vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceSelect, &nQueueFamily, NULL);
+			if (nQueueFamily)
+			{
+				pQueueFamilyProp = (VkQueueFamilyProperties*)malloc(sizeof(VkQueueFamilyProperties) * nQueueFamily);
+				if (pQueueFamilyProp)
+				{
+					vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceSelect, &nQueueFamily, pQueueFamilyProp);
+					printf("\n\t\t pQueueFamilyProp[%u]: { [flags] (count; timestamp valid bits; min image transfer granularity) }", nQueueFamily);
+					for (family = 0; family < nQueueFamily; ++family)
+					{
+						// save best queue family supporting graphics and presentation
+						if (flagcheckexcl(pQueueFamilyProp[family].queueFlags, queueFamilySelectType_graphics_require)
+#if CDRAW_TARGET_WINDOWS
+							&& vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDeviceSelect, family)
+#endif // #if CDRAW_TARGET_WINDOWS
+							&& queueFamilySelectIdx_graphics < 0)
+						{
+							queueFamilySelectIdx_graphics = family;
+							cdrawRendererPrintQueueFamily_vk(&pQueueFamilyProp[family], queueFamilySelectIdx_graphics, pref2A);
+						}
+						else
+							cdrawRendererPrintQueueFamily_vk(&pQueueFamilyProp[family], family, pref2);
+					}
+
+					if (queueFamilySelectIdx_graphics >= 0)
+					{
+						p_renderer->physicalDevice.queueFamilyProp_graphics = pQueueFamilyProp[family];
+					}
+
+					free(pQueueFamilyProp);
+					pQueueFamilyProp = NULL;
+				}
+			}
+
+			// device features
+			{
+				VkPhysicalDeviceFeatures
+					* const deviceFeat = &p_renderer->physicalDevice.deviceFeat,
+					* const deviceFeatUse = &p_renderer->physicalDevice.deviceFeatUse;
+				cdraw_assert(deviceFeat && deviceFeatUse);
+
+				vkGetPhysicalDeviceProperties(physicalDeviceSelect, &p_renderer->physicalDevice.deviceProp);
+				vkGetPhysicalDeviceFeatures(physicalDeviceSelect, deviceFeat);
+				memset(deviceFeatUse, 0, sizeof(*deviceFeatUse));
+				deviceFeatUse->geometryShader = VK_TRUE;
+				deviceFeatUse->tessellationShader = VK_TRUE;
+				deviceFeatUse->multiDrawIndirect = deviceFeat->multiDrawIndirect;
+				//deviceFeatUse->multiViewport = deviceFeat->multiViewport;
+			}
+
+			// device memory
+			{
+				VkPhysicalDeviceMemoryProperties
+					* const deviceMemProp = &p_renderer->physicalDevice.deviceMemProp;
+				cdraw_assert(deviceMemProp);
+
+				vkGetPhysicalDeviceMemoryProperties(physicalDeviceSelect, deviceMemProp);
+				printf("\n\t nMemoryType = %u: { [flags] (heap index) }", deviceMemProp->memoryTypeCount);
+				for (memory = 0; memory < deviceMemProp->memoryTypeCount; ++memory)
+					cdrawRendererPrintMemoryType_vk(&deviceMemProp->memoryTypes[memory], memory, pref1);
+				printf("\n\t nMemoryHeap = %u: { [flags] (device size) }", deviceMemProp->memoryHeapCount);
+				for (memory = 0; memory < deviceMemProp->memoryHeapCount; ++memory)
+					cdrawRendererPrintMemoryHeap_vk(&deviceMemProp->memoryHeaps[memory], memory, pref1);
+			}
+
+			// FINAL CREATE LOGICAL DEVICE
+			{
+				// queue creation data for graphics
+				VkDeviceQueueCreateInfo const queueCreateInfo_graphics = {
+					VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
+					NULL,
+					0,
+					queueFamilySelectIdx_graphics,
+					1,
+					queuePriority_graphics,
+				};
+
+				// all queue creation data
+				VkDeviceQueueCreateInfo const queueCreateInfo[] = {
+					queueCreateInfo_graphics,
+				};
+
+				// device creation data
+				VkDeviceCreateInfo const deviceCreateInfo = {
+					VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+					NULL,
+					0,
+					buffer_len(queueCreateInfo),
+					queueCreateInfo,
+					nDeviceLayerEnabled,
+					deviceLayerName,
+					nDeviceExtEnabled,
+					deviceExtName,
+					&p_renderer->physicalDevice.deviceFeatUse,
+				};
+
+				// create device
+				result = vkCreateDevice(physicalDeviceSelect, &deviceCreateInfo, alloc, &p_renderer->device);
+				if (result == VK_SUCCESS)
+				{
+					cdraw_assert(p_renderer->device);
+				}
+				else
+					result = VK_INCOMPLETE;
+			}
+		}
+		else
+			result = VK_INCOMPLETE;
+	}
 
 	// done
 	return (result == VK_SUCCESS);
