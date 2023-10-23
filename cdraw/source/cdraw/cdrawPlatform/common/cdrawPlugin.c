@@ -439,7 +439,7 @@ result_t cdrawPluginLoad(cdrawPlugin* const plugin, cdrawPluginInfo const* const
 	asserterr(plugin && (plugin->id == -1) && !plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner, errcode_invalidarg);
 	plugin->p_handle = cdrawPluginInternalLoad(plugin, pluginInfo);
-	failassertret(plugin->p_handle, errcode_plugin_init);
+	asserterr(plugin->p_handle, errcode_plugin_init);
 	plugin->info = *pluginInfo;
 	plugin->id = id;
 	plugin->p_owner = owner_opt;
@@ -458,9 +458,9 @@ result_t cdrawPluginReload(cdrawPlugin* const plugin, ptrk_t const caller)
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	cdrawPluginCallPreReload(plugin, caller);
 	unloadResult = cdrawPluginInternalUnload(plugin);
-	failassertret(unloadResult, errcode_plugin_init);
+	asserterr(unloadResult, errcode_plugin_init);
 	plugin->p_handle = cdrawPluginInternalLoad(plugin, &plugin->info);
-	failassertret(plugin->p_handle, errcode_plugin_init);
+	asserterr(plugin->p_handle, errcode_plugin_init);
 	cdrawPluginCallPostReload(plugin, caller);
 	result_return();
 }
@@ -476,7 +476,7 @@ result_t cdrawPluginUnload(cdrawPlugin* const plugin, ptrk_t const caller)
 	else
 		cdrawPluginCallPreHotload(plugin, caller);
 	unloadResult = cdrawPluginInternalUnload(plugin);
-	failassertret(unloadResult, errcode_plugin_init);
+	asserterr(unloadResult, errcode_plugin_init);
 	cdrawPluginInfoReset(&plugin->info);
 	plugin->id = -1;
 	plugin->p_owner = NULL;

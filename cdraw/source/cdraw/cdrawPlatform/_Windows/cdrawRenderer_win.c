@@ -27,6 +27,10 @@
 
 
 result_t cdrawRendererCreate_win_vk(cdrawRenderer* const renderer, ptrk_t const p_data);
+result_t cdrawRendererRelease_win_vk(cdrawRenderer* const renderer);
+bool cdrawRendererPrint_vk(cdrawRenderer const* const renderer);
+
+
 result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, ptrk_t const p_data_opt)
 {
 	result_init();
@@ -54,12 +58,16 @@ result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const
 		printf("\n cdrawRendererPrint: Metal rendering is not supported by this platform.");
 		break;
 	}
-	failret(result_isclean(result), errcode_renderer_api);
+	if (!result_isclean(result))
+	{
+		cdrawRendererRelease_win_vk(renderer);
+		result_seterror(errcode_renderer_api);
+		result_return();
+	}
 	renderer->renderAPI = renderAPI;
 	result_return();
 }
 
-result_t cdrawRendererRelease_win_vk(cdrawRenderer* const renderer);
 result_t cdrawRendererRelease(cdrawRenderer* const renderer)
 {
 	result_init();
@@ -86,12 +94,11 @@ result_t cdrawRendererRelease(cdrawRenderer* const renderer)
 		printf("\n cdrawRendererPrint: Metal rendering is not supported by this platform.");
 		break;
 	}
-	failret(result_isclean(result), errcode_renderer_api);
+	failret(result_isclean(result), result_seterror(errcode_renderer_api));
 	renderer->renderAPI = cdrawRenderAPI_none;
 	result_return();
 }
 
-bool cdrawRendererPrint_vk(cdrawRenderer const* const renderer);
 result_t cdrawRendererPrint(cdrawRenderer const* const renderer)
 {
 	result_init();
@@ -121,7 +128,7 @@ result_t cdrawRendererPrint(cdrawRenderer const* const renderer)
 		printf("\n cdrawRendererPrint: Metal rendering is not supported by this platform.");
 		break;
 	}
-	failret(result, errcode_renderer_api);
+	failret(result, result_seterror(errcode_renderer_api));
 	result_return();
 }
 
