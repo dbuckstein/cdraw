@@ -207,11 +207,15 @@ typedef byte_t								label_long_t[sizeof(label_t)*4];									// Convenient lon
 #define label_long_copy(dst,src)			buffer_copy4(dst,src,0,label_t);label_long_term(dst)				// Copy and terminate long label string.
 
 
-#define swap2(x,y,tmp)						(tmp=x);(x=y);(y=tmp)				// Swap two values.
-#define swap3(x,y,z,tmp)					(tmp=x);(x=y);(y=z);(z=tmp)			// Swap three values.
-#define swap3r(x,y,z,tmp)					(tmp=x);(x=z);(z=y);(y=tmp)			// Swap three values (alt).
-#define swap4(x,y,z,w,tmp)					(tmp=x);(x=y);(y=z);(z=w);(w=tmp)	// Swap four values.
-#define swap4r(x,y,z,w,tmp)					(tmp=x);(x=w);(w=z);(z=y);(y=tmp)	// Swap four values (alt).
+#define gSq(x)								((x)*(x))											// General square of input.
+#define gMad(x0,dx,u)						((x0)+(dx)*(u))										// General multiply-add.
+#define gLerp(x0,x1,u)						((x0)+((x1)-(x0))*u)								// General linear interpolation.
+#define gClamp(x,x_min,x_max)				((x)>=(x_min)?(x)<=(x_max)?(x):(x_max):(x_min))		// General clamp in range.
+#define gSwap(x,y,tmp)						(tmp=x);(x=y);(y=tmp)								// Swap two values.
+#define gSwap3(x,y,z,tmp)					(tmp=x);(x=y);(y=z);(z=tmp)							// Swap three values.
+#define gSwap3r(x,y,z,tmp)					(tmp=x);(x=z);(z=y);(y=tmp)							// Swap three values (alt).
+#define gSwap4(x,y,z,w,tmp)					(tmp=x);(x=y);(y=z);(z=w);(w=tmp)					// Swap four values.
+#define gSwap4r(x,y,z,w,tmp)				(tmp=x);(x=w);(w=z);(z=y);(y=tmp)					// Swap four values (alt).
 
 
 /******************************************************************************

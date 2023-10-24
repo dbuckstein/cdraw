@@ -44,6 +44,7 @@ static const label_long_t gKeyAlt = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
 typedef struct cdrawWindow_win
 {
 	struct {
+		HINSTANCE hInst;			// Internal instance handle.
 		HWND hWnd;					// Internal window handle.
 		HDC hDC;					// Internal device context handle.
 	};
@@ -743,11 +744,14 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 			cdraw_window_valid();
 
 			memset(p_window, 0, sizeof(cdrawWindow_win));
+			p_window->hInst = gWindowPlatform.info.hInstance;
 			p_window->hWnd = hWnd;
 			p_window->hDC = GetDC(hWnd);
 			p_window->mouseTrack.cbSize = sizeof(p_window->mouseTrack);
 			p_window->mouseTrack.hwndTrack = hWnd;
 			p_window->mouseTrack.dwFlags = (TME_LEAVE);
+			cdraw_assert(p_window->hInst && p_window->hWnd && p_window->hDC);
+
 			TrackMouseEvent(&p_window->mouseTrack);
 			SetWindowLongPtrA(hWnd, GWLP_USERDATA, (LONG_PTR)window);
 			++gWindowPlatform.windowCount;
