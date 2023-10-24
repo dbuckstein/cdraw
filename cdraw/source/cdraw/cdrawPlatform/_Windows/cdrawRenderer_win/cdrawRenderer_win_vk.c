@@ -49,6 +49,17 @@
 ******************************************************************************/
 
 /// <summary>
+/// Framework-defined Vulkan allocator manager.
+/// </summary>
+typedef struct cdrawRendererAllocator_vk
+{
+	/// <summary>
+	/// Counts for testing.
+	/// </summary>
+	uint32_t allocCount, reallocCount, freeCount, internalAllocCount, internalFreeCount;
+} cdrawRendererAllocator_vk;
+
+/// <summary>
 /// Complete description of Vulkan physical device.
 /// </summary>
 typedef struct cdrawVkPhysicalDevice
@@ -95,46 +106,61 @@ typedef struct cdrawVkPhysicalDevice
 typedef struct cdrawRenderer_win_vk
 {
 	/// <summary>
-	/// Vulkan instance.
+	/// Vulkan handles and data related to instance or global usage.
 	/// </summary>
-	VkInstance inst;
+	struct {
+		/// <summary>
+		/// Vulkan instance.
+		/// </summary>
+		VkInstance inst;
 
-	/// <summary>
-	/// Vulkan logical device.
-	/// </summary>
-	VkDevice device;
-
-	/// <summary>
-	/// Vulkan presentation surface.
-	/// </summary>
-	VkSurfaceKHR surface;
-
-	/// <summary>
-	/// Vulkan graphics/presentation queue.
-	/// </summary>
-	VkQueue queue;
-
-	/// <summary>
-	/// Vulkan swapchain.
-	/// </summary>
-	VkSwapchainKHR swapchain;
+		/// <summary>
+		/// Vulkan allocation callbacks for memory management.
+		/// </summary>
+		VkAllocationCallbacks alloc;
 
 #if CDRAW_DEBUG
-	/// <summary>
-	/// Debug report extension.
-	/// </summary>
-	VkDebugReportCallbackEXT debug;
+		/// <summary>
+		/// Debug report extension.
+		/// </summary>
+		VkDebugReportCallbackEXT debug;
 #endif // #if CDRAW_DEBUG
+	};
 
 	/// <summary>
-	/// Vulkan allocation callbacks for memory management.
+	/// Vulkan handles and data related to device management.
 	/// </summary>
-	VkAllocationCallbacks alloc;
+	struct {
+		/// <summary>
+		/// Vulkan logical device.
+		/// </summary>
+		VkDevice device;
+
+		/// <summary>
+		/// Description of physical device used.
+		/// </summary>
+		cdrawVkPhysicalDevice physicalDevice;
+	};
 
 	/// <summary>
-	/// Description of physical device used.
+	/// Vulkan handles and data related to presentation.
 	/// </summary>
-	cdrawVkPhysicalDevice physicalDevice;
+	struct {
+		/// <summary>
+		/// Vulkan presentation surface.
+		/// </summary>
+		VkSurfaceKHR surface;
+
+		/// <summary>
+		/// Vulkan swapchain.
+		/// </summary>
+		VkSwapchainKHR swapchain;
+
+		/// <summary>
+		/// Vulkan graphics/presentation queue.
+		/// </summary>
+		VkQueue queue;
+	};
 } cdrawRenderer_win_vk;
 
 
@@ -146,8 +172,81 @@ int32_t cdrawRendererPrintMemoryType_vk(VkMemoryType const* const memoryType, ui
 int32_t cdrawRendererPrintMemoryHeap_vk(VkMemoryHeap const* const memoryHeap, uint32_t const index, cstrk_t const prefix);
 
 
+static ptr_t cdrawRendererAllocatorAllocation_vk(
+	cdrawRendererAllocator_vk* const	pUserData,
+	size_t const						size,
+	size_t const						alignment,
+	VkSystemAllocationScope const		allocationScope)
+{
+	ptr_t pMemory = NULL;
+	// perform custom allocation here
+	// MUST return pointer aligned by 'alignment' if allocation succeeded
+	// MUST return NULL if allocation failed (later generates VK_ERROR_OUT_OF_HOST_MEMORY)
+	if (pMemory)
+		++pUserData->allocCount;
+	return pMemory;
+}
+
+static void cdrawRendererAllocatorFree_vk(
+	cdrawRendererAllocator_vk* const	pUserData,
+	ptr_t const							pMemory)
+{
+	if (pMemory)
+	{
+		// perform custom free here
+		++pUserData->freeCount;
+	}
+}
+
+static ptr_t cdrawRendererAllocatorReallocation_vk(
+	cdrawRendererAllocator_vk* const	pUserData,
+	ptr_t const							pOriginal,
+	size_t const						size,
+	size_t const						alignment,
+	VkSystemAllocationScope const		allocationScope)
+{
+	ptr_t pMemory = NULL;
+	if (pOriginal == NULL)
+	{
+		pMemory = cdrawRendererAllocatorAllocation_vk(pUserData, size, alignment, allocationScope);
+	}
+	else if (size == 0)
+	{
+		cdrawRendererAllocatorFree_vk(pUserData, pOriginal);
+	}
+	else
+	{
+		// perform custom reallocation here
+		// same return rules as allocation
+		// if fail and original is valid, do not free it
+		if (pMemory)
+			++pUserData->reallocCount;
+	}
+	return pMemory;
+}
+
+static void cdrawRendererAllocatorInternalAllocationNotification_vk(
+	cdrawRendererAllocator_vk* const	pUserData,
+	size_t const						size,
+	VkInternalAllocationType const		allocationType,
+	VkSystemAllocationScope const		allocationScope)
+{
+	++pUserData->internalAllocCount;
+}
+
+static void cdrawRendererAllocatorInternalFreeNotification_vk(
+	cdrawRendererAllocator_vk* const	pUserData,
+	size_t const						size,
+	VkInternalAllocationType const		allocationType,
+	VkSystemAllocationScope const		allocationScope)
+{
+	++pUserData->internalFreeCount;
+}
+
+
 static bool cdrawRendererInternalAllocUse_vk(cdrawRenderer_win_vk* const p_renderer)
 {
+	cdraw_assert(p_renderer);
 	if (!p_renderer->alloc.pUserData)
 		return false;
 	return true;
@@ -155,26 +254,38 @@ static bool cdrawRendererInternalAllocUse_vk(cdrawRenderer_win_vk* const p_rende
 
 static bool cdrawRendererInternalAllocInit_vk(cdrawRenderer_win_vk* const p_renderer)
 {
-	//p_renderer->alloc.pUserData = malloc(0);
+	cdraw_assert(p_renderer);
+
+	//p_renderer->alloc.pUserData = (cdrawRendererAllocator_vk*)malloc(sizeof(cdrawRendererAllocator_vk));
+	//p_renderer->alloc.pUserData = &p_renderer->allocator;
 	if (!cdrawRendererInternalAllocUse_vk(p_renderer))
 		return false;
 
-	// ****TO-DO: set callbacks
-
+	p_renderer->alloc.pfnAllocation = cdrawRendererAllocatorAllocation_vk;
+	p_renderer->alloc.pfnReallocation = cdrawRendererAllocatorReallocation_vk;
+	p_renderer->alloc.pfnFree = cdrawRendererAllocatorFree_vk;
+	p_renderer->alloc.pfnInternalAllocation = cdrawRendererAllocatorInternalAllocationNotification_vk;
+	p_renderer->alloc.pfnInternalFree = cdrawRendererAllocatorInternalFreeNotification_vk;
 	return true;
 }
 
 static bool cdrawRendererInternalAllocClean_vk(cdrawRenderer_win_vk* const p_renderer)
 {
+	cdraw_assert(p_renderer);
 	if (!cdrawRendererInternalAllocUse_vk(p_renderer))
 		return false;
-	free(p_renderer->alloc.pUserData);
+
+	//free(p_renderer->alloc.pUserData);
+	//p_renderer->alloc.pUserData = NULL;
 	memset(&p_renderer->alloc, 0, sizeof(p_renderer->alloc));
 	return true;
 }
 
 
-//PFN_vkDebugReportCallbackEXT
+#if CDRAW_DEBUG
+/*
+* Singh, c.4 - translated to C and organized
+*/
 static VkBool32 cdrawRendererInternalDebugCallback_vk(
 	VkDebugReportFlagsEXT const flags,
 	VkDebugReportObjectTypeEXT const objectType,
@@ -185,17 +296,23 @@ static VkBool32 cdrawRendererInternalDebugCallback_vk(
 	cstrk_t const pMessage,
 	ptr_t const pUserData)
 {
-	// print debug info
+	// same format as "PFN_vkDebugReportCallbackEXT"
+
+	// the message contains general info
 	if (flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT)
-		printf("\n cdraw Debug INFO (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
+		printf("\n\t cdrawVkDebugReport: INFORMATION (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
+	// the message contains a warning
 	else if (flags & VK_DEBUG_REPORT_WARNING_BIT_EXT)
-		printf("\n cdraw Debug WARNING (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
+		printf("\n\t cdrawVkDebugReport: WARNING (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
+	// the message contains a performance warning
 	else if (flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT)
-		printf("\n cdraw Debug PERFORMANCE WARNING (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
+		printf("\n\t cdrawVkDebugReport: PERFORMANCE WARNING (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
+	// the message contains an error
 	else if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
-		printf("\n cdraw Debug ERROR (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
+		printf("\n\t cdrawVkDebugReport: ERROR (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
+	// the message pertains to debugging
 	else if (flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT)
-		printf("\n cdraw Debug DEBUG (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
+		printf("\n\t cdrawVkDebugReport: DEBUG (%s, #%d): %s", pLayerPrefix, messageCode, pMessage);
 	// not handled
 	else
 		return VK_FALSE;
@@ -203,6 +320,93 @@ static VkBool32 cdrawRendererInternalDebugCallback_vk(
 	// handled, but should still return false according to spec
 	return VK_SUCCESS;
 }
+static VkDebugReportCallbackCreateInfoEXT cdrawVkDebugReportCallbackCreateInfoCtor(
+	VkDebugReportFlagsEXT const flags,
+	PFN_vkDebugReportCallbackEXT const callback,
+	ptr_t const data)
+{
+	VkDebugReportCallbackCreateInfoEXT debugReportCallbackCreateInfo = { 0 };
+	debugReportCallbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+	debugReportCallbackCreateInfo.flags = flags;
+	debugReportCallbackCreateInfo.pfnCallback = callback;
+	debugReportCallbackCreateInfo.pUserData = data;
+	return debugReportCallbackCreateInfo;
+}
+static VkDebugReportCallbackCreateInfoEXT cdrawVkDebugReportCallbackCreateInfoCtorDefault()
+{
+	// all flags
+	VkDebugReportFlagsEXT const flags =
+		(VK_DEBUG_REPORT_INFORMATION_BIT_EXT
+			| VK_DEBUG_REPORT_WARNING_BIT_EXT
+			| VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT
+			| VK_DEBUG_REPORT_ERROR_BIT_EXT
+			| VK_DEBUG_REPORT_DEBUG_BIT_EXT);
+	return cdrawVkDebugReportCallbackCreateInfoCtor(
+		flags,
+		cdrawRendererInternalDebugCallback_vk,
+		NULL);
+}
+static bool cdrawRendererInternalCreateDebug_vk(cdrawRenderer_win_vk* const p_renderer, VkAllocationCallbacks const* const alloc)
+{
+	VkResult result = VK_SUCCESS;
+	VkDebugReportCallbackEXT debug = VK_NULL_HANDLE;
+	cdraw_assert(p_renderer && p_renderer->inst);
+	cdraw_assert(!p_renderer->debug);
+	printf("\n Creating Vulkan debugging...");
+
+	// DEBUGGING
+	{
+		// first need to get address of debug report callback function pointer
+		PFN_vkCreateDebugReportCallbackEXT const vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(p_renderer->inst, "vkCreateDebugReportCallbackEXT");
+		VkDebugReportCallbackCreateInfoEXT const debugCreateInfo = cdrawVkDebugReportCallbackCreateInfoCtorDefault();
+		cdraw_assert(vkCreateDebugReportCallbackEXT);
+		result = vkCreateDebugReportCallbackEXT(p_renderer->inst, &debugCreateInfo, alloc, &debug);
+		if (debug)
+		{
+			cdraw_assert(result == VK_SUCCESS);
+			p_renderer->debug = debug;
+
+			// custom message debug report
+			// get function and call to add layer messages
+			{
+				PFN_vkDebugReportMessageEXT const vkDebugReportMessageEXT = (PFN_vkDebugReportMessageEXT)vkGetInstanceProcAddr(p_renderer->inst, "vkDebugReportMessageEXT");
+				cdraw_assert(vkDebugReportMessageEXT);
+			}
+		}
+		else
+			result = VK_INCOMPLETE;
+	}
+
+	// done
+	if (result != VK_SUCCESS)
+	{
+		printf("\n Vulkan debugging creation failed.");
+		return false;
+	}
+	cdraw_assert(p_renderer->debug);
+	printf("\n Vulkan debugging creation succeeded.");
+	return true;
+}
+
+static bool cdrawRendererInternalReleaseDebug_vk(cdrawRenderer_win_vk* const p_renderer, VkAllocationCallbacks const* const alloc)
+{
+	cdraw_assert(p_renderer);
+	if (!p_renderer->debug)
+		return false;
+	printf("\n Destroying Vulkan debugging...");
+
+	cdraw_assert(p_renderer->inst);
+	{
+		PFN_vkDestroyDebugReportCallbackEXT const vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(p_renderer->inst, "vkDestroyDebugReportCallbackEXT");
+		cdraw_assert(vkDestroyDebugReportCallbackEXT);
+		vkDestroyDebugReportCallbackEXT(p_renderer->inst, p_renderer->debug, alloc);
+	}
+
+	printf("\n Vulkan debugging destroyed.");
+	p_renderer->debug = NULL;
+	return true;
+}
+#endif // #if CDRAW_DEBUG
 
 /*
 * Singh, c.3 - translated to C and organized
@@ -223,6 +427,9 @@ static VkApplicationInfo cdrawVkApplicationInfoCtor(
 	return applicationInfo;
 }
 static VkInstanceCreateInfo cdrawVkInstanceCreateInfoCtor(
+#if CDRAW_DEBUG
+	VkDebugReportCallbackCreateInfoEXT const* const debugCreateInfo,
+#endif // #if CDRAW_DEBUG
 	VkApplicationInfo const* const appInfo,
 	uint32_t const layerCount,
 	cstrk_t const layerNames[],
@@ -231,6 +438,9 @@ static VkInstanceCreateInfo cdrawVkInstanceCreateInfoCtor(
 {
 	VkInstanceCreateInfo instanceCreateInfo = { 0 };
 	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+#if CDRAW_DEBUG
+	instanceCreateInfo.pNext = debugCreateInfo;
+#endif // #if CDRAW_DEBUG
 	instanceCreateInfo.pApplicationInfo = appInfo;
 	instanceCreateInfo.enabledLayerCount = layerCount;
 	instanceCreateInfo.ppEnabledLayerNames = layerNames;
@@ -385,17 +595,30 @@ static bool cdrawRendererInternalCreateInstance_win_vk(cdrawRenderer_win_vk* con
 	// FINAL CREATE INSTANCE
 	if (result == VK_SUCCESS)
 	{
+#if CDRAW_DEBUG
+		// add debug create info to show messages on instance create
+		VkDebugReportCallbackCreateInfoEXT const debugCreateInfo = cdrawVkDebugReportCallbackCreateInfoCtorDefault();
+#endif // #if CDRAW_DEBUG
+
+		// app descriptor
 		VkApplicationInfo const appInfo = cdrawVkApplicationInfoCtor(
 			"cdraw Plugin Application",
 			VK_MAKE_VERSION(0, 0, 1),
 			"cdraw",
 			VK_MAKE_VERSION(0, 0, 1));
+
+		// instance info
 		VkInstanceCreateInfo const instCreateInfo = cdrawVkInstanceCreateInfoCtor(
+#if CDRAW_DEBUG
+			&debugCreateInfo,
+#endif // #if CDRAW_DEBUG
 			&appInfo,
 			nInstLayerEnabled,
 			instLayerName,
 			nInstExtEnabled,
 			instExtName);
+
+		// create instance
 		result = vkCreateInstance(&instCreateInfo, alloc, &inst);
 		if (inst)
 		{
@@ -422,10 +645,11 @@ static bool cdrawRendererInternalReleaseInstance_vk(cdrawRenderer_win_vk* const 
 	cdraw_assert(p_renderer);
 	if (!p_renderer->inst)
 		return false;
+	printf("\n Destroying Vulkan instance...");
 
 	vkDestroyInstance(p_renderer->inst, alloc);
 
-	printf("\n Released Vulkan instance.");
+	printf("\n Vulkan instance destroyed.");
 	p_renderer->inst = NULL;
 	return true;
 }
@@ -730,12 +954,15 @@ static bool cdrawRendererInternalCreateDevice_win_vk(cdrawRenderer_win_vk* const
 	// FINAL CREATE LOGICAL DEVICE
 	if (result == VK_SUCCESS)
 	{
+		// device queue creation info, starting with graphics-capable
 		VkDeviceQueueCreateInfo const queueCreateInfo[] = {
 			cdrawVkDeviceQueueCreateInfoCtor(
 				queueFamilySelectIdx_graphics,
 				queueCount_graphics,
 				queuePriority_graphics),
 		};
+
+		// device info
 		VkDeviceCreateInfo const deviceCreateInfo = cdrawVkDeviceCreateInfoCtor(
 			buffer_len(queueCreateInfo),
 			queueCreateInfo,
@@ -744,6 +971,8 @@ static bool cdrawRendererInternalCreateDevice_win_vk(cdrawRenderer_win_vk* const
 			nDeviceExtEnabled,
 			deviceExtName,
 			&p_renderer->physicalDevice.deviceFeatUse);
+
+		// create device
 		result = vkCreateDevice(physicalDeviceSelect, &deviceCreateInfo, alloc, &device);
 		if (device)
 		{
@@ -771,6 +1000,7 @@ static bool cdrawRendererInternalReleaseDevice_vk(cdrawRenderer_win_vk* const p_
 	cdraw_assert(p_renderer);
 	if (!p_renderer->device)
 		return false;
+	printf("\n Destroying Vulkan logical device...");
 
 	if (vkDeviceWaitIdle(p_renderer->device) != VK_SUCCESS)
 		return false;
@@ -778,7 +1008,7 @@ static bool cdrawRendererInternalReleaseDevice_vk(cdrawRenderer_win_vk* const p_
 	cdraw_assert(p_renderer->physicalDevice.device);
 	vkDestroyDevice(p_renderer->device, alloc);
 
-	printf("\n Released Vulkan logical device.");
+	printf("\n Vulkan logical device destroyed.");
 	memset(&p_renderer->physicalDevice, 0, sizeof(p_renderer->physicalDevice));
 	p_renderer->device = NULL;
 	return true;
@@ -816,9 +1046,13 @@ static bool cdrawRendererInternalCreateSurface_win_vk(cdrawRenderer_win_vk* cons
 			HINSTANCE hInst;
 			HWND hWnd;
 		} const* const data = p_data;
+
+		// surface info
 		VkWin32SurfaceCreateInfoKHR const surfaceCreateInfo = cdrawVkSurfaceCreateInfoCtor(
 			data->hInst,
 			data->hWnd);
+
+		// create surface
 		cdraw_assert(data->hInst && data->hWnd);
 		result = vkCreateWin32SurfaceKHR(p_renderer->inst, &surfaceCreateInfo, alloc, &surface);
 #endif // #if CDRAW_TARGET_WINDOWS
@@ -847,11 +1081,12 @@ static bool cdrawRendererInternalReleaseSurface_vk(cdrawRenderer_win_vk* const p
 	cdraw_assert(p_renderer);
 	if (!p_renderer->surface)
 		return false;
+	printf("\n Destroying Vulkan presentation surface...");
 
 	cdraw_assert(p_renderer->inst);
 	vkDestroySurfaceKHR(p_renderer->inst, p_renderer->surface, alloc);
 
-	printf("\n Released Vulkan presentation surface.");
+	printf("\n Vulkan presentation surface destroyed.");
 	p_renderer->surface = NULL;
 	return true;
 }
@@ -919,6 +1154,9 @@ static bool cdrawRendererInternalCreateSwapchain_win_vk(cdrawRenderer_win_vk* co
 	uint32_t imageCount = 0, imageArrayLayers = 0;
 	VkSurfaceTransformFlagBitsKHR preTransform = 0;
 	VkCompositeAlphaFlagBitsKHR compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+
+	uint32_t nSwapchainImage = 0;
+	VkImage* pSwapchainImage = NULL;
 
 	VkPhysicalDevice const physicalDevice = p_renderer->physicalDevice.device;
 	int32_t const queueFamilyIdx_graphics = p_renderer->physicalDevice.queueFamilyIdx_graphics;
@@ -1013,8 +1251,17 @@ static bool cdrawRendererInternalCreateSwapchain_win_vk(cdrawRenderer_win_vk* co
 	// FINAL CREATE SWAPCHAIN
 	if (result == VK_SUCCESS)
 	{
+		// how can the images be used
 		VkImageUsageFlags const imageUsage =
+#if CDRAW_DEBUG
+			(VK_BUFFER_USAGE_TRANSFER_DST_BIT) |
+#endif // #if CDRAW_DEBUG
 			(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+		// image sharing mode
+		VkSharingMode const imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		// creation info
 		VkSwapchainCreateInfoKHR const swapchainCreateInfo = cdrawVkSwapchainCreateInfoCtor(
 			p_renderer->surface,
 			min(imageCount, surfaceCapabilities.maxImageCount),
@@ -1023,7 +1270,7 @@ static bool cdrawRendererInternalCreateSwapchain_win_vk(cdrawRenderer_win_vk* co
 			surfaceCapabilities.currentExtent,
 			min(imageArrayLayers, surfaceCapabilities.maxImageArrayLayers),
 			flagcheck(imageUsage, surfaceCapabilities.supportedUsageFlags),
-			VK_SHARING_MODE_EXCLUSIVE,
+			imageSharingMode,
 			0,
 			NULL,
 			flagcheck(preTransform, surfaceCapabilities.supportedTransforms),
@@ -1031,15 +1278,40 @@ static bool cdrawRendererInternalCreateSwapchain_win_vk(cdrawRenderer_win_vk* co
 			presentMode,
 			VK_TRUE,
 			VK_NULL_HANDLE);
+
+		// create swapchain
 		result = vkCreateSwapchainKHR(p_renderer->device, &swapchainCreateInfo, alloc, &swapchain);
 		if (swapchain)
 		{
 			cdraw_assert(result == VK_SUCCESS);
-			p_renderer->swapchain = swapchain;
-			p_renderer->queue = queue;
 		}
 		else
 			result = VK_INCOMPLETE;
+	}
+
+	// next, get images
+	if (swapchain)
+	{
+		result = vkGetSwapchainImagesKHR(p_renderer->device, swapchain, &nSwapchainImage, NULL);
+		if (result == VK_SUCCESS && nSwapchainImage)
+		{
+			pSwapchainImage = (VkImage*)malloc(sizeof(VkImage) * nSwapchainImage);
+			if (pSwapchainImage)
+			{
+				result = vkGetSwapchainImagesKHR(p_renderer->device, swapchain, &nSwapchainImage, pSwapchainImage);
+				cdraw_assert(result == VK_SUCCESS);
+
+				// create image views
+
+
+				free(pSwapchainImage);
+				pSwapchainImage = NULL;
+			}
+		}
+
+		// set pointers
+		p_renderer->swapchain = swapchain;
+		p_renderer->queue = queue;
 	}
 
 	if (result != VK_SUCCESS)
@@ -1057,96 +1329,17 @@ static bool cdrawRendererInternalReleaseSwapchain_vk(cdrawRenderer_win_vk* const
 	cdraw_assert(p_renderer);
 	if (!p_renderer->swapchain)
 		return false;
+	printf("\n Destroying Vulkan swapchain...");
 
 	cdraw_assert(p_renderer->queue);
 	cdraw_assert(p_renderer->device);
 	vkDestroySwapchainKHR(p_renderer->device, p_renderer->swapchain, alloc);
 	
-	printf("\n Released Vulkan swapchain.");
+	printf("\n Vulkan swapchain destroyed.");
 	p_renderer->swapchain = NULL;
 	p_renderer->queue = NULL;
 	return true;
 }
-
-#if CDRAW_DEBUG
-/*
-* Singh, c.4 - translated to C and organized
-*/
-static VkDebugReportCallbackCreateInfoEXT cdrawVkDebugReportCallbackCreateInfoCtor(
-	VkDebugReportFlagsEXT const flags,
-	PFN_vkDebugReportCallbackEXT const callback,
-	ptr_t const data)
-{
-	VkDebugReportCallbackCreateInfoEXT debugReportCallbackCreateInfo = { 0 };
-	debugReportCallbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-	debugReportCallbackCreateInfo.flags = flags;
-	debugReportCallbackCreateInfo.pfnCallback = callback;
-	debugReportCallbackCreateInfo.pUserData = data;
-	return debugReportCallbackCreateInfo;
-}
-static bool cdrawRendererInternalCreateDebug_vk(cdrawRenderer_win_vk* const p_renderer, VkAllocationCallbacks const* const alloc)
-{
-	VkResult result = VK_SUCCESS;
-	VkDebugReportCallbackEXT debug = VK_NULL_HANDLE;
-	cdraw_assert(p_renderer && p_renderer->inst);
-	cdraw_assert(!p_renderer->debug);
-	printf("\n Creating Vulkan debugging...");
-
-	// DEBUGGING
-	{
-		// first need to get address of debug report callback function pointer
-		PFN_vkCreateDebugReportCallbackEXT const vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(p_renderer->inst, "vkCreateDebugReportCallbackEXT");
-		VkDebugReportCallbackCreateInfoEXT const debugCreateInfo = cdrawVkDebugReportCallbackCreateInfoCtor(
-			(VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_DEBUG_BIT_EXT),
-			cdrawRendererInternalDebugCallback_vk,
-			NULL);
-		cdraw_assert(vkCreateDebugReportCallbackEXT);
-		result = vkCreateDebugReportCallbackEXT(p_renderer->inst, &debugCreateInfo, alloc, &debug);
-		if (debug)
-		{
-			cdraw_assert(result == VK_SUCCESS);
-			p_renderer->debug = debug;
-
-			// custom message debug report
-			// get function and call to add layer messages
-			{
-				PFN_vkDebugReportMessageEXT const vkDebugReportMessageEXT = (PFN_vkDebugReportMessageEXT)vkGetInstanceProcAddr(p_renderer->inst, "vkDebugReportMessageEXT");
-				cdraw_assert(vkDebugReportMessageEXT);
-			}
-		}
-		else
-			result = VK_INCOMPLETE;
-	}
-
-	// done
-	if (result != VK_SUCCESS)
-	{
-		printf("\n Vulkan debugging creation failed.");
-		return false;
-	}
-	cdraw_assert(p_renderer->debug);
-	printf("\n Vulkan debugging creation succeeded.");
-	return true;
-}
-
-static bool cdrawRendererInternalReleaseDebug_vk(cdrawRenderer_win_vk* const p_renderer, VkAllocationCallbacks const* const alloc)
-{
-	cdraw_assert(p_renderer);
-	if (!p_renderer->debug)
-		return false;
-
-	cdraw_assert(p_renderer->inst);
-	{
-		PFN_vkDestroyDebugReportCallbackEXT const vkDestroyDebugReportCallbackEXT = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(p_renderer->inst, "vkDestroyDebugReportCallbackEXT");
-		cdraw_assert(vkDestroyDebugReportCallbackEXT);
-		vkDestroyDebugReportCallbackEXT(p_renderer->inst, p_renderer->debug, alloc);
-	}
-
-	printf("\n Released Vulkan debugging.");
-	p_renderer->debug = NULL;
-	return true;
-}
-#endif // #if CDRAW_DEBUG
 
 
 /******************************************************************************
@@ -1169,6 +1362,12 @@ result_t cdrawRendererCreate_win_vk(cdrawRenderer* const renderer, ptrk_t const 
 	result = cdrawRendererInternalCreateInstance_win_vk(p_renderer, alloc);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
+#if CDRAW_DEBUG
+	// CREATE DEBUGGING
+	result = cdrawRendererInternalCreateDebug_vk(p_renderer, alloc);
+	failassertret(result, result_seterror(errcode_renderer_init));
+#endif // #if CDRAW_DEBUG
+
 	// CREATE LOGICAL DEVICE
 	result = cdrawRendererInternalCreateDevice_win_vk(p_renderer, alloc);
 	failassertret(result, result_seterror(errcode_renderer_init));
@@ -1180,12 +1379,6 @@ result_t cdrawRendererCreate_win_vk(cdrawRenderer* const renderer, ptrk_t const 
 	// CREATE SWAPCHAIN
 	result = cdrawRendererInternalCreateSwapchain_win_vk(p_renderer, alloc);
 	failassertret(result, result_seterror(errcode_renderer_init));
-
-#if CDRAW_DEBUG
-	// CREATE DEBUGGING
-	result = cdrawRendererInternalCreateDebug_vk(p_renderer, alloc);
-	failassertret(result, result_seterror(errcode_renderer_init));
-#endif // #if CDRAW_DEBUG
 
 	// all done
 	renderer->p_renderer = p_renderer;
@@ -1199,11 +1392,6 @@ result_t cdrawRendererRelease_win_vk(cdrawRenderer* const renderer)
 	cdraw_assert(p_renderer);
 	VkAllocationCallbacks const* const alloc = cdrawRendererInternalAllocUse_vk(p_renderer) ? &p_renderer->alloc : NULL;
 
-#if CDRAW_DEBUG
-	// destroy debug report callback function pointer
-	cdrawRendererInternalReleaseDebug_vk(p_renderer, alloc);
-#endif // #if CDRAW_DEBUG
-
 	// swapchain (requires device)
 	cdrawRendererInternalReleaseSwapchain_vk(p_renderer, alloc);
 
@@ -1212,6 +1400,11 @@ result_t cdrawRendererRelease_win_vk(cdrawRenderer* const renderer)
 
 	// logical device (wait for it to finish work)
 	cdrawRendererInternalReleaseDevice_vk(p_renderer, alloc);
+
+#if CDRAW_DEBUG
+	// destroy debug report callback function pointer
+	cdrawRendererInternalReleaseDebug_vk(p_renderer, alloc);
+#endif // #if CDRAW_DEBUG
 
 	// finally, destroy instance
 	cdrawRendererInternalReleaseInstance_vk(p_renderer, alloc);
