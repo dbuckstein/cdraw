@@ -48,20 +48,46 @@ typedef enum cdrawRenderAPI
 	cdrawRenderAPI_Metal,		// Modern Metal renderer (Apple native).
 } cdrawRenderAPI;
 
+/// <summary>
+/// API-specific renderer handle.
+/// </summary>
+typedef ptr_t cdrawRendererHandle;
 
 /// <summary>
-/// Portable renderer handle.
+/// Generic renderer function.
+/// </summary>
+typedef result_t(*cdrawRendererFunc)(cdrawRendererHandle r);
+
+/// <summary>
+/// Portable renderer object.
 /// </summary>
 typedef struct cdrawRenderer
 {
 	/// <summary>
 	/// Selected API internal renderer data for specific platform.
 	/// </summary>
-	ptr_t p_renderer;
+	cdrawRendererHandle r;
+	
 	/// <summary>
 	/// Selected rendering API.
 	/// </summary>
 	cdrawRenderAPI renderAPI;
+
+	/// <summary>
+	/// Renderer-specific functions, set on initialization.
+	/// The purpose of this "object-oriented" approach is to avoid having a switch wrapper for every single real-time method.
+	/// The only methods that should be publicly fixed are those around creation or destruction, or non-real-time events.
+	/// Anything that operates on overall renderer should pass its 'r' handle as the first argument.
+	/// Individual renderer components will work similarly, taking the component's respective handle as the second argument.
+	/// </summary>
+	struct {
+		/// <summary>
+		/// Print renderer info.
+		/// </summary>
+		/// <param name="r">Target renderer handle.</param>
+		/// <returns>Zero if success; error code otherwise.</returns>
+		cdrawRendererFunc cdrawRendererPrint;
+	};
 } cdrawRenderer;
 
 
@@ -88,13 +114,6 @@ extern "C" {
 	/// <param name="renderer">Target renderer.</param>
 	/// <returns>Zero if success; error code otherwise.</returns>
 	result_t cdrawRendererRelease(cdrawRenderer* const renderer);
-
-	/// <summary>
-	/// Print high-level information about renderer.
-	/// </summary>
-	/// <param name="renderer">Target renderer.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
-	result_t cdrawRendererPrint(cdrawRenderer const* const renderer);
 
 
 #ifdef __cplusplus

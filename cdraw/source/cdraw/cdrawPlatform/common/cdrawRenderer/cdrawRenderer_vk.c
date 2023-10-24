@@ -1347,6 +1347,18 @@ static bool cdrawRendererReleaseSwapchain_vk(VkSwapchainKHR* const swapchain_out
 }
 
 
+static result_t cdrawRendererPrint_vk(cdrawRenderer_vk const* const r)
+{
+	VkResult result = VK_SUCCESS;
+	uint32_t apiVersion = 0;
+	cdraw_assert(r);
+
+	result = vkEnumerateInstanceVersion(&apiVersion);
+	printf("\n Vulkan API: %u.%u.%u", VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
+	return result;
+}
+
+
 /******************************************************************************
 * Implementations.
 ******************************************************************************/
@@ -1357,7 +1369,7 @@ result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_da
 	bool result = false;
 	size_t const dataSz = sizeof(cdrawRenderer_vk);
 	cdrawRenderer_vk* p_renderer;
-	asserterr(renderer && !renderer->p_renderer && !renderer->renderAPI, errcode_invalidarg);
+	asserterr(renderer && !renderer->r && !renderer->renderAPI, errcode_invalidarg);
 	p_renderer = (cdrawRenderer_vk*)malloc(dataSz);
 	asserterr_ptr(p_renderer, errcode_renderer_init);
 	memset(p_renderer, 0, dataSz);
@@ -1387,8 +1399,13 @@ result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_da
 	result = cdrawRendererCreateSwapchain_vk(&p_renderer->swapchain, &p_renderer->queue, p_renderer->device, p_renderer->surface, p_renderer->physicalDevice.device, p_renderer->physicalDevice.queueFamilyIdx_graphics, alloc_opt);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
+	// setup functions for renderer and components
+	{
+		renderer->cdrawRendererPrint = cdrawRendererPrint_vk;
+	}
+
 	// all done
-	renderer->p_renderer = p_renderer;
+	renderer->r = p_renderer;
 	result_return();
 }
 
@@ -1397,8 +1414,8 @@ result_t cdrawRendererRelease_vk(cdrawRenderer* const renderer)
 	result_init();
 	cdrawRenderer_vk* p_renderer;
 	VkAllocationCallbacks const* alloc_opt;
-	asserterr(renderer && renderer->p_renderer && renderer->renderAPI == cdrawRenderAPI_Vulkan, errcode_invalidarg);
-	p_renderer = ((cdrawRenderer_vk*)renderer->p_renderer);
+	asserterr(renderer && renderer->r && renderer->renderAPI == cdrawRenderAPI_Vulkan, errcode_invalidarg);
+	p_renderer = ((cdrawRenderer_vk*)renderer->r);
 	alloc_opt = cdrawRendererInternalAllocUse_vk(&p_renderer->alloc);
 
 	// swapchain (requires device)
@@ -1422,18 +1439,10 @@ result_t cdrawRendererRelease_vk(cdrawRenderer* const renderer)
 	cdrawRendererInternalAllocClean_vk(&p_renderer->alloc);
 
 	// all done
-	free(renderer->p_renderer);
-	renderer->p_renderer = NULL;
+	free(renderer->r);
+	renderer->r = NULL;
+	{
+		renderer->cdrawRendererPrint = NULL;
+	}
 	result_return();
-}
-
-bool cdrawRendererPrint_vk(cdrawRenderer const* const renderer)
-{
-	uint32_t apiVersion;
-	VkResult result;
-	cdraw_assert(renderer && renderer->p_renderer && renderer->renderAPI == cdrawRenderAPI_Vulkan);
-
-	result = vkEnumerateInstanceVersion(&apiVersion);
-	printf("\n Vulkan API: %u.%u.%u", VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion));
-	return (result == VK_SUCCESS);
 }

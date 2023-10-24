@@ -130,9 +130,9 @@ result_t cb_win_attach(cdrawTestPluginData* const data, int32_t const w, int32_t
 {
 	cdraw_assert(data && windowPlatform_opt);
 	cdrawRenderer* const renderer = &data->renderer;
-	cdraw_assert(!renderer->p_renderer && !renderer->renderAPI);
+	cdraw_assert(!renderer->r && !renderer->renderAPI);
 	result_t result = cdrawRendererCreate(renderer, cdrawRenderAPI_Vulkan, windowPlatform_opt);
-	cdrawRendererPrint(renderer);
+	renderer->cdrawRendererPrint(renderer->r);
 	return result;// printf("\n" __FUNCTION__ "(%p, %d, %d, %d, %d, %p)", data, w, h, x, y, windowPlatform_opt);
 }
 
@@ -140,7 +140,7 @@ result_t cb_win_detach(cdrawTestPluginData* const data, ptrk_t const windowPlatf
 {
 	cdraw_assert(data && windowPlatform_opt);
 	cdrawRenderer* const renderer = &data->renderer;
-	cdraw_assert(renderer->p_renderer && renderer->renderAPI);
+	cdraw_assert(renderer->r && renderer->renderAPI);
 	result_t result = cdrawRendererRelease(renderer);
 	return result;// printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
 }

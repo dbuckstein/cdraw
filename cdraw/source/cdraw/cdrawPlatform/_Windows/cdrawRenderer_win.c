@@ -28,14 +28,13 @@
 
 result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_data);
 result_t cdrawRendererRelease_vk(cdrawRenderer* const renderer);
-bool cdrawRendererPrint_vk(cdrawRenderer const* const renderer);
 
 
 result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, ptrk_t const p_data_opt)
 {
 	result_init();
 	asserterr_ptr(renderer, errcode_invalidarg);
-	asserterr(renderer->p_renderer == NULL, errcode_invalidarg);
+	asserterr(renderer->r == NULL, errcode_invalidarg);
 	asserterr(renderer->renderAPI == cdrawRenderAPI_none, errcode_invalidarg);
 	if (renderAPI == cdrawRenderAPI_none)
 		result_return();
@@ -74,7 +73,7 @@ result_t cdrawRendererRelease(cdrawRenderer* const renderer)
 	asserterr_ptr(renderer, errcode_invalidarg);
 	if (renderer->renderAPI == cdrawRenderAPI_none)
 		result_return();
-	asserterr_ptr(renderer->p_renderer, errcode_invalidarg);
+	asserterr_ptr(renderer->r, errcode_invalidarg);
 	result_t result = 0;
 	switch (renderer->renderAPI)
 	{
@@ -96,39 +95,6 @@ result_t cdrawRendererRelease(cdrawRenderer* const renderer)
 	}
 	failret(result_isclean(result), result_seterror(errcode_renderer_api));
 	renderer->renderAPI = cdrawRenderAPI_none;
-	result_return();
-}
-
-result_t cdrawRendererPrint(cdrawRenderer const* const renderer)
-{
-	result_init();
-	asserterr_ptr(renderer, errcode_invalidarg);
-	if (renderer->renderAPI == cdrawRenderAPI_none)
-	{
-		printf("\n cdrawRendererPrint: No rendering in use.");
-		result_return();
-	}
-	asserterr_ptr(renderer->p_renderer, errcode_invalidarg);
-	bool result = false;
-	switch (renderer->renderAPI)
-	{
-	case cdrawRenderAPI_software:
-		printf("\n cdrawRendererPrint: Software rendering has not yet been implemented for this platform.");
-		break;
-	case cdrawRenderAPI_Vulkan:
-		result = cdrawRendererPrint_vk(renderer);
-		break;
-	case cdrawRenderAPI_OpenGL:
-		printf("\n cdrawRendererPrint: OpenGL rendering has not yet been implemented for this platform.");
-		break;
-	case cdrawRenderAPI_Direct3D:
-		printf("\n cdrawRendererPrint: Direct3D rendering has not yet been implemented for this platform.");
-		break;
-	case cdrawRenderAPI_Metal:
-		printf("\n cdrawRendererPrint: Metal rendering is not supported by this platform.");
-		break;
-	}
-	failret(result, result_seterror(errcode_renderer_api));
 	result_return();
 }
 
