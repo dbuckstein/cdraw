@@ -35,5 +35,11 @@ CDRAW_INL result_t cdrawRendererDisplay(cdrawRenderer const* const renderer)
 	return renderer->cdrawRendererDisplay(renderer->r);
 }
 
+CDRAW_INL result_t cdrawRendererResize(cdrawRenderer const* const renderer, uint32_t const w_old, uint32_t const h_old, uint32_t const w_new, uint32_t const h_new)
+{
+	cdraw_assert(renderer && renderer->r && renderer->cdrawRendererResize);
+	return renderer->cdrawRendererResize(renderer->r, w_old, h_old, w_new, h_new);
+}
+
 
 #endif // #if (!(defined _CDRAW_RENDERER_INL_) && (defined _CDRAW_RENDERER_H_))

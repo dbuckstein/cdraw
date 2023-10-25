@@ -86,6 +86,11 @@ typedef struct cdrawVkPhysicalDevice
 	int32_t queueFamilyIdx_graphics;
 } cdrawVkPhysicalDevice;
 
+enum
+{
+	cdrawVkImagePresent_max = 4,	// convenience: max number of presentation images
+};
+
 /// <summary>
 /// Vulkan renderer data (platform-agnostic).
 /// </summary>
@@ -151,6 +156,12 @@ typedef struct cdrawRenderer_vk
 		/// Vulkan graphics/presentation queue.
 		/// </summary>
 		VkQueue queue;
+
+		/// <summary>
+		/// Image view resources associated with swapchain images.
+		/// Images themselves are not needed; can query later.
+		/// </summary>
+		VkImageView imageView[cdrawVkImagePresent_max];
 	};
 } cdrawRenderer_vk;
 
@@ -422,7 +433,8 @@ static VkDebugReportCallbackCreateInfoEXT cdrawVkDebugReportCallbackCreateInfoCt
 		cdrawRendererInternalDebugCallback_vk,
 		NULL);
 }
-static bool cdrawRendererCreateDebug_vk(VkDebugReportCallbackEXT* const debug_out, VkInstance const inst, VkAllocationCallbacks const* const alloc_opt)
+static bool cdrawRendererCreateDebug_vk(VkDebugReportCallbackEXT* const debug_out,
+	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
 	VkDebugReportCallbackEXT debug = VK_NULL_HANDLE;
@@ -463,7 +475,8 @@ static bool cdrawRendererCreateDebug_vk(VkDebugReportCallbackEXT* const debug_ou
 	return true;
 }
 
-static bool cdrawRendererReleaseDebug_vk(VkDebugReportCallbackEXT* const debug_out, VkInstance const inst, VkAllocationCallbacks const* const alloc_opt)
+static bool cdrawRendererReleaseDebug_vk(VkDebugReportCallbackEXT* const debug_out,
+	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt)
 {
 	cdraw_assert(debug_out);
 	if (!*debug_out)
@@ -524,7 +537,8 @@ static VkInstanceCreateInfo cdrawVkInstanceCreateInfoCtor(
 	return instanceCreateInfo;
 }
 cstrk_t cdrawRendererInternalPlatformSurfaceExtName_vk();
-static bool cdrawRendererCreateInstance_vk(VkInstance* const inst_out, VkAllocationCallbacks const* const alloc_opt)
+static bool cdrawRendererCreateInstance_vk(VkInstance* const inst_out,
+	VkAllocationCallbacks const* const alloc_opt)
 {
 	// print prefixes
 	cstrk_t const pref1 = "\t    ", pref1A = "\t -> ", pref2 = "\t\t    ", pref2A = "\t\t -> ", pref3 = "\t\t\t    ", pref3A = "\t\t\t -> ";
@@ -713,7 +727,8 @@ static bool cdrawRendererCreateInstance_vk(VkInstance* const inst_out, VkAllocat
 	return true;
 }
 
-static bool cdrawRendererReleaseInstance_vk(VkInstance* const inst_out, VkAllocationCallbacks const* const alloc_opt)
+static bool cdrawRendererReleaseInstance_vk(VkInstance* const inst_out,
+	VkAllocationCallbacks const* const alloc_opt)
 {
 	cdraw_assert(inst_out);
 	if (!*inst_out)
@@ -763,7 +778,8 @@ static VkDeviceCreateInfo cdrawVkDeviceCreateInfoCtor(
 	return deviceCreateInfo;
 }
 bool cdrawRendererInternalPlatformQueueFamilySupportsPresentation_vk(VkPhysicalDevice const physicalDevice, uint32_t const queueFamilyIndex);
-static bool cdrawRendererCreateDevice_vk(VkDevice* const device_out, cdrawVkPhysicalDevice* const physicalDeviceDesc_out, VkInstance const inst, VkAllocationCallbacks const* const alloc_opt)
+static bool cdrawRendererCreateDevice_vk(VkDevice* const device_out, cdrawVkPhysicalDevice* const physicalDeviceDesc_out,
+	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt)
 {
 	// print prefixes
 	cstrk_t const pref1 = "\t    ", pref1A = "\t -> ", pref2 = "\t\t    ", pref2A = "\t\t -> ", pref3 = "\t\t\t    ", pref3A = "\t\t\t -> ";
@@ -1066,7 +1082,8 @@ static bool cdrawRendererCreateDevice_vk(VkDevice* const device_out, cdrawVkPhys
 	return true;
 }
 
-static bool cdrawRendererReleaseDevice_vk(VkDevice* const device_out, cdrawVkPhysicalDevice* const physicalDevice_out, VkAllocationCallbacks const* const alloc_opt)
+static bool cdrawRendererReleaseDevice_vk(VkDevice* const device_out, cdrawVkPhysicalDevice* const physicalDevice_out,
+	VkAllocationCallbacks const* const alloc_opt)
 {
 	cdraw_assert(device_out);
 	if (!*device_out)
@@ -1085,9 +1102,11 @@ static bool cdrawRendererReleaseDevice_vk(VkDevice* const device_out, cdrawVkPhy
 	return true;
 }
 
-bool cdrawRendererCreateSurface_vk(VkSurfaceKHR* const surface_out, VkInstance const inst, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt);
+bool cdrawRendererCreateSurface_vk(VkSurfaceKHR* const surface_out,
+	VkInstance const inst, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt);
 
-static bool cdrawRendererReleaseSurface_vk(VkSurfaceKHR* const surface_out, VkInstance const inst, VkAllocationCallbacks const* const alloc_opt)
+static bool cdrawRendererReleaseSurface_vk(VkSurfaceKHR* const surface_out,
+	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt)
 {
 	cdraw_assert(surface_out);
 	if (!*surface_out)
@@ -1116,9 +1135,9 @@ static VkSwapchainCreateInfoKHR cdrawVkSwapchainCreateInfoCtor(
 	VkSharingMode const imageSharingMode,
 	uint32_t const queueFamilyIndexCount,
 	uint32_t const queueFamilyIndices[/*queueFamilyIndexCount*/],
-	VkSurfaceTransformFlagBitsKHR preTransform,
-	VkCompositeAlphaFlagBitsKHR compositeAlpha,
-	VkPresentModeKHR presentMode,
+	VkSurfaceTransformFlagBitsKHR const preTransform,
+	VkCompositeAlphaFlagBitsKHR const compositeAlpha,
+	VkPresentModeKHR const presentMode,
 	VkBool32 const clipped,
 	VkSwapchainKHR const oldSwapchain)
 {
@@ -1141,7 +1160,61 @@ static VkSwapchainCreateInfoKHR cdrawVkSwapchainCreateInfoCtor(
 	swapchainCreateInfo.oldSwapchain = oldSwapchain;
 	return swapchainCreateInfo;
 }
-static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out, VkQueue* const queue_out, VkDevice const device, VkSurfaceKHR const surface, VkPhysicalDevice const physicalDevice, int32_t const queueFamilyIdx_graphics, VkAllocationCallbacks const* const alloc_opt)
+static VkComponentMapping cdrawVkComponentMappingCtor(
+	VkComponentSwizzle const r,
+	VkComponentSwizzle const g,
+	VkComponentSwizzle const b,
+	VkComponentSwizzle const a)
+{
+	VkComponentMapping componentMapping;
+	componentMapping.r = r;
+	componentMapping.g = g;
+	componentMapping.b = b;
+	componentMapping.a = a;
+	return componentMapping;
+}
+static VkComponentMapping cdrawVkComponentMappingCtorDefault()
+{
+	return cdrawVkComponentMappingCtor(VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A);
+}
+static VkImageSubresourceRange cdrawVkImageSubresourceRangeCtor(
+	VkImageAspectFlags const aspectMask,
+	uint32_t const baseMipLevel,
+	uint32_t const levelCount,
+	uint32_t const baseArrayLayer,
+	uint32_t const layerCount)
+{
+	VkImageSubresourceRange subresourceRange;
+	subresourceRange.aspectMask = aspectMask;
+	subresourceRange.baseMipLevel = baseMipLevel;
+	subresourceRange.levelCount = levelCount;
+	subresourceRange.baseArrayLayer = baseArrayLayer;
+	subresourceRange.layerCount = layerCount;
+	return subresourceRange;
+}
+static VkImageSubresourceRange cdrawVkImageSubresourceRangeCtorDefault()
+{
+	return cdrawVkImageSubresourceRangeCtor(VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1);
+}
+static VkImageViewCreateInfo cdrawVkImageViewCreateInfoCtor(
+	VkImage const image,
+	VkImageViewType const viewType,
+	VkFormat const format,
+	VkComponentMapping const components,
+	VkImageSubresourceRange const subresourceRange)
+{
+	VkImageViewCreateInfo imageViewCreateInfo = { 0 };
+	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	imageViewCreateInfo.image = image;
+	imageViewCreateInfo.viewType = viewType;
+	imageViewCreateInfo.format = format;
+	imageViewCreateInfo.components = components;
+	imageViewCreateInfo.subresourceRange = subresourceRange;
+	return imageViewCreateInfo;
+}
+static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out, VkQueue* const queue_out,
+	VkImageView imageView_out[], uint32_t const imageViewCount,
+	VkDevice const device, VkSurfaceKHR const surface, VkPhysicalDevice const physicalDevice, int32_t const queueFamilyIdx_graphics, VkAllocationCallbacks const* const alloc_opt)
 {
 	// data
 	VkBool32 supportsSurface = VK_FALSE;
@@ -1198,7 +1271,7 @@ static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out,
 		if (result == VK_SUCCESS)
 		{
 			// desired number of images in swapchain
-			imageCount = surfaceCapabilities.minImageCount;
+			imageCount = surfaceCapabilities.minImageCount + 1;
 			imageArrayLayers = surfaceCapabilities.maxImageArrayLayers;
 			preTransform = surfaceCapabilities.currentTransform;
 
@@ -1262,7 +1335,7 @@ static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out,
 #if CDRAW_DEBUG
 		(VK_BUFFER_USAGE_TRANSFER_DST_BIT) |
 #endif // #if CDRAW_DEBUG
-			(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+			(VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 
 		// image sharing mode
 		VkSharingMode const imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -1270,7 +1343,7 @@ static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out,
 		// creation info
 		VkSwapchainCreateInfoKHR const swapchainCreateInfo = cdrawVkSwapchainCreateInfoCtor(
 			surface,
-			min(imageCount, surfaceCapabilities.maxImageCount),
+			gClamp(imageCount, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount),
 			surfaceFormat.format,
 			surfaceFormat.colorSpace,
 			surfaceCapabilities.currentExtent,
@@ -1298,6 +1371,14 @@ static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out,
 	// next, get images
 	if (swapchain)
 	{
+		// reusable image view descriptor
+		VkImageViewCreateInfo imageViewCreateInfo = cdrawVkImageViewCreateInfoCtor(
+			VK_NULL_HANDLE, // updated per image below
+			VK_IMAGE_VIEW_TYPE_2D, surfaceFormat.format, cdrawVkComponentMappingCtorDefault(), cdrawVkImageSubresourceRangeCtorDefault()
+		);
+		uint32_t idx;
+
+		// get count and allocate
 		result = vkGetSwapchainImagesKHR(device, swapchain, &nSwapchainImage, NULL);
 		if (result == VK_SUCCESS && nSwapchainImage)
 		{
@@ -1308,7 +1389,22 @@ static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out,
 				cdraw_assert(result == VK_SUCCESS);
 
 				// create image views
-
+				cdraw_assert(nSwapchainImage <= imageViewCount);
+				for (idx = 0; idx < nSwapchainImage; ++idx)
+				{
+					cdraw_assert(pSwapchainImage[idx]);
+					imageViewCreateInfo.image = pSwapchainImage[idx];
+					result = vkCreateImageView(device, &imageViewCreateInfo, alloc_opt, &imageView_out[idx]);
+					if (imageView_out[idx])
+					{
+						cdraw_assert(result == VK_SUCCESS);
+					}
+					else
+					{
+						result = VK_INCOMPLETE;
+						break;
+					}
+				}
 
 				free(pSwapchainImage);
 				pSwapchainImage = NULL;
@@ -1316,8 +1412,11 @@ static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out,
 		}
 
 		// set pointers
-		*swapchain_out = swapchain;
-		*queue_out = queue;
+		if (result == VK_SUCCESS)
+		{
+			*swapchain_out = swapchain;
+			*queue_out = queue;
+		}
 	}
 
 	if (result != VK_SUCCESS)
@@ -1330,8 +1429,11 @@ static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out,
 	return true;
 }
 
-static bool cdrawRendererReleaseSwapchain_vk(VkSwapchainKHR* const swapchain_out, VkQueue* const queue_out, VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
+static bool cdrawRendererReleaseSwapchain_vk(VkSwapchainKHR* const swapchain_out, VkQueue* const queue_out,
+	VkImageView imageView_out[], uint32_t const imageViewCount,
+	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
 {
+	uint32_t idx;
 	cdraw_assert(swapchain_out);
 	if (!*swapchain_out)
 		return false;
@@ -1341,6 +1443,14 @@ static bool cdrawRendererReleaseSwapchain_vk(VkSwapchainKHR* const swapchain_out
 	vkDestroySwapchainKHR(device, *swapchain_out, alloc_opt);
 
 	printf("\n Vulkan swapchain destroyed.");
+	for (idx = 0; idx < imageViewCount; ++idx)
+	{
+		if (imageView_out[idx])
+		{
+			vkDestroyImageView(device, imageView_out[idx], alloc_opt);
+			imageView_out[idx] = VK_NULL_HANDLE;
+		}
+	}
 	*swapchain_out = VK_NULL_HANDLE;
 	*queue_out = VK_NULL_HANDLE;
 	return true;
@@ -1379,18 +1489,51 @@ static VkPresentInfoKHR cdrawVkPresentInfoCtor(
 static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r)
 {
 	VkResult result = VK_SUCCESS;
-	cdraw_assert(r && r->queue && r->swapchain);
+	cdraw_assert(r);
+	if (r->queue && r->swapchain)
 	{
 		VkSwapchainKHR const swapchains[] = {
 			r->swapchain,
 		};
 		uint32_t const nSwapchains = buffer_len(swapchains);
-		uint32_t const imageIndices[buffer_len(swapchains)] = {
-			0,
-		};
+		uint32_t imageIndices[buffer_len(swapchains)], i;
 		VkPresentInfoKHR const presentInfo = cdrawVkPresentInfoCtor(0, NULL, nSwapchains, swapchains, imageIndices, NULL);
+		for (i = 0; i < nSwapchains; ++i)
+		{
+			result = vkAcquireNextImageKHR(r->device, swapchains[i], UINT64_MAX, VK_NULL_HANDLE, VK_NULL_HANDLE, &imageIndices[i]);
+			if (result != VK_SUCCESS)
+				break;
+		}
+		if (result == VK_SUCCESS)
+		{
+			result = vkQueuePresentKHR(r->queue, &presentInfo);
+			if (result != VK_SUCCESS)
+			{
+				// handle display error
+			}
+		}
+	}
+	return result;
+}
 
-		result = vkQueuePresentKHR(r->queue, &presentInfo);
+static result_t cdrawRendererResize_vk(cdrawRenderer_vk* const r, uint32_t const w_old, uint32_t const h_old, uint32_t const w_new, uint32_t const h_new)
+{
+	VkResult result = VK_SUCCESS;
+	cdraw_assert(r);
+	if ((w_old != w_new) && (h_old != h_new))
+	{
+		vkDeviceWaitIdle(r->device);
+
+		// release old swapchain
+		if (w_old && h_old)
+			result = cdrawRendererReleaseSwapchain_vk(&r->swapchain, &r->queue,
+				r->imageView, buffer_len(r->imageView), r->device, &r->alloc);
+
+		// create new swapchain
+		if (w_new && h_new)
+			result = cdrawRendererCreateSwapchain_vk(&r->swapchain, &r->queue,
+				r->imageView, buffer_len(r->imageView),
+				r->device, r->surface, r->physicalDevice.device, r->physicalDevice.queueFamilyIdx_graphics, &r->alloc);
 	}
 	return result;
 }
@@ -1433,13 +1576,16 @@ result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_da
 	failassertret(result, result_seterror(errcode_renderer_init));
 
 	// CREATE SWAPCHAIN
-	result = cdrawRendererCreateSwapchain_vk(&p_renderer->swapchain, &p_renderer->queue, p_renderer->device, p_renderer->surface, p_renderer->physicalDevice.device, p_renderer->physicalDevice.queueFamilyIdx_graphics, alloc_opt);
+	result = cdrawRendererCreateSwapchain_vk(&p_renderer->swapchain, &p_renderer->queue,
+		p_renderer->imageView, buffer_len(p_renderer->imageView),
+		p_renderer->device, p_renderer->surface, p_renderer->physicalDevice.device, p_renderer->physicalDevice.queueFamilyIdx_graphics, alloc_opt);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
 	// setup functions for renderer and components
 	{
 		renderer->cdrawRendererPrint = cdrawRendererPrint_vk;
 		renderer->cdrawRendererDisplay = cdrawRendererDisplay_vk;
+		renderer->cdrawRendererResize = cdrawRendererResize_vk;
 	}
 
 	// all done
@@ -1456,8 +1602,12 @@ result_t cdrawRendererRelease_vk(cdrawRenderer* const renderer)
 	p_renderer = ((cdrawRenderer_vk*)renderer->r);
 	alloc_opt = cdrawRendererInternalAllocUse_vk(&p_renderer->alloc);
 
+	// safety
+	vkDeviceWaitIdle(p_renderer->device);
+
 	// swapchain (requires device)
-	cdrawRendererReleaseSwapchain_vk(&p_renderer->swapchain, &p_renderer->queue, p_renderer->device, alloc_opt);
+	cdrawRendererReleaseSwapchain_vk(&p_renderer->swapchain, &p_renderer->queue,
+		p_renderer->imageView, buffer_len(p_renderer->imageView), p_renderer->device, alloc_opt);
 
 	// presentation surface (requires instance)
 	cdrawRendererReleaseSurface_vk(&p_renderer->surface, p_renderer->inst, alloc_opt);
@@ -1482,6 +1632,7 @@ result_t cdrawRendererRelease_vk(cdrawRenderer* const renderer)
 	{
 		renderer->cdrawRendererPrint = NULL;
 		renderer->cdrawRendererDisplay = NULL;
+		renderer->cdrawRendererResize = NULL;
 	}
 	result_return();
 }

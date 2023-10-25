@@ -34,6 +34,9 @@ typedef struct cdrawTestPluginData
 {
 	cdrawTimer timer_sys, timer;
 	cdrawRenderer renderer;
+
+	// window status
+	uint32_t w, h, x, y;
 	bool activated;
 } cdrawTestPluginData;
 
@@ -140,6 +143,10 @@ result_t cb_win_attach(cdrawTestPluginData* const data, int32_t const w, int32_t
 	cdraw_assert(!renderer->r && !renderer->renderAPI);
 	result_t result = cdrawRendererCreate(renderer, cdrawRenderAPI_Vulkan, windowPlatform_opt);
 	cdrawRendererPrint(renderer);
+	data->w = w;
+	data->h = h;
+	data->x = x;
+	data->y = y;
 	return result;// printf("\n" __FUNCTION__ "(%p, %d, %d, %d, %d, %p)", data, w, h, x, y, windowPlatform_opt);
 }
 
@@ -168,19 +175,24 @@ result_t cb_win_deactivate(cdrawTestPluginData* const data, ptrk_t const windowP
 
 result_t cb_win_resize(cdrawTestPluginData* const data, int32_t const w, int32_t const h)
 {
-
+	cdraw_assert(data);
+	cdrawRendererResize(&data->renderer, data->w, data->h, w, h);
+	data->w = w;
+	data->h = h;
 	return printf("\n" __FUNCTION__ "(%p, %d, %d)", data, w, h);
 }
 
 result_t cb_win_move(cdrawTestPluginData* const data, int32_t const x, int32_t const y)
 {
-
+	cdraw_assert(data);
+	data->x = x;
+	data->y = y;
 	return printf("\n" __FUNCTION__ "(%p, %d, %d)", data, x, y);
 }
 
 result_t cb_display(cdrawTestPluginData* const data)
 {
-
+	// SHOULD NOT USE FOR RENDERING - REPRESENTS WINDOW REFRESH, NOT ACTUAL DISPLAY
 	return 0;// printf("\n" __FUNCTION__ "(%p)", data);
 }
 
@@ -194,8 +206,8 @@ result_t cb_idle(cdrawTestPluginData* const data)
 		//cdrawTimerStateGetElapsedTime(&data->timer.state, &t);
 		//printf("\n" __FUNCTION__ ": t=%.3lf", t);
 	
-		//if (data->activated)
-		//	cdrawRendererDisplay(&data->renderer);
+		if (data->activated)
+			cdrawRendererDisplay(&data->renderer);
 	}
 	return 0;// printf("\n" __FUNCTION__ "(%p)", data);
 }

@@ -56,7 +56,7 @@ typedef ptr_t cdrawRendererHandle;
 /// <summary>
 /// Generic renderer function.
 /// </summary>
-typedef result_t(*cdrawRendererFunc)(cdrawRendererHandle r);
+typedef result_t(*cdrawRendererFunc)(cdrawRendererHandle r, ...);
 
 /// <summary>
 /// Portable renderer object.
@@ -83,6 +83,7 @@ typedef struct cdrawRenderer
 	struct {
 		cdrawRendererFunc cdrawRendererPrint;
 		cdrawRendererFunc cdrawRendererDisplay;
+		cdrawRendererFunc cdrawRendererResize;
 	};
 } cdrawRenderer;
 
@@ -124,6 +125,17 @@ extern "C" {
 	/// <param name="renderer">Target renderer.</param>
 	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawRendererDisplay(cdrawRenderer const* const renderer);
+
+	/// <summary>
+	/// Invoke renderer resize; should destroy framebuffers before this and recreate them afterwards.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="w_old">Old display width.</param>
+	/// <param name="h_old">Old display height.</param>
+	/// <param name="w_new">New display width.</param>
+	/// <param name="h_new">New display height</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererResize(cdrawRenderer const* const renderer, uint32_t const w_old, uint32_t const h_old, uint32_t const w_new, uint32_t const h_new);
 
 
 #ifdef __cplusplus

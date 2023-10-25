@@ -61,7 +61,8 @@ static VkWin32SurfaceCreateInfoKHR cdrawVkSurfaceCreateInfoCtor(
 	return surfaceCreateInfo;
 }
 #endif // #if CDRAW_TARGET_WINDOWS
-static bool cdrawRendererInternalCreateSurface_win_vk(VkSurfaceKHR* const surface_out, VkInstance const inst, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt)
+static bool cdrawRendererInternalCreateSurface_win_vk(VkSurfaceKHR* const surface_out,
+	VkInstance const inst, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
@@ -130,7 +131,8 @@ bool cdrawRendererInternalPlatformQueueFamilySupportsPresentation_vk(VkPhysicalD
 * Implementations.
 ******************************************************************************/
 
-bool cdrawRendererCreateSurface_vk(VkSurfaceKHR* const surface_out, VkInstance const inst, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt)
+bool cdrawRendererCreateSurface_vk(VkSurfaceKHR* const surface_out,
+	VkInstance const inst, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt)
 {
 	return cdrawRendererInternalCreateSurface_win_vk(surface_out, inst, p_data, alloc_opt);
 }
