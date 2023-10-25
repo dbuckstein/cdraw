@@ -81,12 +81,8 @@ typedef struct cdrawRenderer
 	/// Individual renderer components will work similarly, taking the component's respective handle as the second argument.
 	/// </summary>
 	struct {
-		/// <summary>
-		/// Print renderer info.
-		/// </summary>
-		/// <param name="r">Target renderer handle.</param>
-		/// <returns>Zero if success; error code otherwise.</returns>
 		cdrawRendererFunc cdrawRendererPrint;
+		cdrawRendererFunc cdrawRendererDisplay;
 	};
 } cdrawRenderer;
 
@@ -105,20 +101,37 @@ extern "C" {
 	/// <param name="renderer">Target renderer.</param>
 	/// <param name="renderAPI">Desired rendering API (must be supported on local platform).</param>
 	/// <param name="p_data_opt">Optional pointer to platform data.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, ptrk_t const p_data_opt);
 
 	/// <summary>
 	/// Release renderer by cleaning up and destroying all of its internal resources.
 	/// </summary>
 	/// <param name="renderer">Target renderer.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawRendererRelease(cdrawRenderer* const renderer);
+
+	/// <summary>
+	/// Print high-level information about renderer.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererPrint(cdrawRenderer const* const renderer);
+
+	/// <summary>
+	/// Invoke renderer display.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererDisplay(cdrawRenderer const* const renderer);
 
 
 #ifdef __cplusplus
 }
 #endif // #ifdef __cplusplus
+
+
+#include "_inl/cdrawRenderer.inl"
 
 
 #endif // #ifndef _CDRAW_RENDERER_H_

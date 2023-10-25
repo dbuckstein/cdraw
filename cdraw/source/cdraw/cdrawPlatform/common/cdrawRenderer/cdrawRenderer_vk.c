@@ -507,9 +507,9 @@ static VkInstanceCreateInfo cdrawVkInstanceCreateInfoCtor(
 #endif // #if CDRAW_DEBUG
 	VkApplicationInfo const* const appInfo,
 	uint32_t const layerCount,
-	cstrk_t const layerNames[],
+	cstrk_t const layerNames[/*layerCount*/],
 	uint32_t const extCount,
-	cstrk_t const extNames[])
+	cstrk_t const extNames[/*extCount*/])
 {
 	VkInstanceCreateInfo instanceCreateInfo = { 0 };
 	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -733,7 +733,7 @@ static bool cdrawRendererReleaseInstance_vk(VkInstance* const inst_out, VkAlloca
 static VkDeviceQueueCreateInfo cdrawVkDeviceQueueCreateInfoCtor(
 	uint32_t const queueFamilyIndex,
 	uint32_t const queueCount,
-	fp32_t const queuePriorities[])
+	fp32_t const queuePriorities[/*queueCount*/])
 {
 	VkDeviceQueueCreateInfo deviceQueueCreateInfo = { 0 };
 	deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -744,11 +744,11 @@ static VkDeviceQueueCreateInfo cdrawVkDeviceQueueCreateInfoCtor(
 }
 static VkDeviceCreateInfo cdrawVkDeviceCreateInfoCtor(
 	uint32_t const queueCreateInfoCount,
-	VkDeviceQueueCreateInfo const queueCreateInfo[],
+	VkDeviceQueueCreateInfo const queueCreateInfo[/*queueCreateInfoCount*/],
 	uint32_t const layerCount,
-	cstrk_t const layerNames[],
+	cstrk_t const layerNames[/*layerCount*/],
 	uint32_t const extCount,
-	cstrk_t const extNames[],
+	cstrk_t const extNames[/*extCount*/],
 	VkPhysicalDeviceFeatures const* const deviceFeat)
 {
 	VkDeviceCreateInfo deviceCreateInfo = { 0 };
@@ -1115,7 +1115,7 @@ static VkSwapchainCreateInfoKHR cdrawVkSwapchainCreateInfoCtor(
 	VkImageUsageFlags const imageUsage,
 	VkSharingMode const imageSharingMode,
 	uint32_t const queueFamilyIndexCount,
-	uint32_t const queueFamilyIndices[],
+	uint32_t const queueFamilyIndices[/*queueFamilyIndexCount*/],
 	VkSurfaceTransformFlagBitsKHR preTransform,
 	VkCompositeAlphaFlagBitsKHR compositeAlpha,
 	VkPresentModeKHR presentMode,
@@ -1358,6 +1358,43 @@ static result_t cdrawRendererPrint_vk(cdrawRenderer_vk const* const r)
 	return result;
 }
 
+static VkPresentInfoKHR cdrawVkPresentInfoCtor(
+	uint32_t const waitSemaphoreCount,
+	VkSemaphore const waitSemaphores[/*waitSemaphoreCount*/],
+	uint32_t const swapchainCount,
+	VkSwapchainKHR const swapchains[/*swapchainCount*/],
+	uint32_t const imageIndices[/*swapchainCount*/],
+	VkResult results_out_opt[/*swapchainCount*/])
+{
+	VkPresentInfoKHR presentInfo = { 0 };
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	presentInfo.waitSemaphoreCount = waitSemaphoreCount;
+	presentInfo.pWaitSemaphores = waitSemaphores;
+	presentInfo.swapchainCount = swapchainCount;
+	presentInfo.pSwapchains = swapchains;
+	presentInfo.pImageIndices = imageIndices;
+	presentInfo.pResults = results_out_opt;
+	return presentInfo;
+}
+static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r)
+{
+	VkResult result = VK_SUCCESS;
+	cdraw_assert(r && r->queue && r->swapchain);
+	{
+		VkSwapchainKHR const swapchains[] = {
+			r->swapchain,
+		};
+		uint32_t const nSwapchains = buffer_len(swapchains);
+		uint32_t const imageIndices[buffer_len(swapchains)] = {
+			0,
+		};
+		VkPresentInfoKHR const presentInfo = cdrawVkPresentInfoCtor(0, NULL, nSwapchains, swapchains, imageIndices, NULL);
+
+		result = vkQueuePresentKHR(r->queue, &presentInfo);
+	}
+	return result;
+}
+
 
 /******************************************************************************
 * Implementations.
@@ -1402,6 +1439,7 @@ result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_da
 	// setup functions for renderer and components
 	{
 		renderer->cdrawRendererPrint = cdrawRendererPrint_vk;
+		renderer->cdrawRendererDisplay = cdrawRendererDisplay_vk;
 	}
 
 	// all done
@@ -1443,6 +1481,7 @@ result_t cdrawRendererRelease_vk(cdrawRenderer* const renderer)
 	renderer->r = NULL;
 	{
 		renderer->cdrawRendererPrint = NULL;
+		renderer->cdrawRendererDisplay = NULL;
 	}
 	result_return();
 }

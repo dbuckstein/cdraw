@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cdraw/cdrawPlatform/cdrawTimer.h"
 #include "cdraw/cdrawPlatform/cdrawRenderer.h"
 
 /******************************************************************************
@@ -31,7 +32,9 @@
 
 typedef struct cdrawTestPluginData
 {
+	cdrawTimer timer_sys, timer;
 	cdrawRenderer renderer;
+	bool activated;
 } cdrawTestPluginData;
 
 
@@ -88,6 +91,10 @@ result_t cb_load_post(cdrawTestPluginData** const data_inout)
 	cdrawTestPluginData* const data = (cdrawTestPluginData*)malloc(dataSz);
 	cdraw_assert(data);
 	memset(data, 0, dataSz);
+
+	cdrawTimerInitSystem(&data->timer_sys);
+	cdrawTimerSet(&data->timer, &data->timer_sys, 60);
+
 	*data_inout = data;
 	return 0;// printf("\n" __FUNCTION__ "(%p) -> %p", data_inout, *data_inout);
 }
@@ -132,7 +139,7 @@ result_t cb_win_attach(cdrawTestPluginData* const data, int32_t const w, int32_t
 	cdrawRenderer* const renderer = &data->renderer;
 	cdraw_assert(!renderer->r && !renderer->renderAPI);
 	result_t result = cdrawRendererCreate(renderer, cdrawRenderAPI_Vulkan, windowPlatform_opt);
-	renderer->cdrawRendererPrint(renderer->r);
+	cdrawRendererPrint(renderer);
 	return result;// printf("\n" __FUNCTION__ "(%p, %d, %d, %d, %d, %p)", data, w, h, x, y, windowPlatform_opt);
 }
 
@@ -147,14 +154,16 @@ result_t cb_win_detach(cdrawTestPluginData* const data, ptrk_t const windowPlatf
 
 result_t cb_win_activate(cdrawTestPluginData* const data, ptrk_t const windowPlatform_opt)
 {
-
-	return printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
+	cdraw_assert(data && windowPlatform_opt);
+	data->activated = true;
+	return 0;// printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
 }
 
 result_t cb_win_deactivate(cdrawTestPluginData* const data, ptrk_t const windowPlatform_opt)
 {
-
-	return printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
+	cdraw_assert(data && windowPlatform_opt);
+	data->activated = false;
+	return 0;// printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
 }
 
 result_t cb_win_resize(cdrawTestPluginData* const data, int32_t const w, int32_t const h)
@@ -177,7 +186,17 @@ result_t cb_display(cdrawTestPluginData* const data)
 
 result_t cb_idle(cdrawTestPluginData* const data)
 {
-
+	cdraw_assert(data);
+	cdrawTimerStepSystem(&data->timer_sys);
+	if (result_haswarns(cdrawTimerStepClip(&data->timer, data->timer_sys.state.dt)))
+	{
+		//stime_t t;
+		//cdrawTimerStateGetElapsedTime(&data->timer.state, &t);
+		//printf("\n" __FUNCTION__ ": t=%.3lf", t);
+	
+		//if (data->activated)
+		//	cdrawRendererDisplay(&data->renderer);
+	}
 	return 0;// printf("\n" __FUNCTION__ "(%p)", data);
 }
 

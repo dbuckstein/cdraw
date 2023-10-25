@@ -209,6 +209,9 @@
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawTimer.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawWindow.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\include\cdraw\cdrawPlatform\_inl\cdrawRenderer.inl" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

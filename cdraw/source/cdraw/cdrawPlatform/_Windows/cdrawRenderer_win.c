@@ -42,19 +42,19 @@ result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const
 	switch (renderAPI)
 	{
 	case cdrawRenderAPI_software:
-		printf("\n cdrawRendererPrint: Software rendering has not yet been implemented for this platform.");
+		printf("\n cdrawRendererCreate: Software rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Vulkan:
 		result = cdrawRendererCreate_vk(renderer, p_data_opt);
 		break;
 	case cdrawRenderAPI_OpenGL:
-		printf("\n cdrawRendererPrint: OpenGL rendering has not yet been implemented for this platform.");
+		printf("\n cdrawRendererCreate: OpenGL rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Direct3D:
-		printf("\n cdrawRendererPrint: Direct3D rendering has not yet been implemented for this platform.");
+		printf("\n cdrawRendererCreate: Direct3D rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Metal:
-		printf("\n cdrawRendererPrint: Metal rendering is not supported by this platform.");
+		printf("\n cdrawRendererCreate: Metal rendering is not supported by this platform.");
 		break;
 	}
 	if (!result_isclean(result))
@@ -78,19 +78,19 @@ result_t cdrawRendererRelease(cdrawRenderer* const renderer)
 	switch (renderer->renderAPI)
 	{
 	case cdrawRenderAPI_software:
-		printf("\n cdrawRendererPrint: Software rendering has not yet been implemented for this platform.");
+		printf("\n cdrawRendererRelease: Software rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Vulkan:
 		result = cdrawRendererRelease_vk(renderer);
 		break;
 	case cdrawRenderAPI_OpenGL:
-		printf("\n cdrawRendererPrint: OpenGL rendering has not yet been implemented for this platform.");
+		printf("\n cdrawRendererRelease: OpenGL rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Direct3D:
-		printf("\n cdrawRendererPrint: Direct3D rendering has not yet been implemented for this platform.");
+		printf("\n cdrawRendererRelease: Direct3D rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Metal:
-		printf("\n cdrawRendererPrint: Metal rendering is not supported by this platform.");
+		printf("\n cdrawRendererRelease: Metal rendering is not supported by this platform.");
 		break;
 	}
 	failret(result_isclean(result), result_seterror(errcode_renderer_api));

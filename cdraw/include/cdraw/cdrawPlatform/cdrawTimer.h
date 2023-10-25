@@ -127,7 +127,7 @@ extern "C" {
 	/// Reset timer.
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawTimerReset(cdrawTimer* const timer);
 
 	/// <summary>
@@ -135,7 +135,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
 	/// <param name="elapsedTime_out">Pointer to storage for result.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawTimerStateGetElapsedTime(cdrawTimerState const* const timerState, stime_t* const elapsedTime_out);
 
 	/// <summary>
@@ -143,7 +143,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
 	/// <param name="deltaTime_out">Pointer to storage for result.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawTimerStateGetDeltaTime(cdrawTimerState const* const timerState, stime_t* const deltaTime_out);
 
 	/// <summary>
@@ -151,7 +151,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
 	/// <param name="intervalTime_out">Pointer to storage for result.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawTimerStateGetIntervalTime(cdrawTimerState const* const timerState, stime_t* const intervalTime_out);
 
 	/// <summary>
@@ -159,7 +159,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
 	/// <param name="overstepRatio_out">Pointer to storage for result.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawTimerStateGetOverstepRatio(cdrawTimerState const* const timerState, stime_t* const overstepRatio_out);
 
 	/// <summary>
@@ -167,7 +167,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
 	/// <param name="understepRatio_out">Pointer to storage for result.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawTimerStateGetUnderstepRatio(cdrawTimerState const* const timerState, stime_t* const understepRatio_out);
 
 	/// <summary>
@@ -175,28 +175,28 @@ extern "C" {
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
 	/// <param name="deltaTimeRatio_out">Pointer to storage for result.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawTimerStateGetDeltaTimeRatio(cdrawTimerState const* const timerState, stime_t* const deltaTimeRatio_out);
 
 	/// <summary>
 	/// Initialize system timer.
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawTimerInitSystem(cdrawTimer* const timer);
 
 	/// <summary>
 	/// Step and sample system timer.
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Warn if tick; Error code otherwise.</returns>
 	result_t cdrawTimerStepSystem(cdrawTimer* const timer);
 
 	/// <summary>
 	/// Step and sample system timer, clipping excessive delta time above rate.
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Warn if tick; Error code otherwise.</returns>
 	result_t cdrawTimerStepSystemClip(cdrawTimer* const timer);
 
 	/// <summary>
@@ -206,7 +206,7 @@ extern "C" {
 	/// <param name="callback">Timer callback function, called on tick.</param>
 	/// <param name="callbackArg_opt">Optional argument to callback function.</param>
 	/// <param name="callbackResult_out_opt">Optional pointer to store result of callback function.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Warn if tick; Error code otherwise.</returns>
 	result_t cdrawTimerStepSystemCallback(cdrawTimer* const timer, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt);
 
 	/// <summary>
@@ -216,7 +216,7 @@ extern "C" {
 	/// <param name="callback">Timer callback function, called on tick.</param>
 	/// <param name="callbackArg_opt">Optional argument to callback function.</param>
 	/// <param name="callbackResult_out_opt">Optional pointer to store result of callback function.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Warn if tick; Error code otherwise.</returns>
 	result_t cdrawTimerStepSystemClipCallback(cdrawTimer* const timer, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt);
 
 	/// <summary>
@@ -227,7 +227,7 @@ extern "C" {
 	/// <param name="callback">Timer callback function, called on tick.</param>
 	/// <param name="callbackArg_opt">Optional argument to callback function.</param>
 	/// <param name="callbackResult_out_opt">Optional pointer to store result of callback function.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Warn if tick; Error code otherwise.</returns>
 	result_t cdrawTimerStepSystemMultiCallback(cdrawTimer* const timer, result_t* const count_out_opt, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt);
 
 	/// <summary>
@@ -236,7 +236,7 @@ extern "C" {
 	/// <param name="timer">Pointer to affected timer object.</param>
 	/// <param name="parent">Pointer to parent timer for local reference.</param>
 	/// <param name="ticksPerSecond">Tick rate (ticks per second) relative to parent time frame.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawTimerSet(cdrawTimer* const timer, cdrawTimer const* const parent, uint16_t const ticksPerSecond);
 
 	/// <summary>
@@ -246,7 +246,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
 	/// <param name="dt_parent">Delta time relative to parent time.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Warn if tick; Error code otherwise.</returns>
 	result_t cdrawTimerStep(cdrawTimer* const timer, ctime_t const dt_parent);
 
 	/// <summary>
@@ -256,7 +256,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="timer">Pointer to affected timer object.</param>
 	/// <param name="dt_parent">Delta time relative to parent time.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Warn if tick; Error code otherwise.</returns>
 	result_t cdrawTimerStepClip(cdrawTimer* const timer, ctime_t const dt_parent);
 
 	/// <summary>
@@ -269,7 +269,7 @@ extern "C" {
 	/// <param name="callback">Timer callback function, called on tick.</param>
 	/// <param name="callbackArg_opt">Optional argument to callback function.</param>
 	/// <param name="callbackResult_out_opt">Optional pointer to store result of callback function.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Warn if tick; Error code otherwise.</returns>
 	result_t cdrawTimerStepCallback(cdrawTimer* const timer, ctime_t const dt_parent, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt);
 	
 	/// <summary>
@@ -282,7 +282,7 @@ extern "C" {
 	/// <param name="callback">Timer callback function, called on tick.</param>
 	/// <param name="callbackArg_opt">Optional argument to callback function.</param>
 	/// <param name="callbackResult_out_opt">Optional pointer to store result of callback function.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Warn if tick; Error code otherwise.</returns>
 	result_t cdrawTimerStepClipCallback(cdrawTimer* const timer, ctime_t const dt_parent, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt);
 	
 	/// <summary>
@@ -296,7 +296,7 @@ extern "C" {
 	/// <param name="callback">Timer callback function, called on tick.</param>
 	/// <param name="callbackArg_opt">Optional argument to callback function.</param>
 	/// <param name="callbackResult_out_opt">Optional pointer to store result of callback function.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Warn if tick; Error code otherwise.</returns>
 	result_t cdrawTimerStepMultiCallback(cdrawTimer* const timer, ctime_t const dt_parent, result_t* const count_out_opt, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt);
 
 

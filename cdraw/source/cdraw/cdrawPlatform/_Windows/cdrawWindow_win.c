@@ -51,6 +51,7 @@ typedef struct cdrawWindow_win
 	RECT restoreArea;				// Non-full-screen area.
 	BOOL buildState;				// Hot-build tracker.
 	BOOL mouseState;				// Mouse hovering tracker.
+	BOOL activeState;				// Activation state.
 	TRACKMOUSEEVENT mouseTrack;		// Mouse tracking for entering/exiting window.
 	ptrk_t pluginOwner;				// Original owner of plugin if we have one attached externally.
 	cdrawPlugin pluginDebug;		// Debug plugin instance.
@@ -863,6 +864,7 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 	case WM_ACTIVATE: {
 		word_t const value = LOWORD(wParam);
 		cdraw_window_valid();
+		p_window->activeState = value;
 		switch (value)
 		{
 		case WA_ACTIVE:
@@ -1107,6 +1109,8 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 				window->p_plugin = &p_window->pluginDebug;
 				p_window->pluginOwner = p_window;
 				cdrawPluginCallOnWindowAttach(window->p_plugin, p_window, window->sz_w, window->sz_h, window->pos_x, window->pos_y, p_window);
+				if (p_window->activeState || (window->control & cdrawWindowControl_active_unfocused))
+					cdrawPluginCallOnWindowActivate(window->p_plugin, p_window, p_window);
 			}
 		}
 	}	break;
@@ -1137,6 +1141,7 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 			if (cdraw_window_ownsplugin())
 			{
 				window->p_plugin->id = INT_MAX;
+				cdrawPluginCallOnWindowDeactivate(window->p_plugin, p_window, p_window);
 				cdrawPluginCallOnWindowDetach(window->p_plugin, p_window, p_window);
 				if (result_isclean(cdrawPluginUnload(window->p_plugin, p_window)))
 				{
@@ -1566,7 +1571,7 @@ result_t cdrawWindowRelease(cdrawWindow* const window)
 	result_return();
 }
 
-result_t cdrawWindowLoop(ptr_t const data_opt)
+result_t cdrawWindowLoop(cdrawWindow* const window_opt, ptr_t const data_opt)
 {
 	// default data if not entered loop
 	if (data_opt)
@@ -1600,7 +1605,8 @@ result_t cdrawWindowLoop(ptr_t const data_opt)
 		// if no message, idle
 		else
 		{
-			window = msg.hwnd ? (cdrawWindow*)GetWindowLongPtrA(msg.hwnd, GWLP_USERDATA) : NULL;
+			// select window
+			window = msg.hwnd ? (cdrawWindow*)GetWindowLongPtrA(msg.hwnd, GWLP_USERDATA) : window_opt;
 
 			// idle callback
 			if (window && cdraw_window_cancallback())

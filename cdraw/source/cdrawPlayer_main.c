@@ -32,7 +32,7 @@ result_t cdrawPlayer_main(cstrk_t const cmd, ptr_t const data_opt)
 	cdrawApplicationStartSingleInstance(&appHandle, "cdraw Player Application", &appCount);
 	cdrawConsoleCreate();
 	cdrawWindowCreate(&window, "cdraw Player", 0, 0, 1280, 720, false, control, data_opt);
-	cdrawWindowLoop(data_opt);
+	cdrawWindowLoop(&window, data_opt);
 	cdrawWindowRelease(&window);
 	cdrawConsoleRelease();
 	cdrawApplicationStopSingleInstance(&appHandle, &appCount);

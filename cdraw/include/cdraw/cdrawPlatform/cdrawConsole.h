@@ -91,13 +91,13 @@ extern "C" {
 	/// <summary>
 	/// Create main console window.
 	/// </summary>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleCreate();
 
 	/// <summary>
 	/// Release main console window.
 	/// </summary>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleRelease();
 
 	/// <summary>
@@ -106,14 +106,14 @@ extern "C" {
 	/// <param name="redirectInput">True to redirect standard input (stdin) to main console window.</param>
 	/// <param name="redirectOutput">True to redirect standard output (stdout) to main console window.</param>
 	/// <param name="redirectError">True to redirect standard error (stderr) to main console window.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleRedirect(bool const redirectInput, bool const redirectOutput, bool const redirectError);
 
 	/// <summary>
 	/// Toggle main console window cursor visibility.
 	/// </summary>
 	/// <param name="visible">True to enable console cursor.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleToggleCursor(bool const visible);
 
 	/// <summary>
@@ -121,7 +121,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="x_out">Pointer to storage for horizontal position of cursor from left.</param>
 	/// <param name="y_out">Pointer to storage for vertical position of cursor from top.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleGetCursor(int16_t* const x_out, int16_t* const y_out);
 
 	/// <summary>
@@ -129,7 +129,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="x">Horizontal position of cursor from left.</param>
 	/// <param name="y">Vertical position of cursor from top.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleSetCursor(int16_t const x, int16_t const y);
 
 	/// <summary>
@@ -137,7 +137,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="fg_out">Pointer to storage for foreground color (text).</param>
 	/// <param name="bg_out">Pointer to storage for background color (window).</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleGetColor(cdrawConsoleColor* const fg_out, cdrawConsoleColor* const bg_out);
 
 	/// <summary>
@@ -145,13 +145,13 @@ extern "C" {
 	/// </summary>
 	/// <param name="fg">Foreground color (text).</param>
 	/// <param name="bg">Background color (window).</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleSetColor(cdrawConsoleColor const fg, cdrawConsoleColor const bg);
 
 	/// <summary>
 	/// Reset display color to default.
 	/// </summary>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleResetColor();
 
 	/// <summary>
@@ -161,7 +161,7 @@ extern "C" {
 	/// <param name="y_out">Pointer to storage for vertical position of cursor from top.</param>
 	/// <param name="fg_out">Pointer to storage for foreground color (text).</param>
 	/// <param name="bg_out">Pointer to storage for background color (window).</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleGetCursorColor(int16_t* const x_out, int16_t* const y_out, cdrawConsoleColor* const fg_out, cdrawConsoleColor* const bg_out);
 
 	/// <summary>
@@ -171,7 +171,7 @@ extern "C" {
 	/// <param name="y">Vertical position of cursor from top.</param>
 	/// <param name="fg">Foreground color (text).</param>
 	/// <param name="bg">Background color (window).</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleSetCursorColor(int16_t const x, int16_t const y, cdrawConsoleColor const fg, cdrawConsoleColor const bg);
 
 	/// <summary>
@@ -179,7 +179,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="w_out">Pointer to storage for width of window.</param>
 	/// <param name="h_out">Pointer to storage for height of window.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleGetSize(int16_t* const w_out, int16_t* const h_out);
 
 	/// <summary>
@@ -187,19 +187,19 @@ extern "C" {
 	/// </summary>
 	/// <param name="w">Width of window.</param>
 	/// <param name="h">Height of window.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleSetSize(int16_t const w, int16_t const h);
 
 	/// <summary>
 	/// Clear main console window.
 	/// </summary>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleClear();
 
 	/// <summary>
 	/// Display debug patch in main console window.
 	/// </summary>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleDebugPatch();
 
 	/// <summary>
@@ -207,7 +207,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="format">Format string using standard escape characters.</param>
 	/// <param name="...">Variadic arguments following format.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawConsoleDebugPrint(cstrk_t const format, ...);
 
 

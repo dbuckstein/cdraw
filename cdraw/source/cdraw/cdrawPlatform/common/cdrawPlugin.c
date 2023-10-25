@@ -225,7 +225,7 @@ CDRAW_INL bool cdrawPluginInternalUnload(cdrawPlugin* const plugin)
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>
+/// <returns>Zero if success; Error code otherwise.</returns>
 static result_t cdrawPluginCallPostLoad(cdrawPlugin* const plugin, ptrk_t const caller);
 
 /// <summary>
@@ -233,7 +233,7 @@ static result_t cdrawPluginCallPostLoad(cdrawPlugin* const plugin, ptrk_t const 
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>
+/// <returns>Zero if success; Error code otherwise.</returns>
 static result_t cdrawPluginCallPreHotload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 /// <summary>
@@ -241,7 +241,7 @@ static result_t cdrawPluginCallPreHotload(cdrawPlugin* const plugin, ptrk_t cons
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>
+/// <returns>Zero if success; Error code otherwise.</returns>
 static result_t cdrawPluginCallPostHotload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 /// <summary>
@@ -249,7 +249,7 @@ static result_t cdrawPluginCallPostHotload(cdrawPlugin* const plugin, ptrk_t con
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>
+/// <returns>Zero if success; Error code otherwise.</returns>
 static result_t cdrawPluginCallPreReload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 /// <summary>
@@ -257,7 +257,7 @@ static result_t cdrawPluginCallPreReload(cdrawPlugin* const plugin, ptrk_t const
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>
+/// <returns>Zero if success; Error code otherwise.</returns>
 static result_t cdrawPluginCallPostReload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 /// <summary>
@@ -265,7 +265,7 @@ static result_t cdrawPluginCallPostReload(cdrawPlugin* const plugin, ptrk_t cons
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>	
+/// <returns>Zero if success; Error code otherwise.</returns>	
 static result_t cdrawPluginCallPreUnload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 
