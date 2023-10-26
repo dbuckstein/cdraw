@@ -49,6 +49,9 @@
 /*
 * Singh, c.6 - translated to C and organized
 */
+bool cdrawRendererDestroySurface_vk(VkSurfaceKHR* const surface_out,
+	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt);
+
 #if CDRAW_TARGET_WINDOWS
 static VkWin32SurfaceCreateInfoKHR cdrawVkSurfaceCreateInfoCtor(
 	HINSTANCE const hInst,
@@ -89,23 +92,26 @@ static bool cdrawRendererInternalCreateSurface_win_vk(VkSurfaceKHR* const surfac
 		result = vkCreateWin32SurfaceKHR(inst, &surfaceCreateInfo, alloc_opt, &surface);
 #endif // #if CDRAW_TARGET_WINDOWS
 		if (surface)
-		{
 			cdraw_assert(result == VK_SUCCESS);
-			*surface_out = surface;
-		}
-		else
-			result = VK_INCOMPLETE;
 	}
 
-	// done
-	if (result != VK_SUCCESS)
+	// set final outputs or clean up
+	if (!surface || (result != VK_SUCCESS))
 	{
+		cdrawRendererDestroySurface_vk(&surface, inst, alloc_opt);
 		printf("\n Vulkan presentation surface creation failed.");
 		return false;
 	}
+	*surface_out = surface;
 	cdraw_assert(*surface_out);
-	printf("\n Vulkan presentation surface creation succeeded.");
+	printf("\n Vulkan presentation surface created.");
 	return true;
+}
+
+bool cdrawRendererCreateSurface_vk(VkSurfaceKHR* const surface_out,
+	VkInstance const inst, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt)
+{
+	return cdrawRendererInternalCreateSurface_win_vk(surface_out, inst, p_data, alloc_opt);
 }
 
 cstrk_t cdrawRendererInternalPlatformSurfaceExtName_vk()
@@ -124,17 +130,6 @@ bool cdrawRendererInternalPlatformQueueFamilySupportsPresentation_vk(VkPhysicalD
 	result = vkGetPhysicalDeviceWin32PresentationSupportKHR(physicalDevice, queueFamilyIndex);
 #endif // #if CDRAW_TARGET_WINDOWS
 	return (result != 0);
-}
-
-
-/******************************************************************************
-* Implementations.
-******************************************************************************/
-
-bool cdrawRendererCreateSurface_vk(VkSurfaceKHR* const surface_out,
-	VkInstance const inst, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt)
-{
-	return cdrawRendererInternalCreateSurface_win_vk(surface_out, inst, p_data, alloc_opt);
 }
 
 

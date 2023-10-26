@@ -95,10 +95,10 @@ extern "C" {
 	result_t cdrawConsoleCreate();
 
 	/// <summary>
-	/// Release main console window.
+	/// Destroy main console window.
 	/// </summary>
 	/// <returns>Zero if success; Error code otherwise.</returns>
-	result_t cdrawConsoleRelease();
+	result_t cdrawConsoleDestroy();
 
 	/// <summary>
 	/// Redirect standard IO to main console window.

@@ -27,7 +27,7 @@
 
 
 result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_data);
-result_t cdrawRendererRelease_vk(cdrawRenderer* const renderer);
+result_t cdrawRendererDestroy_vk(cdrawRenderer* const renderer);
 
 
 result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, ptrk_t const p_data_opt)
@@ -59,7 +59,7 @@ result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const
 	}
 	if (!result_isclean(result))
 	{
-		cdrawRendererRelease_vk(renderer);
+		cdrawRendererDestroy_vk(renderer);
 		result_seterror(errcode_renderer_api);
 		result_return();
 	}
@@ -67,7 +67,7 @@ result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const
 	result_return();
 }
 
-result_t cdrawRendererRelease(cdrawRenderer* const renderer)
+result_t cdrawRendererDestroy(cdrawRenderer* const renderer)
 {
 	result_init();
 	asserterr_ptr(renderer, errcode_invalidarg);
@@ -78,19 +78,19 @@ result_t cdrawRendererRelease(cdrawRenderer* const renderer)
 	switch (renderer->renderAPI)
 	{
 	case cdrawRenderAPI_software:
-		printf("\n cdrawRendererRelease: Software rendering has not yet been implemented for this platform.");
+		printf("\n cdrawRendererDestroy: Software rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Vulkan:
-		result = cdrawRendererRelease_vk(renderer);
+		result = cdrawRendererDestroy_vk(renderer);
 		break;
 	case cdrawRenderAPI_OpenGL:
-		printf("\n cdrawRendererRelease: OpenGL rendering has not yet been implemented for this platform.");
+		printf("\n cdrawRendererDestroy: OpenGL rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Direct3D:
-		printf("\n cdrawRendererRelease: Direct3D rendering has not yet been implemented for this platform.");
+		printf("\n cdrawRendererDestroy: Direct3D rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Metal:
-		printf("\n cdrawRendererRelease: Metal rendering is not supported by this platform.");
+		printf("\n cdrawRendererDestroy: Metal rendering is not supported by this platform.");
 		break;
 	}
 	failret(result_isclean(result), result_seterror(errcode_renderer_api));

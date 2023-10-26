@@ -151,7 +151,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="window">Target window.</param>
 	/// <returns>Zero if success; Error code otherwise.</returns>
-	result_t cdrawWindowRelease(cdrawWindow* const window);
+	result_t cdrawWindowDestroy(cdrawWindow* const window);
 
 	/// <summary>
 	/// Enter a window's main loop to handle events.

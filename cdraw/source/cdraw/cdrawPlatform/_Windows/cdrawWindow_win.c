@@ -1557,7 +1557,7 @@ result_t cdrawWindowCreate(cdrawWindow* const window, label_t const windowName, 
 	result_return();
 }
 
-result_t cdrawWindowRelease(cdrawWindow* const window)
+result_t cdrawWindowDestroy(cdrawWindow* const window)
 {
 	result_init();
 	asserterr(window, errcode_invalidarg);

@@ -32,7 +32,7 @@ result_t cdrawConsoleTest()
 	result_init();
 	cdrawConsoleCreate();
 	cdrawConsoleDebugPatch();
-	cdrawConsoleRelease();
+	cdrawConsoleDestroy();
 	result_return();
 }
 

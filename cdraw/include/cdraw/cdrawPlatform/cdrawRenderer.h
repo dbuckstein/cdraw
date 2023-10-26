@@ -110,7 +110,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="renderer">Target renderer.</param>
 	/// <returns>Zero if success; Error code otherwise.</returns>
-	result_t cdrawRendererRelease(cdrawRenderer* const renderer);
+	result_t cdrawRendererDestroy(cdrawRenderer* const renderer);
 
 	/// <summary>
 	/// Print high-level information about renderer.

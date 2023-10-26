@@ -155,7 +155,7 @@ result_t cb_win_detach(cdrawTestPluginData* const data, ptrk_t const windowPlatf
 	cdraw_assert(data && windowPlatform_opt);
 	cdrawRenderer* const renderer = &data->renderer;
 	cdraw_assert(renderer->r && renderer->renderAPI);
-	result_t result = cdrawRendererRelease(renderer);
+	result_t result = cdrawRendererDestroy(renderer);
 	return result;// printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
 }
 
