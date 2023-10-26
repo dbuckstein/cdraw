@@ -22,7 +22,7 @@
 #include "cdraw/cdraw/cdrawConfig.h"
 #if CDRAW_USING_WINDOWS
 #include <Windows.h>
-#include "../cdrawPlayer.rc.h"
+#include "../resource/proj/cdrawPlayer.rc.h"
 
 
 /******************************************************************************

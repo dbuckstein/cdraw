@@ -21,11 +21,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="_Windows\cdrawPlugin_DllMain.c">
+    <ClCompile Include="_Windows\source\cdrawPlugin_DllMain.c">
       <Filter>Source Files\_Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\cdrawPlugin_main.c">
-      <Filter>Source Files\common</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

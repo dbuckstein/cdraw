@@ -160,7 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdrawPlayer_main.c" />
-    <ClCompile Include="_Windows\cdrawPlayer_WinMain.c" />
+    <ClCompile Include="_Windows\source\cdrawPlayer_WinMain.c" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\..\..\..\resource\_plugin\cdraw_plugin_info.txt" />
@@ -169,10 +169,10 @@
     <Image Include="_Windows\resource\icon\cbtk.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="cdrawPlayer.rc" />
+    <ResourceCompile Include="_Windows\resource\proj\cdrawPlayer.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cdrawPlayer.rc.h" />
+    <ClInclude Include="_Windows\resource\proj\cdrawPlayer.rc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
