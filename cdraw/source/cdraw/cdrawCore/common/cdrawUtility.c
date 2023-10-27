@@ -77,3 +77,15 @@ int64_t cdrawUtilityReduceRationalGCD(int64_t numerator, int64_t denominator, in
 		*gcd_out_opt = d;
 	return i;
 }
+
+int8_t cdrawUtilityLowestBit32(uint32_t x)
+{
+	int8_t i = 0;
+	if (x == 0)
+		return -1;
+	if ((x & 0xFFFF) == 0) { i += 16; x >>= 16; }
+	if ((x & 0x00FF) == 0) { i +=  8; x >>=  8; }
+	if ((x & 0x000F) == 0) { i +=  4; x >>=  4; }
+	if ((x & 0x0003) == 0) { i +=  2; x >>=  2; }
+	return ((x & 1) == 0 ? i + 1 : i );
+}

@@ -43,12 +43,11 @@
 
 
 /******************************************************************************
-* Internal interfaces.
+* SECTION: Surface management (Windows).
+* Reference: Singh, c.6.
+* Substantial improvements: translated to C and organized.
 ******************************************************************************/
 
-/*
-* Singh, c.6 - translated to C and organized
-*/
 bool cdrawRendererDestroySurface_vk(VkSurfaceKHR* const surface_out,
 	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt);
 

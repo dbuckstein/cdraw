@@ -58,6 +58,13 @@ extern "C" {
 	/// <returns>Integer component of quotient.</returns>
 	int64_t cdrawUtilityReduceRationalGCD(int64_t numerator, int64_t denominator, int64_t* const numerator_out, int64_t* const denominator_out, int64_t* const gcd_out_opt);
 
+	/// <summary>
+	/// Get index of lowest set bit in a 32-bit input.
+	/// </summary>
+	/// <param name="x">Number.</param>
+	/// <returns>Index of lowest set bit; -1 if value is zero.</returns>
+	int8_t cdrawUtilityLowestBit32(uint32_t x);
+
 
 #ifdef __cplusplus
 }
