@@ -37,6 +37,18 @@
     <Filter Include="Header Files\cdrawPlatform\_inl\cdrawRenderer">
       <UniqueIdentifier>{46b13543-e926-4680-9105-58a25ffe0e16}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\_Windows\cdrawRenderer_win\cdrawRenderer_win_vk">
+      <UniqueIdentifier>{0f381bf5-7c2c-4923-aade-4ea4861f019e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\cdrawRenderer\cdrawRenderer_vk">
+      <UniqueIdentifier>{45799358-fe82-47dc-8738-a5385cf39ff4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h">
+      <UniqueIdentifier>{d33a499f-c56a-4a96-94c6-4e90b92bc0c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk">
+      <UniqueIdentifier>{bfadea2f-1277-4a8b-bba4-0f3ce04e9e14}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform.c">
@@ -109,6 +121,15 @@
     </ClInclude>
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawWindow.h">
       <Filter>Header Files\cdrawPlatform</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk.h">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawInstance_vk.h">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawDevice_vk.h">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

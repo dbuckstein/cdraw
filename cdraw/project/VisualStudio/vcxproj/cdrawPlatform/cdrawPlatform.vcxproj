@@ -208,6 +208,9 @@
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawRenderer.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawTimer.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawWindow.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawDevice_vk.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawInstance_vk.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\..\include\cdraw\cdrawPlatform\_inl\cdrawRenderer.inl" />

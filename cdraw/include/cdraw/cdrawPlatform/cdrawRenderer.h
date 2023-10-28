@@ -59,6 +59,19 @@ typedef ptr_t cdrawRendererHandle;
 typedef result_t(*cdrawRendererFunc)(cdrawRendererHandle r, ...);
 
 /// <summary>
+/// Renderer-specific functions, set on initialization.
+/// The purpose of this "object-oriented" approach is to avoid having a switch wrapper for every single real-time method.
+/// The only methods that should be publicly fixed are those around creation or destruction, or non-real-time events.
+/// Anything that operates on overall renderer should pass its 'r' handle as the first argument.
+/// Individual renderer components will work similarly, taking the component's respective handle as the second argument.
+/// </summary>
+typedef struct cdrawRendererFuncTable {
+	cdrawRendererFunc cdrawRendererPrint;
+	cdrawRendererFunc cdrawRendererDisplay;
+	cdrawRendererFunc cdrawRendererResize;
+} cdrawRendererFuncTable;
+
+/// <summary>
 /// Portable renderer object.
 /// </summary>
 typedef struct cdrawRenderer
@@ -67,24 +80,16 @@ typedef struct cdrawRenderer
 	/// Selected API internal renderer data for specific platform.
 	/// </summary>
 	cdrawRendererHandle r;
+
+	/// <summary>
+	/// Function table.
+	/// </summary>
+	cdrawRendererFuncTable const* f;
 	
 	/// <summary>
 	/// Selected rendering API.
 	/// </summary>
 	cdrawRenderAPI renderAPI;
-
-	/// <summary>
-	/// Renderer-specific functions, set on initialization.
-	/// The purpose of this "object-oriented" approach is to avoid having a switch wrapper for every single real-time method.
-	/// The only methods that should be publicly fixed are those around creation or destruction, or non-real-time events.
-	/// Anything that operates on overall renderer should pass its 'r' handle as the first argument.
-	/// Individual renderer components will work similarly, taking the component's respective handle as the second argument.
-	/// </summary>
-	struct {
-		cdrawRendererFunc cdrawRendererPrint;
-		cdrawRendererFunc cdrawRendererDisplay;
-		cdrawRendererFunc cdrawRendererResize;
-	};
 } cdrawRenderer;
 
 
@@ -111,6 +116,20 @@ extern "C" {
 	/// <param name="renderer">Target renderer.</param>
 	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawRendererDestroy(cdrawRenderer* const renderer);
+
+	/// <summary>
+	/// Refresh global renderer settings, namely function pointers.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererRefresh(cdrawRenderer const* const renderer);
+
+	/// <summary>
+	/// Refresh global renderer settings for API, namely function pointers.
+	/// </summary>
+	/// <param name="renderAPI">Target render API.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererRefreshAPI(cdrawRenderAPI const renderAPI);
 
 	/// <summary>
 	/// Print high-level information about renderer.

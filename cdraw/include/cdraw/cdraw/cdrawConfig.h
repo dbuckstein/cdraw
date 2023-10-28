@@ -142,6 +142,8 @@ typedef uint64_t							qword_t;	// Quad-word type (8 bytes).
 #define uint16_invalid						UINT16_MAX	// Global value representing invalid 16-bit unsigned integer.
 #define uint32_invalid						UINT32_MAX	// Global value representing invalid 32-bit unsigned integer.
 #define uint64_invalid						UINT64_MAX	// Global value representing invalid 64-bit unsigned integer.
+#define ptr_invalid							NULL		// Global value representing invalid pointer.
+#define cstr_invalid						""			// Global value representing invalid non-null c-style string (also invalid if null).
 
 
 typedef uint32_t							bitflag_t[8];												// Convenient storage type for 256 bits.
@@ -187,7 +189,8 @@ typedef enum errcode_common_t
 #define result_getwarn(result,warncode)		flagcheck(result_getwarns(result), (1<<(warncode&0xF)))	// Get specific warning code (bit) from result.
 
 
-#define buffer_valid(x)						((x)!=NULL&&*(x)!=0)									// True if pointer is initialized and value it points to is non-zero.
+#define ptr_valid(x)						((x)!=ptr_invalid)										// True if pointer is initialized.
+#define buffer_valid(x)						(ptr_valid(x)&&*(x)!=0)									// True if pointer is initialized and value it points to is non-zero.
 #define buffer_len(x)						(sizeof(x) / sizeof(*(x)))								// Calculate number of elements in buffer (note: does not work on raw pointers).
 #define buffer_init1(dst,offset,type)		(((type*)(dst))[offset]=(type)0)						// Initialize single value in buffer to zero.
 #define buffer_copy1(dst,src,offset,type)	(((type*)(dst))[offset]=((type const*)(src))[offset])	// Copy single value in buffer.
@@ -210,7 +213,9 @@ typedef byte_t								label_long_t[sizeof(label_t)*4];									// Convenient lon
 #define gSq(x)								((x)*(x))											// General square of input.
 #define gMad(x0,dx,u)						((x0)+(dx)*(u))										// General multiply-add.
 #define gLerp(x0,x1,u)						((x0)+((x1)-(x0))*u)								// General linear interpolation.
-#define gClamp(x,x_min,x_max)				((x)>=(x_min)?(x)<=(x_max)?(x):(x_max):(x_min))		// General clamp in range.
+#define gClamp(x,x_min,x_max)				((x)>=(x_min)?(x)<(x_max)?(x):(x_max):(x_min))		// General clamp in range.
+#define gRange(x,x_min,x_max)				((x)>=(x_min)&&(x)<(x_max))							// General range validation (semi-open range).
+#define gIndex(x,n)							gRange(x,0,n)										// General index validation (semi-open range).
 #define gSwap(x,y,tmp)						(tmp=x);(x=y);(y=tmp)								// Swap two values.
 #define gSwap3(x,y,z,tmp)					(tmp=x);(x=y);(y=z);(z=tmp)							// Swap three values.
 #define gSwap3r(x,y,z,tmp)					(tmp=x);(x=z);(z=y);(y=tmp)							// Swap three values (alt).
@@ -241,12 +246,12 @@ extern "C" {
 #define failassertret(condition,...)		cdraw_assert(condition); failret(condition, __VA_ARGS__)									// Assert and/or return variadic argument if condition fails.
 #define failassertreset()
 #endif // #else // #if (defined CDRAW_ASSERT_TEST)
-#define asserterr(condition,errcode)		cdraw_assert(condition); failret(condition, result_seterror(errcode))						// Assert and/or return error result if condition fails.
-#define asserterr_rng(x,xmin,xmax,errcode)	asserterr((x)>=(xmin)&&(x)<=(xmax), errcode)												// Assert and/or return error result if value is not in range.
-#define asserterr_ptr(ptr,errcode)			asserterr((ptr)!=NULL, errcode)																// Assert and/or return error result if pointer is not initialized.
-#define asserterr_ptrval(ptr,errcode)		asserterr(buffer_valid(ptr), errcode)														// Assert and/or return error result if pointer or its value is not initialized.
-#define asserterr_cstr(cstr,errcode)		asserterr(label_valid(cstr), errcode)														// Assert and/or return error result if c-style string is not initialized.
-#define asserterr_count(x,count,errcode)	asserterr_rng(x, 0, count, errcode)															// Assert and/or return error result if value is negative or exceeds count.
+#define asserterr(condition,errcode)			cdraw_assert(condition); failret(condition, result_seterror(errcode))					// Assert and/or return error result if condition fails.
+#define asserterr_ptr(ptr,errcode)				asserterr(ptr_valid(ptr), errcode)														// Assert and/or return error result if pointer is not initialized.
+#define asserterr_ptrval(ptr,errcode)			asserterr(buffer_valid(ptr), errcode)													// Assert and/or return error result if pointer or its value is not initialized.
+#define asserterr_cstr(cstr,errcode)			asserterr(label_valid(cstr), errcode)													// Assert and/or return error result if c-style string is not initialized.
+#define asserterr_range(x,x_min,x_max,errcode)	asserterr(gRange(x,x_min,x_max), errcode)												// Assert and/or return error result if value is not in range.
+#define asserterr_index(x,n,errcode)			asserterr(gIndex(x,n), errcode)															// Assert and/or return error result if value is negative or exceeds count.
 
 
 #define cdraw_istrue(tolerance_unused,expect_unused,result)		(!!result)																// Definition of true result test.

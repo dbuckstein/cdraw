@@ -138,10 +138,12 @@ result_t cb_unload_pre(cdrawTestPluginData** const data_inout)
 
 result_t cb_win_attach(cdrawTestPluginData* const data, int32_t const w, int32_t const h, int32_t const x, int32_t const y, ptrk_t const windowPlatform_opt)
 {
+	result_t result;
 	cdraw_assert(data && windowPlatform_opt);
 	cdrawRenderer* const renderer = &data->renderer;
 	cdraw_assert(!renderer->r && !renderer->renderAPI);
-	result_t result = cdrawRendererCreate(renderer, cdrawRenderAPI_Vulkan, windowPlatform_opt);
+	result = cdrawRendererRefreshAPI(cdrawRenderAPI_Vulkan);
+	result = cdrawRendererCreate(renderer, cdrawRenderAPI_Vulkan, windowPlatform_opt);
 	cdrawRendererPrint(renderer);
 	data->w = w;
 	data->h = h;
