@@ -15,16 +15,29 @@
 */
 
 /*
-* cdrawInstance_vk.h
+* cdrawRendererInstance_vk.h
 * Facade interface for Vulkan instance management.
 */
 
-#ifndef _CDRAW_INSTANCE_VK_H_
-#define _CDRAW_INSTANCE_VK_H_
+#if ((!defined _CDRAW_RENDERER_INSTANCE_VK_H_) && (defined _CDRAW_RENDERER_VK_H_))
+#define _CDRAW_RENDERER_INSTANCE_VK_H_
 
 
-#include "cdraw/cdraw/cdrawConfig.h"
-#include "vulkan/vulkan.h"
+/// <summary>
+/// Get Vulkan instance-dependent function address.
+/// </summary>
+#define cdrawVkGetInstanceProcAddr(name,f,inst) if ((f->name = (PFN_##name)vkGetInstanceProcAddr(inst, #name)) == NULL) cdraw_assert(f->name)
+
+
+/// <summary>
+/// Instance-dependent extension function pointer storage.
+/// </summary>
+typedef struct cdrawVkInstanceFuncTable
+{
+#if CDRAW_DEBUG
+	cdrawVkInstanceDebugFuncTable f_debug;
+#endif // #if CDRAW_DEBUG
+} cdrawVkInstanceFuncTable;
 
 
 /// <summary>
@@ -41,28 +54,17 @@ typedef struct cdrawVkInstance
 	/// Vulkan instance handle.
 	/// </summary>
 	VkInstance instance;
+
+	/// <summary>
+	/// Instance function pointers.
+	/// </summary>
+	cdrawVkInstanceFuncTable f;
 } cdrawVkInstance;
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif // #ifdef __cplusplus
-
-	/// <summary>
-	/// Constructor for Vulkan instance descriptor.
-	/// </summary>
-	/// <param name="instance_out">Target instance descriptor (non-null).</param>
-	/// <param name="name">Descriptor name.</param>
-	/// <param name="instance">Vulkan instance handle.</param>
-	/// <returns>Success: <paramref name="instance_out"/>; Failure: <c>NULL</c>.</returns>
-	cdrawVkInstance* cdrawVkInstanceCtor(cdrawVkInstance* const instance_out,
-		label_t const name, VkInstance const instance);
-
-	/// <summary>
-	/// Destructor interface for Vulkan instance descriptor.
-	/// </summary>
-	/// <param name="instance_out">Target instance descriptor (non-null).</param>
-	void cdrawVkInstanceDtor(cdrawVkInstance* const instance_out);
 
 	/// <summary>
 	/// Indicate whether descriptor is valid (set up correctly) and should not be modified.
@@ -78,10 +80,28 @@ extern "C" {
 	/// <returns>True if unused.</returns>
 	bool cdrawVkInstanceUnused(cdrawVkInstance const* const instance);
 
+	/// <summary>
+	/// Create instance.
+	/// </summary>
+	/// <param name="instance_out">Target instance descriptor (non-null and unused).</param>
+	/// <param name="name">Descriptor name.</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if created.</returns>
+	bool cdrawVkInstanceCreate(cdrawVkInstance* const instance_out,
+		label_t const name, VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Destroy instance.
+	/// </summary>
+	/// <param name="instance_out">Target instance descriptor (non-null and valid).</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if destroyed.</returns>
+	bool cdrawVkInstanceDestroy(cdrawVkInstance* const instance_out,
+		VkAllocationCallbacks const* const alloc_opt);
 
 #ifdef __cplusplus
 }
 #endif // #ifdef __cplusplus
 
 
-#endif // #ifndef _CDRAW_INSTANCE_VK_H_
+#endif // #if ((!defined _CDRAW_RENDERER_INSTANCE_VK_H_) && (defined _CDRAW_RENDERER_VK_H_))

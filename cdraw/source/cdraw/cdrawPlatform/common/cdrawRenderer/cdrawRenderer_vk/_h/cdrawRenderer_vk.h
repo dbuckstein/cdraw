@@ -22,135 +22,18 @@
 #ifndef _CDRAW_RENDERER_VK_H_
 #define _CDRAW_RENDERER_VK_H_
 
+#include "vulkan/vulkan.h"
 
-#include "cdrawRenderer_vk/cdrawInstance_vk.h"
-#include "cdrawRenderer_vk/cdrawDevice_vk.h"
+#include "cdraw/cdraw/cdrawConfig.h"
 
-
-#define cdrawGetInstanceProcAddr_vk(name,f,inst) if ((f->name = (PFN_##name)vkGetInstanceProcAddr(inst, #name)) == NULL) cdraw_assert(f->name)
-#define cdrawGetDeviceProcAddr_vk(name,f,device) if ((f->name = (PFN_##name)vkGetDeviceProcAddr(device, #name)) == NULL) cdraw_assert(f->name)
 #if CDRAW_DEBUG
-/// <summary>
-/// Internal function pointer storage.
-/// </summary>
-typedef struct cdrawRendererInternalFuncTable_vk_dbg
-{
-	PFN_vkCreateDebugReportCallbackEXT vkCreateDebugReportCallbackEXT;
-	PFN_vkDestroyDebugReportCallbackEXT vkDestroyDebugReportCallbackEXT;
-	PFN_vkDebugReportMessageEXT vkDebugReportMessageEXT;
-
-	PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT;
-	PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT;
-	PFN_vkSubmitDebugUtilsMessageEXT vkSubmitDebugUtilsMessageEXT;
-	PFN_vkSetDebugUtilsObjectNameEXT vkSetDebugUtilsObjectNameEXT;
-	PFN_vkSetDebugUtilsObjectTagEXT vkSetDebugUtilsObjectTagEXT;
-	PFN_vkQueueBeginDebugUtilsLabelEXT vkQueueBeginDebugUtilsLabelEXT;
-	PFN_vkQueueEndDebugUtilsLabelEXT vkQueueEndDebugUtilsLabelEXT;
-	PFN_vkQueueInsertDebugUtilsLabelEXT vkQueueInsertDebugUtilsLabelEXT;
-	PFN_vkCmdBeginDebugUtilsLabelEXT vkCmdBeginDebugUtilsLabelEXT;
-	PFN_vkCmdEndDebugUtilsLabelEXT vkCmdEndDebugUtilsLabelEXT;
-	PFN_vkCmdInsertDebugUtilsLabelEXT vkCmdInsertDebugUtilsLabelEXT;
-
-	PFN_vkDebugMarkerSetObjectNameEXT vkDebugMarkerSetObjectNameEXT;
-	PFN_vkDebugMarkerSetObjectTagEXT vkDebugMarkerSetObjectTagEXT;
-	PFN_vkCmdDebugMarkerBeginEXT vkCmdDebugMarkerBeginEXT;
-	PFN_vkCmdDebugMarkerEndEXT vkCmdDebugMarkerEndEXT;
-	PFN_vkCmdDebugMarkerInsertEXT vkCmdDebugMarkerInsertEXT;
-} cdrawRendererInternalFuncTable_vk_dbg;
+#include "cdrawRenderer_vk/cdrawRendererDebug_vk.h"
 #endif // #if CDRAW_DEBUG
-
-
-/// <summary>
-/// Framework-defined Vulkan allocation manager descriptor.
-/// </summary>
-typedef struct cdrawVkAllocator
-{
-	/// <summary>
-	/// Descriptor name.
-	/// </summary>
-	label_t name;
-
-	/// <summary>
-	/// Counts for testing.
-	/// </summary>
-	uint32_t allocCount, reallocCount, freeCount, internalAllocCount, internalFreeCount;
-} cdrawVkAllocator;
-
-
-/// <summary>
-/// Vulkan image and dependencies descriptor.
-/// </summary>
-typedef struct cdrawVkImage
-{
-	/// <summary>
-	/// Descriptor name.
-	/// </summary>
-	label_t name;
-
-	/// <summary>
-	/// Vulkan image handle.
-	/// </summary>
-	VkImage image;
-
-	/// <summary>
-	/// Vulkan device memory handle (memory allocated for image).
-	/// </summary>
-	VkDeviceMemory imageMem;
-
-	/// <summary>
-	/// Vulkan image view handle (exposure to app).
-	/// </summary>
-	VkImageView imageView;
-} cdrawVkImage;
-
-
-/// <summary>
-/// Vulkan physical device and details descriptor.
-/// </summary>
-typedef struct cdrawVkPhysicalDevice
-{
-	/// <summary>
-	/// Descriptor name.
-	/// </summary>
-	label_t name;
-
-	/// <summary>
-	/// Device handle.
-	/// </summary>
-	VkPhysicalDevice device;
-
-	/// <summary>
-	/// Device properties.
-	/// </summary>
-	VkPhysicalDeviceProperties deviceProp;
-
-	/// <summary>
-	/// Device memory properties.
-	/// </summary>
-	VkPhysicalDeviceMemoryProperties deviceMemProp;
-
-	/// <summary>
-	/// Device features.
-	/// </summary>
-	VkPhysicalDeviceFeatures deviceFeat;
-
-	/// <summary>
-	/// Device features actually requested/used.
-	/// </summary>
-	VkPhysicalDeviceFeatures deviceFeatUse;
-
-	/// <summary>
-	/// Queue family selected for graphics.
-	/// Should have additional one for dedicated compute.
-	/// </summary>
-	VkQueueFamilyProperties queueFamilyProp_graphics;
-
-	/// <summary>
-	/// Index of graphics queue family.
-	/// Should have additional one for dedicated compute.
-	/// </summary>
-	int32_t queueFamilyIdx_graphics;
-} cdrawVkPhysicalDevice;
+#include "cdrawRenderer_vk/cdrawRendererMemory_vk.h"
+#include "cdrawRenderer_vk/cdrawRendererInstance_vk.h"
+#include "cdrawRenderer_vk/cdrawRendererDevice_vk.h"
+#include "cdrawRenderer_vk/cdrawRendererImage_vk.h"
+#include "cdrawRenderer_vk/cdrawRendererPresentation_vk.h"
 
 
 enum
@@ -165,18 +48,18 @@ enum
 typedef struct cdrawRenderer_vk
 {
 	/// <summary>
-	/// Vulkan handles and data related to instance or global usage.
+	/// Vulkan handles and data related to instance, logical device and global usage.
 	/// </summary>
 	struct {
 		/// <summary>
 		/// Vulkan instance.
 		/// </summary>
-		VkInstance inst;
+		cdrawVkInstance instance;
 
 		/// <summary>
-		/// Vulkan allocation callbacks for memory management.
+		/// Vulkan logical device.
 		/// </summary>
-		VkAllocationCallbacks alloc;
+		cdrawVkLogicalDevice logicalDevice;
 
 		/// <summary>
 		/// Allocator data for callbacks.
@@ -185,35 +68,10 @@ typedef struct cdrawRenderer_vk
 
 #if CDRAW_DEBUG
 		/// <summary>
-		/// Debug report extension.
+		/// Debugging extensions and callbacks.
 		/// </summary>
-		VkDebugReportCallbackEXT debugReport;
-
-		/// <summary>
-		/// Debug messenger extension.
-		/// </summary>
-		VkDebugUtilsMessengerEXT debugMessenger;
-
-		/// <summary>
-		/// Internal fuction table.
-		/// </summary>
-		cdrawRendererInternalFuncTable_vk_dbg f;
+		cdrawVkDebug debug;
 #endif // #if CDRAW_DEBUG
-	};
-
-	/// <summary>
-	/// Vulkan handles and data related to device management.
-	/// </summary>
-	struct {
-		/// <summary>
-		/// Vulkan logical device.
-		/// </summary>
-		VkDevice device;
-
-		/// <summary>
-		/// Description of physical device used.
-		/// </summary>
-		cdrawVkPhysicalDevice physicalDevice;
 	};
 
 	/// <summary>

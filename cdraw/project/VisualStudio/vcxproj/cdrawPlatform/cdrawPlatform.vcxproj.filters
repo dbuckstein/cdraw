@@ -99,6 +99,27 @@
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_gl.c">
       <Filter>Source Files\common\cdrawRenderer</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererImage_vk.c">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererMemory_vk.c">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererPresentation_vk.c">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_vk\cdrawRendererPresentation_win_vk.c">
+      <Filter>Source Files\_Windows\cdrawRenderer_win\cdrawRenderer_win_vk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererDevice_vk.c">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererInstance_vk.c">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererDebug_vk.c">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform.h">
@@ -125,10 +146,22 @@
     <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk.h">
       <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawInstance_vk.h">
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererInstance_vk.h">
       <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawDevice_vk.h">
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererDevice_vk.h">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererDebug_vk.h">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererImage_vk.h">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererMemory_vk.h">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererPresentation_vk.h">
       <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
     </ClInclude>
   </ItemGroup>

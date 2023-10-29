@@ -26,1211 +26,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "vulkan/vulkan.h"
-
 #include "cdraw/cdrawCore/cdrawUtility.h"
 
 
 /******************************************************************************
-* SECTION: Internal utility implementations.
+* Private implementations.
 ******************************************************************************/
 
-static int32_t cdrawRendererEnumVendorID_vk(uint32_t const id)
-{
-	switch (id)
-	{
-		// 0 - other
-		// https://www.reddit.com/r/vulkan/comments/4ta9nj/is_there_a_comprehensive_list_of_the_names_and/ 
-	case 0x1002: return 1; // AMD
-	case 0x1010: return 2; // ImgTec
-	case 0x10DE: return 3; // NVIDIA
-	case 0x13B5: return 4; // ARM
-	case 0x5143: return 5; // QualComm
-	case 0x8086: return 6; // INTEL
-		// 7 - null
-	case 0x10000: return 8; // KHR
-	case VK_VENDOR_ID_VIV: return 9;
-	case VK_VENDOR_ID_VSI: return 10;
-	case VK_VENDOR_ID_KAZAN: return 11;
-	case VK_VENDOR_ID_CODEPLAY: return 12;
-	case VK_VENDOR_ID_MESA: return 13;
-	case VK_VENDOR_ID_POCL: return 14;
-		// 15 - null
-	}
-	return -1;
-}
-
-static int32_t cdrawRendererPrintLayer_vk(VkLayerProperties const* const layerProp, uint32_t const index, cstrk_t const prefix)
-{
-	return printf("\n %s layerProp[%u] = { \"%s\" (%u.%u.%u; %u.%u.%u): \"%s\" }", prefix, index,
-		layerProp->layerName,
-		VK_VERSION_MAJOR(layerProp->specVersion), VK_VERSION_MINOR(layerProp->specVersion), VK_VERSION_PATCH(layerProp->specVersion),
-		VK_VERSION_MAJOR(layerProp->implementationVersion), VK_VERSION_MINOR(layerProp->implementationVersion), VK_VERSION_PATCH(layerProp->implementationVersion),
-		layerProp->description);
-}
-
-static int32_t cdrawRendererPrintExt_vk(VkExtensionProperties const* const extProp, uint32_t const index, cstrk_t const prefix)
-{
-	return printf("\n %s extensionProp[%u] = { \"%s\" (%u.%u.%u) }", prefix, index,
-		extProp->extensionName,
-		VK_VERSION_MAJOR(extProp->specVersion), VK_VERSION_MINOR(extProp->specVersion), VK_VERSION_PATCH(extProp->specVersion));
-}
-
-static int32_t cdrawRendererPrintPhysicalDevice_vk(VkPhysicalDeviceProperties const* const physicalDeviceProp, uint32_t const index, cstrk_t const prefix)
-{
-	cstrk_t const deviceType[] = { "other", "integrated gpu", "discrete gpu", "virtual gpu", "cpu" };
-	cstrk_t const vendorIDs[] = {
-		"other", "amd", "imgtec", "nvidia", "arm", "qualcomm", "intel", 0,
-		"khr", "viv", "vsi", "kazan", "codeplay", "mesa", "pocl", 0,
-	};
-	uint32_t const vendor = cdrawRendererEnumVendorID_vk(physicalDeviceProp->vendorID);
-	uint32_t const device = (physicalDeviceProp->deviceID);
-
-	return printf("\n %s physicalDeviceProp[%u] = { \"%s\" [%s] (%u.%u.%u; %u.%u.%u; %s; %u) }", prefix, index,
-		physicalDeviceProp->deviceName, deviceType[physicalDeviceProp->deviceType],
-		VK_VERSION_MAJOR(physicalDeviceProp->apiVersion), VK_VERSION_MINOR(physicalDeviceProp->apiVersion), VK_VERSION_PATCH(physicalDeviceProp->apiVersion),
-		VK_VERSION_MAJOR(physicalDeviceProp->driverVersion), VK_VERSION_MINOR(physicalDeviceProp->driverVersion), VK_VERSION_PATCH(physicalDeviceProp->driverVersion),
-		vendorIDs[vendor], device);
-}
-
-static int32_t cdrawRendererPrintQueueFamily_vk(VkQueueFamilyProperties const* const queueFamilyProp, uint32_t const index, cstrk_t const prefix)
-{
-	cstrk_t const queueFlag[] = { "[graphics]", "[compute]", "[transfer]", "[sparsebind]", "[protected]" };
-	return printf("\n %s queueFamilyProp[%u] = { [%s%s%s%s%s] (%u; %u; %u,%u,%u) }", prefix, index,
-		(queueFamilyProp->queueFlags & VK_QUEUE_GRAPHICS_BIT) ? queueFlag[0] : "",
-		(queueFamilyProp->queueFlags & VK_QUEUE_COMPUTE_BIT) ? queueFlag[1] : "",
-		(queueFamilyProp->queueFlags & VK_QUEUE_TRANSFER_BIT) ? queueFlag[2] : "",
-		(queueFamilyProp->queueFlags & VK_QUEUE_SPARSE_BINDING_BIT) ? queueFlag[3] : "",
-		(queueFamilyProp->queueFlags & VK_QUEUE_PROTECTED_BIT) ? queueFlag[4] : "",
-		queueFamilyProp->queueCount, queueFamilyProp->timestampValidBits,
-		queueFamilyProp->minImageTransferGranularity.width, queueFamilyProp->minImageTransferGranularity.height, queueFamilyProp->minImageTransferGranularity.depth);
-}
-
-static int32_t cdrawRendererPrintMemoryType_vk(VkMemoryType const* const memoryType, uint32_t const index, cstrk_t const prefix)
-{
-	cstrk_t const memoryTypeFlag[] = { "[device local]", "[host visible]", "[host coherent]", "[host cached]", "[lazy alloc]", "[protected]", "[device coherent AMD]", "[device uncached AMD]" };
-	return printf("\n %s memoryType[%u] = { [%s%s%s%s%s%s%s%s] (%u) }", prefix, index,
-		(memoryType->propertyFlags & VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT) ? memoryTypeFlag[0] : "",
-		(memoryType->propertyFlags & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) ? memoryTypeFlag[1] : "",
-		(memoryType->propertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) ? memoryTypeFlag[2] : "",
-		(memoryType->propertyFlags & VK_MEMORY_PROPERTY_HOST_CACHED_BIT) ? memoryTypeFlag[3] : "",
-		(memoryType->propertyFlags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT) ? memoryTypeFlag[4] : "",
-		(memoryType->propertyFlags & VK_MEMORY_PROPERTY_PROTECTED_BIT) ? memoryTypeFlag[5] : "",
-		(memoryType->propertyFlags & VK_MEMORY_PROPERTY_DEVICE_COHERENT_BIT_AMD) ? memoryTypeFlag[6] : "",
-		(memoryType->propertyFlags & VK_MEMORY_PROPERTY_DEVICE_UNCACHED_BIT_AMD) ? memoryTypeFlag[7] : "",
-		memoryType->heapIndex);
-}
-
-static int32_t cdrawRendererPrintMemoryHeap_vk(VkMemoryHeap const* const memoryHeap, uint32_t const index, cstrk_t const prefix)
-{
-	cstrk_t const memoryHeapFlag[] = { "[device local]", "[multi-instance]", "[multi-instance KHR]" };
-	return printf("\n %s memoryHeap[%u] = { [%s%s%s] (%llu) }", prefix, index,
-		(memoryHeap->flags & VK_MEMORY_HEAP_DEVICE_LOCAL_BIT) ? memoryHeapFlag[0] : "",
-		(memoryHeap->flags & VK_MEMORY_HEAP_MULTI_INSTANCE_BIT) ? memoryHeapFlag[1] : "",
-		(memoryHeap->flags & VK_MEMORY_HEAP_MULTI_INSTANCE_BIT_KHR) ? memoryHeapFlag[2] : "",
-		memoryHeap->size);
-}
-
-
-/******************************************************************************
-* SECTION: Memory management.
-******************************************************************************/
-
-static ptr_t cdrawVkAllocatorAllocation(
-	cdrawVkAllocator*			const pUserData,
-	size_t						const size,
-	size_t						const alignment,
-	VkSystemAllocationScope		const allocationScope)
-{
-	ptr_t pMemory = NULL;
-	// perform custom allocation here
-	// MUST return pointer aligned by 'alignment' if allocation succeeded
-	// MUST return NULL if allocation failed (later generates VK_ERROR_OUT_OF_HOST_MEMORY)
-	if (pMemory)
-		++pUserData->allocCount;
-	return pMemory;
-}
-
-static void cdrawVkAllocatorFree(
-	cdrawVkAllocator*			const pUserData,
-	ptr_t						const pMemory)
-{
-	if (pMemory)
-	{
-		// perform custom free here
-		++pUserData->freeCount;
-	}
-}
-
-static ptr_t cdrawVkAllocatorReallocation(
-	cdrawVkAllocator*			const pUserData,
-	ptr_t						const pOriginal,
-	size_t						const size,
-	size_t						const alignment,
-	VkSystemAllocationScope		const allocationScope)
-{
-	ptr_t pMemory = NULL;
-	if (pOriginal == NULL)
-	{
-		pMemory = cdrawVkAllocatorAllocation(pUserData, size, alignment, allocationScope);
-	}
-	else if (size == 0)
-	{
-		cdrawVkAllocatorFree(pUserData, pOriginal);
-	}
-	else
-	{
-		// perform custom reallocation here
-		// same return rules as allocation
-		// if fail and original is valid, do not free it
-		if (pMemory)
-			++pUserData->reallocCount;
-	}
-	return pMemory;
-}
-
-static void cdrawVkAllocatorInternalAllocationNotification(
-	cdrawVkAllocator*			const pUserData,
-	size_t						const size,
-	VkInternalAllocationType	const allocationType,
-	VkSystemAllocationScope		const allocationScope)
-{
-	++pUserData->internalAllocCount;
-}
-
-static void cdrawVkAllocatorInternalFreeNotification(
-	cdrawVkAllocator*			const pUserData,
-	size_t						const size,
-	VkInternalAllocationType	const allocationType,
-	VkSystemAllocationScope		const allocationScope)
-{
-	++pUserData->internalFreeCount;
-}
-
-static VkAllocationCallbacks const* cdrawRendererInternalAllocUse_vk(VkAllocationCallbacks const* const alloc)
-{
-	cdraw_assert(alloc);
-	return (alloc->pUserData ? alloc : NULL);
-}
-
-static VkAllocationCallbacks* cdrawRendererInternalAllocInit_vk(VkAllocationCallbacks* const alloc, cdrawVkAllocator* const allocator)
-{
-	cdraw_assert(alloc);
-	//alloc->pUserData = allocator;
-	if (!cdrawRendererInternalAllocUse_vk(alloc))
-		return NULL;
-	alloc->pfnAllocation = cdrawVkAllocatorAllocation;
-	alloc->pfnReallocation = cdrawVkAllocatorReallocation;
-	alloc->pfnFree = cdrawVkAllocatorFree;
-	alloc->pfnInternalAllocation = cdrawVkAllocatorInternalAllocationNotification;
-	alloc->pfnInternalFree = cdrawVkAllocatorInternalFreeNotification;
-	return alloc;
-}
-
-static VkAllocationCallbacks* cdrawRendererInternalAllocClean_vk(VkAllocationCallbacks* const alloc)
-{
-	cdraw_assert(alloc);
-	if (!cdrawRendererInternalAllocUse_vk(alloc))
-		return NULL;
-	alloc->pUserData = NULL;
-	alloc->pfnAllocation = NULL;
-	alloc->pfnReallocation = NULL;
-	alloc->pfnFree = NULL;
-	alloc->pfnInternalAllocation = NULL;
-	alloc->pfnInternalFree = NULL;
-	return alloc;
-}
-
-
-static VkMemoryAllocateInfo cdrawVkMemoryAllocateInfoCtor(
-	VkDeviceSize const allocationSize,
-	uint32_t const memoryTypeIndex)
-{
-	VkMemoryAllocateInfo memAllocInfo = { 0 };
-	memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	memAllocInfo.allocationSize = allocationSize;
-	memAllocInfo.memoryTypeIndex = memoryTypeIndex;
-	return memAllocInfo;
-}
-
-
-/******************************************************************************
-* SECTION: Debugging and validation layers.
-* Reference: Singh, c.4.
-* Substantial improvements: translated to C and organized.
-******************************************************************************/
-
-#if CDRAW_DEBUG
-static bool cdrawRendererDestroyDebugReport_vk(VkDebugReportCallbackEXT* const debugReport_out,
-	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
-	cdrawRendererInternalFuncTable_vk_dbg const* const f)
-{
-	cdraw_assert(debugReport_out);
-	if (!*debugReport_out)
-		return false;
-	printf("\n Destroying Vulkan debug report...");
-
-	cdraw_assert(inst);
-	cdraw_assert(f && f->vkDestroyDebugReportCallbackEXT);
-	f->vkDestroyDebugReportCallbackEXT(inst, *debugReport_out, alloc_opt);
-
-	printf("\n Vulkan debug report destroyed.");
-	*debugReport_out = VK_NULL_HANDLE;
-	return true;
-}
-
-static VkBool32 cdrawRendererInternalDebugReportCallback_vk(
-	VkDebugReportFlagsEXT const flags,
-	VkDebugReportObjectTypeEXT const objectType,
-	uint64_t const object,
-	size_t const location,
-	int32_t const messageCode,
-	cstrk_t const pLayerPrefix,
-	cstrk_t const pMessage,
-	ptr_t const pUserData)
-{
-	// same format as "PFN_vkDebugReportCallbackEXT"
-
-	cstrk_t const flagStr[] = { "[INFORMATION]", "[WARNING]", "[PERFORMANCE WARNING]", "[ERROR]", "[DEBUG]" };
-	printf("\n\t cdrawVkDebugReport %s%s%s%s%s (T:%d, MsgCode:%d, LayerPrefix:%s):\n\t\t \"%s\"",
-		(flags & VK_DEBUG_REPORT_INFORMATION_BIT_EXT) ? flagStr[0] : "",
-		(flags & VK_DEBUG_REPORT_WARNING_BIT_EXT) ? flagStr[1] : "",
-		(flags & VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT) ? flagStr[2] : "",
-		(flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) ? flagStr[3] : "",
-		(flags & VK_DEBUG_REPORT_DEBUG_BIT_EXT) ? flagStr[4] : "",
-		(int32_t)objectType, messageCode, pLayerPrefix, pMessage);
-
-	// handled, but should still return false according to spec
-	return VK_SUCCESS;
-}
-
-static VkDebugReportCallbackCreateInfoEXT cdrawVkDebugReportCallbackCreateInfoCtor(
-	VkDebugReportFlagsEXT const flags,
-	PFN_vkDebugReportCallbackEXT const callback,
-	ptr_t const data)
-{
-	VkDebugReportCallbackCreateInfoEXT debugReportCallbackCreateInfo = { 0 };
-	debugReportCallbackCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-	debugReportCallbackCreateInfo.flags = flags;
-	debugReportCallbackCreateInfo.pfnCallback = callback;
-	debugReportCallbackCreateInfo.pUserData = data;
-	return debugReportCallbackCreateInfo;
-}
-
-static VkDebugReportCallbackCreateInfoEXT cdrawVkDebugReportCallbackCreateInfoCtorDefault()
-{
-	// all flags
-	VkDebugReportFlagsEXT const flags =
-		(VK_DEBUG_REPORT_INFORMATION_BIT_EXT
-			| VK_DEBUG_REPORT_WARNING_BIT_EXT
-			| VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT
-			| VK_DEBUG_REPORT_ERROR_BIT_EXT
-			| VK_DEBUG_REPORT_DEBUG_BIT_EXT);
-	return cdrawVkDebugReportCallbackCreateInfoCtor(
-		flags,
-		cdrawRendererInternalDebugReportCallback_vk,
-		NULL);
-}
-
-static bool cdrawRendererCreateDebugReport_vk(VkDebugReportCallbackEXT* const debugReport_out,
-	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
-	cdrawRendererInternalFuncTable_vk_dbg const* const f)
-{
-	VkResult result = VK_SUCCESS;
-	VkDebugReportCallbackEXT debugReport = VK_NULL_HANDLE;
-	cdraw_assert(debugReport_out && !*debugReport_out && inst);
-	printf("\n Creating Vulkan debug report...");
-
-	// FINAL CREATE DEBUGGING
-	{
-		// first need to get address of debug report callback function pointer
-		VkDebugReportCallbackCreateInfoEXT const debugReportCreateInfo = cdrawVkDebugReportCallbackCreateInfoCtorDefault();
-		cdraw_assert(f && f->vkCreateDebugReportCallbackEXT);
-		result = f->vkCreateDebugReportCallbackEXT(inst, &debugReportCreateInfo, alloc_opt, &debugReport);
-		if (debugReport)
-			cdraw_assert(result == VK_SUCCESS);
-	}
-
-	// set final outputs or clean up
-	if (!debugReport || (result != VK_SUCCESS))
-	{
-		cdrawRendererDestroyDebugReport_vk(&debugReport, inst, alloc_opt, f);
-		printf("\n Vulkan debug report creation failed.");
-		return false;
-	}
-	*debugReport_out = debugReport;
-	cdraw_assert(*debugReport_out);
-	printf("\n Vulkan debug report created.");
-	return true;
-}
-
-
-static bool cdrawRendererDestroyDebugUtilsMessenger_vk(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
-	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
-	cdrawRendererInternalFuncTable_vk_dbg const* const f)
-{
-	cdraw_assert(debugUtilsMsg_out);
-	if (!*debugUtilsMsg_out)
-		return false;
-	printf("\n Destroying Vulkan debug utility messenger...");
-
-	cdraw_assert(inst);
-	{
-		cdraw_assert(f && f->vkDestroyDebugUtilsMessengerEXT);
-		f->vkDestroyDebugUtilsMessengerEXT(inst, *debugUtilsMsg_out, alloc_opt);
-	}
-
-	printf("\n Vulkan debug utility messenger destroyed.");
-	*debugUtilsMsg_out = VK_NULL_HANDLE;
-	return true;
-}
-
-static VkBool32 cdrawRendererInternalDebugUtilsMessengerCallback_vk(
-	VkDebugUtilsMessageSeverityFlagBitsEXT const messageSeverity,
-	VkDebugUtilsMessageTypeFlagsEXT const messageTypes,
-	VkDebugUtilsMessengerCallbackDataEXT const* const pCallbackData,
-	ptr_t const pUserData)
-{
-	// same format as "PFN_vkDebugUtilsMessengerCallbackEXT"
-	
-	uint32_t i;
-	cstrk_t const severityStr[] = { "[VERBOSE]", "[INFO]", "[WARNING]", "[ERROR]" };
-	cstrk_t const typeStr[] = { "[GENERAL]", "[VALIDATION]", "[PERFORMANCE]" };
-	printf("\n\t cdrawVkDebugUtilsMessenger %s%s%s%s%s%s%s (ID \'%s\' (%d)):\n\t\t \"%s\"",
-		(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) ? severityStr[0] : "",
-		(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) ? severityStr[1] : "",
-		(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) ? severityStr[2] : "",
-		(messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) ? severityStr[3] : "",
-		(messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT) ? typeStr[0] : "",
-		(messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT) ? typeStr[1] : "",
-		(messageTypes & VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT) ? typeStr[2] : "",
-		pCallbackData->pMessageIdName, pCallbackData->messageIdNumber, pCallbackData->pMessage);
-	if (pCallbackData->queueLabelCount)
-	{
-		printf("\n\t\t\t Queue Labels: ");
-		for (i = 0; i < pCallbackData->queueLabelCount; ++i)
-			printf("[\'%s\']", pCallbackData->pQueueLabels[i].pLabelName);
-	}
-	if (pCallbackData->cmdBufLabelCount)
-	{
-		printf("\n\t\t\t CmdBuf Labels: ");
-		for (i = 0; i < pCallbackData->queueLabelCount; ++i)
-			printf("[\'%s\']", pCallbackData->pCmdBufLabels[i].pLabelName);
-	}
-	if (pCallbackData->objectCount)
-	{
-		printf("\n\t\t\t Objects: ");
-		for (i = 0; i < pCallbackData->objectCount; ++i)
-			printf("[T:%d, \'%s\']", (int32_t)pCallbackData->pObjects[i].objectType, pCallbackData->pObjects[i].pObjectName);
-	}
-	
-	return VK_SUCCESS;
-}
-
-static VkDebugUtilsMessengerCreateInfoEXT cdrawVkDebugUtilsMessengerCreateInfoCtor(
-	VkDebugUtilsMessageSeverityFlagsEXT const messageSeverity,
-	VkDebugUtilsMessageTypeFlagsEXT const messageType,
-	PFN_vkDebugUtilsMessengerCallbackEXT const callback,
-	ptr_t const data)
-{
-	VkDebugUtilsMessengerCreateInfoEXT debugUtilsMessengerCreateInfo = { 0 };
-	debugUtilsMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-	debugUtilsMessengerCreateInfo.messageSeverity = messageSeverity;
-	debugUtilsMessengerCreateInfo.messageType = messageType;
-	debugUtilsMessengerCreateInfo.pfnUserCallback = callback;
-	debugUtilsMessengerCreateInfo.pUserData = data;
-	return debugUtilsMessengerCreateInfo;
-}
-
-static VkDebugUtilsMessengerCreateInfoEXT cdrawVkDebugUtilsMessengerCreateInfoCtorDefault()
-{
-	VkDebugUtilsMessageSeverityFlagsEXT const messageSeverity =
-		(VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT);
-	VkDebugUtilsMessageTypeFlagsEXT const messageType =
-		(VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT
-			| VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT);
-	return cdrawVkDebugUtilsMessengerCreateInfoCtor(
-		messageSeverity,
-		messageType,
-		cdrawRendererInternalDebugUtilsMessengerCallback_vk,
-		NULL);
-}
-
-static bool cdrawRendererCreateDebugUtilsMessenger_vk(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
-	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
-	cdrawRendererInternalFuncTable_vk_dbg const* const f)
-{
-	VkResult result = VK_SUCCESS;
-	VkDebugUtilsMessengerEXT debugUtilsMsg = VK_NULL_HANDLE;
-	cdraw_assert(debugUtilsMsg_out && !*debugUtilsMsg_out && inst);
-	printf("\n Creating Vulkan debug utility messenger...");
-
-	// FINAL CREATE DEBUGGING
-	{
-		// first need to get address of debug report callback function pointer
-		VkDebugUtilsMessengerCreateInfoEXT const debugUtilsMsgCreateInfo = cdrawVkDebugUtilsMessengerCreateInfoCtorDefault();
-		cdraw_assert(f && f->vkCreateDebugUtilsMessengerEXT);
-		result = f->vkCreateDebugUtilsMessengerEXT(inst, &debugUtilsMsgCreateInfo, alloc_opt, &debugUtilsMsg);
-		if (debugUtilsMsg)
-			cdraw_assert(result == VK_SUCCESS);
-	}
-
-	// set final outputs or clean up
-	if (!debugUtilsMsg || (result != VK_SUCCESS))
-	{
-		cdrawRendererDestroyDebugUtilsMessenger_vk(&debugUtilsMsg, inst, alloc_opt, f);
-		printf("\n Vulkan debug utility messenger creation failed.");
-		return false;
-	}
-	*debugUtilsMsg_out = debugUtilsMsg;
-	cdraw_assert(*debugUtilsMsg_out);
-	printf("\n Vulkan debug utility messenger created.");
-	return true;
-}
-
-static VkDebugUtilsObjectNameInfoEXT cdrawVkDebugUtilsObjectNameInfoCtor(
-	ptrk_t const object, VkObjectType const objectType, label_t const objectName)
-{
-	VkDebugUtilsObjectNameInfoEXT debugUtilsObjectNameInfo = { 0 };
-	debugUtilsObjectNameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-	debugUtilsObjectNameInfo.objectHandle = (uint64_t)object;
-	debugUtilsObjectNameInfo.objectType = objectType;
-	debugUtilsObjectNameInfo.pObjectName = objectName;
-	return debugUtilsObjectNameInfo;
-}
-
-static VkDebugUtilsObjectTagInfoEXT cdrawVkDebugUtilsObjectTagInfoCtor(
-	ptrk_t const object, VkObjectType const objectType, uint64_t const tagName, size_t const tagSize, ptrk_t const tag)
-{
-	VkDebugUtilsObjectTagInfoEXT debugUtilsObjectTagInfo = { 0 };
-	debugUtilsObjectTagInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT;
-	debugUtilsObjectTagInfo.objectHandle = (uint64_t)object;
-	debugUtilsObjectTagInfo.objectType = objectType;
-	debugUtilsObjectTagInfo.tagName = tagName;
-	debugUtilsObjectTagInfo.tagSize = tagSize;
-	debugUtilsObjectTagInfo.pTag = tag;
-	return debugUtilsObjectTagInfo;
-}
-
-static VkDebugUtilsLabelEXT cdrawVkDebugUtilsLabelCtor(
-	label_t const labelName, fp32_t const color_opt[4])
-{
-	VkDebugUtilsLabelEXT debugUtilsLabel = { 0 };
-	fp32_t* const color = debugUtilsLabel.color;
-	debugUtilsLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-	debugUtilsLabel.pLabelName = labelName;
-	if (color_opt)
-		memcpy(color, color_opt, sizeof(debugUtilsLabel.color));
-	else
-		color[0] = color[1] = color[2] = color[3] = 1.0f;
-	return debugUtilsLabel;
-}
-
-static VkDebugMarkerObjectNameInfoEXT cdrawVkDebugMarkerObjectNameInfoCtor(
-	ptrk_t const object, VkDebugReportObjectTypeEXT const objectType, label_t const objectName)
-{
-	VkDebugMarkerObjectNameInfoEXT debugMarkerObjectNameInfo = { 0 };
-	debugMarkerObjectNameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
-	debugMarkerObjectNameInfo.object = (uint64_t)object;
-	debugMarkerObjectNameInfo.objectType = objectType;
-	debugMarkerObjectNameInfo.pObjectName = objectName;
-	return debugMarkerObjectNameInfo;
-}
-
-static VkDebugMarkerObjectTagInfoEXT cdrawVkDebugMarkerObjectTagInfoCtor(
-	ptrk_t const object, VkDebugReportObjectTypeEXT const objectType, uint64_t const tagName, size_t const tagSize, ptrk_t const tag)
-{
-	VkDebugMarkerObjectTagInfoEXT debugMarkerObjectTagInfo = { 0 };
-	debugMarkerObjectTagInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT;
-	debugMarkerObjectTagInfo.object = (uint64_t)object;
-	debugMarkerObjectTagInfo.objectType = objectType;
-	debugMarkerObjectTagInfo.tagName = tagName;
-	debugMarkerObjectTagInfo.tagSize = tagSize;
-	debugMarkerObjectTagInfo.pTag = tag;
-	return debugMarkerObjectTagInfo;
-}
-
-static VkDebugMarkerMarkerInfoEXT cdrawVkDebugMarkerMarkerInfoCtor(
-	label_t const markerName, fp32_t const color_opt[4])
-{
-	VkDebugMarkerMarkerInfoEXT debugMarkerMarkerInfo = { 0 };
-	fp32_t* const color = debugMarkerMarkerInfo.color;
-	debugMarkerMarkerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
-	debugMarkerMarkerInfo.pMarkerName = markerName;
-	if (color_opt)
-		memcpy(color, color_opt, sizeof(debugMarkerMarkerInfo.color));
-	else
-		color[0] = color[1] = color[2] = color[3] = 1.0f;
-	return debugMarkerMarkerInfo;
-}
-
-
-static void cdrawRendererRefreshInstanceFuncs_vk_dbg(VkInstance const inst,
-	cdrawRendererInternalFuncTable_vk_dbg *const f)
-{
-	cdraw_assert(inst && f);
-
-	cdrawGetInstanceProcAddr_vk(vkCreateDebugReportCallbackEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkDestroyDebugReportCallbackEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkDebugReportMessageEXT, f, inst);
-	
-	cdrawGetInstanceProcAddr_vk(vkCreateDebugUtilsMessengerEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkDestroyDebugUtilsMessengerEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkSubmitDebugUtilsMessageEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkSetDebugUtilsObjectNameEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkSetDebugUtilsObjectTagEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkQueueBeginDebugUtilsLabelEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkQueueEndDebugUtilsLabelEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkQueueInsertDebugUtilsLabelEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkCmdBeginDebugUtilsLabelEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkCmdEndDebugUtilsLabelEXT, f, inst);
-	cdrawGetInstanceProcAddr_vk(vkCmdInsertDebugUtilsLabelEXT, f, inst);
-}
-
-static void cdrawRendererRefreshDeviceFuncs_vk_dbg(VkDevice const device,
-	cdrawRendererInternalFuncTable_vk_dbg* const f)
-{
-	cdraw_assert(device && f);
-
-	cdrawGetDeviceProcAddr_vk(vkDebugMarkerSetObjectNameEXT, f, device);
-	cdrawGetDeviceProcAddr_vk(vkDebugMarkerSetObjectTagEXT, f, device);
-	cdrawGetDeviceProcAddr_vk(vkCmdDebugMarkerBeginEXT, f, device);
-	cdrawGetDeviceProcAddr_vk(vkCmdDebugMarkerEndEXT, f, device);
-	cdrawGetDeviceProcAddr_vk(vkCmdDebugMarkerInsertEXT, f, device);
-}
-#endif // #if CDRAW_DEBUG
-
-
-/******************************************************************************
-* SECTION: Instance management.
-* Reference: Singh, c.3.
-* Substantial improvements: translated to C and organized.
-******************************************************************************/
-
-static bool cdrawRendererDestroyInstance_vk(VkInstance* const inst_out,
-	VkAllocationCallbacks const* const alloc_opt)
-{
-	cdraw_assert(inst_out);
-	if (!*inst_out)
-		return false;
-	printf("\n Destroying Vulkan instance...");
-
-	vkDestroyInstance(*inst_out, alloc_opt);
-
-	printf("\n Vulkan instance destroyed.");
-	*inst_out = VK_NULL_HANDLE;
-	return true;
-}
-
-static VkApplicationInfo cdrawVkApplicationInfoCtor(
-	cstrk_t const appName,
-	uint32_t const appVer,
-	cstrk_t const engineName,
-	uint32_t const engineVer)
-{
-	VkApplicationInfo applicationInfo = { 0 };
-	applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	applicationInfo.pApplicationName = appName;
-	applicationInfo.applicationVersion = appVer;
-	applicationInfo.pEngineName = engineName;
-	applicationInfo.engineVersion = engineVer;
-	vkEnumerateInstanceVersion(&applicationInfo.apiVersion);
-	return applicationInfo;
-}
-
-static VkInstanceCreateInfo cdrawVkInstanceCreateInfoCtor(
-#if CDRAW_DEBUG
-	VkDebugReportCallbackCreateInfoEXT* const debugReportCreateInfo,
-	VkDebugUtilsMessengerCreateInfoEXT* const debugUtilsMsgCreateInfo,
-#endif // #if CDRAW_DEBUG
-	VkApplicationInfo const* const appInfo,
-	uint32_t const layerCount,
-	cstrk_t const layerNames[/*layerCount*/],
-	uint32_t const extCount,
-	cstrk_t const extNames[/*extCount*/])
-{
-	VkInstanceCreateInfo instanceCreateInfo = { 0 };
-	instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-#if CDRAW_DEBUG
-	if (debugReportCreateInfo)
-	{
-		instanceCreateInfo.pNext = debugReportCreateInfo;
-		if (debugUtilsMsgCreateInfo)
-		{
-			debugReportCreateInfo->pNext = debugUtilsMsgCreateInfo;
-		}
-	}
-	else if (debugUtilsMsgCreateInfo)
-	{
-		instanceCreateInfo.pNext = debugUtilsMsgCreateInfo;
-	}
-#endif // #if CDRAW_DEBUG
-	instanceCreateInfo.pApplicationInfo = appInfo;
-	instanceCreateInfo.enabledLayerCount = layerCount;
-	instanceCreateInfo.ppEnabledLayerNames = layerNames;
-	instanceCreateInfo.enabledExtensionCount = extCount;
-	instanceCreateInfo.ppEnabledExtensionNames = extNames;
-	return instanceCreateInfo;
-}
-
-cstrk_t cdrawRendererInternalPlatformSurfaceExtName_vk();
-
-static bool cdrawRendererCreateInstance_vk(VkInstance* const inst_out,
-	VkAllocationCallbacks const* const alloc_opt)
-{
-	// print prefixes
-	cstrk_t const pref1 = "\t    ", pref1A = "\t -> ", pref2 = "\t\t    ", pref2A = "\t\t -> ", pref3 = "\t\t\t    ", pref3A = "\t\t\t -> ";
-
-	// instance layers
-	cstrk_t const instLayerName_request[] = {
-#if CDRAW_DEBUG
-		"VK_LAYER_KHRONOS_validation",
-		"VK_LAYER_LUNARG_standard_validation",
-		"VK_LAYER_LUNARG_api_dump",
-		//"VK_LAYER_LUNARG_monitor",
-		//"VK_LAYER_LUNARG_screenshot",
-
-		/*// included in standard validation (7):
-		"VK_LAYER_GOOGLE_threading",
-		"VK_LAYER_LUNARG_parameter_validation",
-		"VK_LAYER_LUNARG_object_tracker",
-		"VK_LAYER_LUNARG_image",
-		"VK_LAYER_LUNARG_core_validation",
-		"VK_LAYER_LUNARG_swapchain",
-		"VK_LAYER_GOOGLE_unique_objects",*/
-#endif // #if CDRAW_DEBUG
-		NULL
-	};
-	cstrk_t const instLayerName_require[] = {
-		NULL
-	};
-	cstrk_t instLayerName[buffer_len(instLayerName_request) + buffer_len(instLayerName_require)] = { NULL };
-	uint32_t const instLayerName_request_count = cdrawUtilityPtrCount(instLayerName_request, buffer_len(instLayerName_request));
-	uint32_t const instLayerName_require_count = cdrawUtilityPtrCount(instLayerName_require, buffer_len(instLayerName_require));
-	uint32_t const instLayerName_baseLen = buffer_len(instLayerName);
-
-	// instance extensions
-	cstrk_t const instExtName_request[] = {
-#if CDRAW_DEBUG
-		// included with KHR validation layer (3): 
-		VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
-		VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-		VK_EXT_VALIDATION_FEATURES_EXTENSION_NAME,
-#endif // #if CDRAW_DEBUG
-		NULL
-	};
-	cstrk_t const instExtName_require[] = {
-		VK_KHR_SURFACE_EXTENSION_NAME,
-		cdrawRendererInternalPlatformSurfaceExtName_vk(),
-		NULL
-	};
-	cstrk_t instExtName[buffer_len(instExtName_request) + buffer_len(instExtName_require)] = { NULL };
-	uint32_t const instExtName_request_count = cdrawUtilityPtrCount(instExtName_request, buffer_len(instExtName_request));
-	uint32_t const instExtName_require_count = cdrawUtilityPtrCount(instExtName_require, buffer_len(instExtName_require));
-	uint32_t const instExtName_baseLen = buffer_len(instExtName);
-
-	// iterators and counts
-	uint32_t nInstLayer = 0, nInstLayerEnabled = 0;
-	uint32_t nInstExt = 0, nInstExtEnabled = 0;
-	VkLayerProperties* pInstLayerProp = NULL;
-	VkExtensionProperties* pInstExtProp = NULL;
-	uint32_t layerItr, extItr;
-	int32_t layerIdx, extIdx;
-	cstrk_t name;
-
-	VkResult result = VK_SUCCESS;
-	VkInstance inst = VK_NULL_HANDLE;
-	cdraw_assert(inst_out && !*inst_out);
-	printf("\n Creating Vulkan instance...");
-
-	// get available instance layers; may be zero
-	result = vkEnumerateInstanceLayerProperties(&nInstLayer, NULL);
-	if (result == VK_SUCCESS && nInstLayer)
-	{
-		pInstLayerProp = (VkLayerProperties*)malloc(sizeof(VkLayerProperties) * nInstLayer);
-		if (pInstLayerProp)
-		{
-			result = vkEnumerateInstanceLayerProperties(&nInstLayer, pInstLayerProp);
-			cdraw_assert(result == VK_SUCCESS);
-			printf("\n\t pInstLayerProp[%u]: { \"layerName\" (specVer; implVer) \"description\" }", nInstLayer);
-			for (layerItr = 0; layerItr < nInstLayer; ++layerItr)
-			{
-				// copy requested layers to final list if they are found
-				layerIdx = -1;
-				name = pInstLayerProp[layerItr].layerName;
-				if (cdrawUtilityStrFind(name, instLayerName, nInstLayerEnabled) < 0)
-					if ((layerIdx = cdrawUtilityStrFind(name, instLayerName_request, instLayerName_request_count)) >= 0)
-						instLayerName[nInstLayerEnabled++] = instLayerName_request[layerIdx];
-				cdrawRendererPrintLayer_vk(&pInstLayerProp[layerItr], layerItr, (layerIdx >= 0 ? pref1A : pref1));
-
-				// get available instance extensions related to this layer; may be zero
-				result = vkEnumerateInstanceExtensionProperties(name, &nInstExt, NULL);
-				if (result == VK_SUCCESS && nInstExt)
-				{
-					pInstExtProp = (VkExtensionProperties*)malloc(sizeof(VkExtensionProperties) * nInstExt);
-					if (pInstExtProp)
-					{
-						result = vkEnumerateInstanceExtensionProperties(name, &nInstExt, pInstExtProp);
-						cdraw_assert(result == VK_SUCCESS);
-						printf("\n\t\t pInstExtProp[%u]: { \"extensionName\" (specVer) }", nInstExt);
-						for (extItr = 0; extItr < nInstExt; ++extItr)
-						{
-							// copy requested extensions to final list if they are found
-							extIdx = -1;
-							name = pInstExtProp[extItr].extensionName;
-							if (cdrawUtilityStrFind(name, instExtName, nInstExtEnabled) < 0)
-								if ((extIdx = cdrawUtilityStrFind(name, instExtName_request, instExtName_request_count)) >= 0)
-									instExtName[nInstExtEnabled++] = instExtName_request[extItr];
-							cdrawRendererPrintExt_vk(&pInstExtProp[extItr], extItr, (extIdx >= 0 ? pref2A : pref2));
-						}
-						free(pInstExtProp);
-						pInstExtProp = NULL;
-					}
-				}
-			}
-			free(pInstLayerProp);
-			pInstLayerProp = NULL;
-		}
-	}
-
-	// copy required layers to final list, confirm count
-	for (layerItr = 0; layerItr < instLayerName_require_count; ++layerItr)
-	{
-		name = instLayerName_require[layerItr];
-		if (cdrawUtilityStrFind(name, instLayerName, nInstLayerEnabled) < 0)
-		{
-			instLayerName[nInstLayerEnabled++] = name;
-			printf("\n\t Additional layer: \"%s\"", name);
-		}
-	}
-	cdraw_assert(nInstLayerEnabled == cdrawUtilityPtrCount(instLayerName, instLayerName_baseLen));
-
-	// copy required extensions to final list, confirm count
-	for (extItr = 0; extItr < instExtName_require_count; ++extItr)
-	{
-		name = instExtName_require[extItr];
-		if (cdrawUtilityStrFind(name, instExtName, nInstExtEnabled) < 0)
-		{
-			instExtName[nInstExtEnabled++] = name;
-			printf("\n\t\t Additional extension: \"%s\"", name);
-		}
-	}
-	cdraw_assert(nInstExtEnabled == cdrawUtilityPtrCount(instExtName, instExtName_baseLen));
-
-	// FINAL CREATE INSTANCE
-	if (result == VK_SUCCESS)
-	{
-#if CDRAW_DEBUG
-		// add debug create info to show messages on instance create
-		VkDebugReportCallbackCreateInfoEXT debugReportCreateInfo = cdrawVkDebugReportCallbackCreateInfoCtorDefault();
-		VkDebugUtilsMessengerCreateInfoEXT debugUtilsMsgCreateInfo = cdrawVkDebugUtilsMessengerCreateInfoCtorDefault();
-#endif // #if CDRAW_DEBUG
-
-		// app descriptor
-		VkApplicationInfo const appInfo = cdrawVkApplicationInfoCtor(
-			"cdraw Plugin Application",
-			VK_MAKE_VERSION(0, 0, 1),
-			"cdraw",
-			VK_MAKE_VERSION(0, 0, 1));
-
-		// instance info
-		VkInstanceCreateInfo const instCreateInfo = cdrawVkInstanceCreateInfoCtor(
-#if CDRAW_DEBUG
-			&debugReportCreateInfo,
-			&debugUtilsMsgCreateInfo,
-#endif // #if CDRAW_DEBUG
-			& appInfo,
-			nInstLayerEnabled,
-			instLayerName,
-			nInstExtEnabled,
-			instExtName);
-
-		// create instance
-		result = vkCreateInstance(&instCreateInfo, alloc_opt, &inst);
-		if (inst)
-			cdraw_assert(result == VK_SUCCESS);
-	}
-
-	// set final outputs or clean up
-	if (!inst || (result != VK_SUCCESS))
-	{
-		cdrawRendererDestroyInstance_vk(inst_out, alloc_opt);
-		printf("\n Vulkan instance creation failed.");
-		return false;
-	}
-	*inst_out = inst;
-	cdraw_assert(*inst_out);
-	printf("\n Vulkan instance created.");
-	return true;
-}
-
-
-/******************************************************************************
-* SECTION: Device management.
-* Reference: Singh, c.3.
-* Substantial improvements: translated to C and organized.
-******************************************************************************/
-
-static bool cdrawRendererDestroyDevice_vk(VkDevice* const device_out, cdrawVkPhysicalDevice* const physicalDevice_out,
-	VkAllocationCallbacks const* const alloc_opt)
-{
-	cdraw_assert(device_out);
-	if (!*device_out)
-		return false;
-	printf("\n Destroying Vulkan logical device...");
-
-	if (vkDeviceWaitIdle(*device_out) != VK_SUCCESS)
-		return false;
-
-	vkDestroyDevice(*device_out, alloc_opt);
-
-	printf("\n Vulkan logical device destroyed.");
-	cdraw_assert(physicalDevice_out);
-	physicalDevice_out->device = VK_NULL_HANDLE;
-	memset(physicalDevice_out, 0, sizeof(*physicalDevice_out));
-	*device_out = VK_NULL_HANDLE;
-	return true;
-}
-
-static VkDeviceQueueCreateInfo cdrawVkDeviceQueueCreateInfoCtor(
-	uint32_t const queueFamilyIndex,
-	uint32_t const queueCount,
-	fp32_t const queuePriorities[/*queueCount*/])
-{
-	VkDeviceQueueCreateInfo deviceQueueCreateInfo = { 0 };
-	deviceQueueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	deviceQueueCreateInfo.queueFamilyIndex = queueFamilyIndex;
-	deviceQueueCreateInfo.queueCount = queueCount;
-	deviceQueueCreateInfo.pQueuePriorities = queuePriorities;
-	return deviceQueueCreateInfo;
-}
-
-static VkDeviceCreateInfo cdrawVkDeviceCreateInfoCtor(
-	uint32_t const queueCreateInfoCount,
-	VkDeviceQueueCreateInfo const queueCreateInfo[/*queueCreateInfoCount*/],
-	uint32_t const layerCount,
-	cstrk_t const layerNames[/*layerCount*/],
-	uint32_t const extCount,
-	cstrk_t const extNames[/*extCount*/],
-	VkPhysicalDeviceFeatures const* const deviceFeat)
-{
-	VkDeviceCreateInfo deviceCreateInfo = { 0 };
-	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	deviceCreateInfo.queueCreateInfoCount = queueCreateInfoCount;
-	deviceCreateInfo.pQueueCreateInfos = queueCreateInfo;
-	deviceCreateInfo.enabledLayerCount = layerCount;
-	deviceCreateInfo.ppEnabledLayerNames = layerNames;
-	deviceCreateInfo.enabledExtensionCount = extCount;
-	deviceCreateInfo.ppEnabledExtensionNames = extNames;
-	deviceCreateInfo.pEnabledFeatures = deviceFeat;
-	return deviceCreateInfo;
-}
-
-bool cdrawRendererInternalPlatformQueueFamilySupportsPresentation_vk(VkPhysicalDevice const physicalDevice, uint32_t const queueFamilyIndex);
-
-static bool cdrawRendererCreateDevice_vk(VkDevice* const device_out, cdrawVkPhysicalDevice* const physicalDeviceDesc_out,
-	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt)
-{
-	// print prefixes
-	cstrk_t const pref1 = "\t    ", pref1A = "\t -> ", pref2 = "\t\t    ", pref2A = "\t\t -> ", pref3 = "\t\t\t    ", pref3A = "\t\t\t -> ";
-
-	// limits
-	enum {
-		device_queue_family_queues_max = 16,		// hard limit
-		device_queue_family_compute_only_max = 8,	// hard limit
-	};
-	fp32_t queuePriority_graphics[device_queue_family_queues_max] = { 0 };
-
-	// device descriptors
-	VkPhysicalDeviceType const physicalDeviceSelectType_require =
-		(VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
-	int32_t physicalDeviceSelectIdx = -1;
-	VkPhysicalDeviceProperties physicalDeviceProp = { 0 };
-
-	// queue family descriptors
-	VkQueueFlagBits const queueFamilySelectType_graphics_require = (
-		//| VK_QUEUE_COMPUTE_BIT // can be added later or make a new queue
-		VK_QUEUE_GRAPHICS_BIT);
-	int32_t queueFamilySelectIdx_graphics = -1;
-	uint32_t const queueCount_graphics = 1;
-
-	// device layers (deprecated)
-	cstrk_t const deviceLayerName_request[] = {
-#if CDRAW_DEBUG
-		"VK_LAYER_KHRONOS_validation",
-		"VK_LAYER_LUNARG_standard_validation",
-		"VK_LAYER_LUNARG_api_dump",
-#endif // #if CDRAW_DEBUG
-		NULL
-	};
-	cstrk_t const deviceLayerName_require[] = {
-		NULL
-	};
-	cstrk_t deviceLayerName[buffer_len(deviceLayerName_request) + buffer_len(deviceLayerName_require)] = { NULL };
-	uint32_t const deviceLayerName_request_count = cdrawUtilityPtrCount(deviceLayerName_request, buffer_len(deviceLayerName_request));
-	uint32_t const deviceLayerName_require_count = cdrawUtilityPtrCount(deviceLayerName_require, buffer_len(deviceLayerName_require));
-	uint32_t const deviceLayerName_baseLen = buffer_len(deviceLayerName);
-
-	// device extensions
-	cstrk_t const deviceExtName_request[] = {
-#if CDRAW_DEBUG
-		// included with KHR validation layer (3): 
-		VK_EXT_VALIDATION_CACHE_EXTENSION_NAME,
-		VK_EXT_DEBUG_MARKER_EXTENSION_NAME,
-		VK_EXT_TOOLING_INFO_EXTENSION_NAME,
-#endif // #if CDRAW_DEBUG
-		NULL
-	};
-	cstrk_t const deviceExtName_require[] = {
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-		NULL
-	};
-	cstrk_t deviceExtName[buffer_len(deviceExtName_request) + buffer_len(deviceExtName_require)] = { NULL };
-	uint32_t const deviceExtName_request_count = cdrawUtilityPtrCount(deviceExtName_request, buffer_len(deviceExtName_request));
-	uint32_t const deviceExtName_require_count = cdrawUtilityPtrCount(deviceExtName_require, buffer_len(deviceExtName_require));
-	uint32_t const deviceExtName_baseLen = buffer_len(deviceExtName);
-
-	// iterators, lists and counts
-	uint32_t nPhysicalDevice = 0;
-	uint32_t nDeviceLayer = 0, nDeviceLayerEnabled = 0;
-	uint32_t nDeviceExt = 0, nDeviceExtEnabled = 0;
-	uint32_t nQueueFamily = 0;
-	VkPhysicalDevice* pPhysicalDevice = NULL;
-	VkLayerProperties* pDeviceLayerProp = NULL;
-	VkExtensionProperties* pDeviceExtProp = NULL;
-	VkQueueFamilyProperties* pQueueFamilyProp = NULL;
-	uint32_t deviceItr, layerItr, extItr, familyItr, memoryItr;
-	int32_t layerIdx, extIdx;
-	cstrk_t name;
-
-	VkResult result = VK_SUCCESS;
-	VkDevice device = VK_NULL_HANDLE;
-	VkPhysicalDevice physicalDeviceSelect = VK_NULL_HANDLE;
-	cdraw_assert(device_out && !*device_out && physicalDeviceDesc_out && !physicalDeviceDesc_out->device && inst);
-	printf("\n Creating Vulkan logical device...");
-
-	// get physical devices
-	result = vkEnumeratePhysicalDevices(inst, &nPhysicalDevice, NULL);
-	if (result == VK_SUCCESS)
-	{
-		// should not be zero if we are to proceed
-		cdraw_assert(nPhysicalDevice);
-		pPhysicalDevice = (VkPhysicalDevice*)malloc(sizeof(VkPhysicalDevice) * nPhysicalDevice);
-		if (pPhysicalDevice)
-		{
-			result = vkEnumeratePhysicalDevices(inst, &nPhysicalDevice, pPhysicalDevice);
-			cdraw_assert(result == VK_SUCCESS);
-			printf("\n\t pPhysicalDevice[%u]: { \"name\" [type] (apiVer; driverVer; vendorID; deviceID) }", nPhysicalDevice);
-			for (deviceItr = 0; deviceItr < nPhysicalDevice; ++deviceItr)
-			{
-				// find most capable device (e.g. discrete GPU should be priority)
-				vkGetPhysicalDeviceProperties(pPhysicalDevice[deviceItr], &physicalDeviceProp);
-				if (flagcheckexcl(physicalDeviceProp.deviceType, physicalDeviceSelectType_require)
-					&& physicalDeviceSelectIdx < 0)
-				{
-					physicalDeviceSelectIdx = deviceItr;
-					cdrawRendererPrintPhysicalDevice_vk(&physicalDeviceProp, physicalDeviceSelectIdx, pref1A);
-				}
-				else
-					cdrawRendererPrintPhysicalDevice_vk(&physicalDeviceProp, deviceItr, pref1);
-			}
-
-			// select physical device
-			if (physicalDeviceSelectIdx >= 0)
-			{
-				physicalDeviceSelect = pPhysicalDevice[physicalDeviceSelectIdx];
-			}
-
-			free(pPhysicalDevice);
-			pPhysicalDevice = NULL;
-		}
-	}
-
-	// setup logical device from selected physical device
-	if (physicalDeviceSelect)
-	{
-		// device layers; may be zero (deprecated for use in logical device)
-		result = vkEnumerateDeviceLayerProperties(physicalDeviceSelect, &nDeviceLayer, NULL);
-		if (result == VK_SUCCESS && nDeviceLayer)
-		{
-			pDeviceLayerProp = (VkLayerProperties*)malloc(sizeof(VkLayerProperties) * nDeviceLayer);
-			if (pDeviceLayerProp)
-			{
-				result = vkEnumerateDeviceLayerProperties(physicalDeviceSelect, &nDeviceLayer, pDeviceLayerProp);
-				cdraw_assert(result == VK_SUCCESS);
-				printf("\n\t\t pDeviceLayerProp[%u]: ", nDeviceLayer);
-				for (layerItr = 0; layerItr < nDeviceLayer; ++layerItr)
-				{
-					// same logic as instance layers
-					layerIdx = -1;
-					name = pDeviceLayerProp[layerItr].layerName;
-					if (cdrawUtilityStrFind(name, deviceLayerName, nDeviceLayerEnabled) < 0)
-						if ((layerIdx = cdrawUtilityStrFind(name, deviceLayerName_request, deviceLayerName_request_count)) >= 0)
-							deviceLayerName[nDeviceLayerEnabled++] = deviceLayerName_request[layerIdx];
-					cdrawRendererPrintLayer_vk(&pDeviceLayerProp[layerItr], layerItr, (layerIdx >= 0 ? pref2A : pref2));
-
-					// device extensions; may be zero
-					result = vkEnumerateDeviceExtensionProperties(physicalDeviceSelect, name, &nDeviceExt, NULL);
-					if (result == VK_SUCCESS && nDeviceExt)
-					{
-						pDeviceExtProp = (VkExtensionProperties*)malloc(sizeof(VkExtensionProperties) * nDeviceExt);
-						if (pDeviceExtProp)
-						{
-							result = vkEnumerateDeviceExtensionProperties(physicalDeviceSelect, name, &nDeviceExt, pDeviceExtProp);
-							cdraw_assert(result == VK_SUCCESS);
-							printf("\n\t\t\t pDeviceExtProp[%u]:", nDeviceExt);
-							for (extItr = 0; extItr < nDeviceExt; ++extItr)
-							{
-								// same logic as instance extensions
-								extIdx = -1;
-								name = pDeviceExtProp[extItr].extensionName;
-								if (cdrawUtilityStrFind(name, deviceExtName, nDeviceExtEnabled) < 0)
-									if ((extIdx = cdrawUtilityStrFind(name, deviceExtName_request, deviceExtName_request_count)) >= 0)
-										deviceExtName[nDeviceExtEnabled++] = deviceExtName_request[extIdx];
-								cdrawRendererPrintExt_vk(&pDeviceExtProp[extItr], extItr, (extIdx >= 0 ? pref3A : pref3));
-							}
-							free(pDeviceExtProp);
-							pDeviceExtProp = NULL;
-						}
-					}
-				}
-				free(pDeviceLayerProp);
-				pDeviceLayerProp = NULL;
-			}
-		}
-
-		for (layerItr = 0; layerItr < deviceLayerName_require_count; ++layerItr)
-		{
-			name = deviceLayerName_require[layerItr];
-			if (cdrawUtilityStrFind(name, deviceLayerName, nDeviceLayerEnabled) < 0)
-			{
-				deviceLayerName[nDeviceLayerEnabled++] = name;
-				printf("\n\t\t Additional layer: \"%s\"", name);
-			}
-		}
-		cdraw_assert(nDeviceLayerEnabled == cdrawUtilityPtrCount(deviceLayerName, deviceLayerName_baseLen));
-
-		for (extItr = 0; extItr < deviceExtName_require_count; ++extItr)
-		{
-			name = deviceExtName_require[extItr];
-			if (cdrawUtilityStrFind(name, deviceExtName, nDeviceExtEnabled) < 0)
-			{
-				deviceExtName[nDeviceExtEnabled++] = name;
-				printf("\n\t\t\t Additional extension: \"%s\"", name);
-			}
-		}
-		cdraw_assert(nDeviceExtEnabled == cdrawUtilityPtrCount(deviceExtName, deviceExtName_baseLen));
-
-		// set up queue family info
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceSelect, &nQueueFamily, NULL);
-		if (nQueueFamily)
-		{
-			pQueueFamilyProp = (VkQueueFamilyProperties*)malloc(sizeof(VkQueueFamilyProperties) * nQueueFamily);
-			if (pQueueFamilyProp)
-			{
-				vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceSelect, &nQueueFamily, pQueueFamilyProp);
-				printf("\n\t\t pQueueFamilyProp[%u]: { [flags] (count; timestamp valid bits; min image transfer granularity) }", nQueueFamily);
-				for (familyItr = 0; familyItr < nQueueFamily; ++familyItr)
-				{
-					// save best queue family supporting graphics and presentation
-					if (flagcheckexcl(pQueueFamilyProp[familyItr].queueFlags, queueFamilySelectType_graphics_require)
-						&& cdrawRendererInternalPlatformQueueFamilySupportsPresentation_vk(physicalDeviceSelect, familyItr)
-						&& queueFamilySelectIdx_graphics < 0)
-					{
-						queueFamilySelectIdx_graphics = familyItr;
-						cdrawRendererPrintQueueFamily_vk(&pQueueFamilyProp[familyItr], queueFamilySelectIdx_graphics, pref2A);
-					}
-					else
-						cdrawRendererPrintQueueFamily_vk(&pQueueFamilyProp[familyItr], familyItr, pref2);
-				}
-
-				if (queueFamilySelectIdx_graphics >= 0)
-				{
-					physicalDeviceDesc_out->queueFamilyProp_graphics = pQueueFamilyProp[queueFamilySelectIdx_graphics];
-					physicalDeviceDesc_out->queueFamilyIdx_graphics = queueFamilySelectIdx_graphics;
-				}
-
-				free(pQueueFamilyProp);
-				pQueueFamilyProp = NULL;
-			}
-		}
-
-		// device features
-		{
-			VkPhysicalDeviceFeatures
-				* const deviceFeat = &physicalDeviceDesc_out->deviceFeat,
-				* const deviceFeatUse = &physicalDeviceDesc_out->deviceFeatUse;
-			cdraw_assert(deviceFeat && deviceFeatUse);
-
-			vkGetPhysicalDeviceProperties(physicalDeviceSelect, &physicalDeviceDesc_out->deviceProp);
-			vkGetPhysicalDeviceFeatures(physicalDeviceSelect, deviceFeat);
-			memset(deviceFeatUse, 0, sizeof(*deviceFeatUse));
-			deviceFeatUse->geometryShader = VK_TRUE;
-			deviceFeatUse->tessellationShader = VK_TRUE;
-			deviceFeatUse->multiDrawIndirect = deviceFeat->multiDrawIndirect;
-			//deviceFeatUse->multiViewport = deviceFeat->multiViewport;
-		}
-
-		// device memory
-		{
-			VkPhysicalDeviceMemoryProperties
-				* const deviceMemProp = &physicalDeviceDesc_out->deviceMemProp;
-			cdraw_assert(deviceMemProp);
-
-			vkGetPhysicalDeviceMemoryProperties(physicalDeviceSelect, deviceMemProp);
-			printf("\n\t nMemoryType = %u: { [flags] (heap index) }", deviceMemProp->memoryTypeCount);
-			for (memoryItr = 0; memoryItr < deviceMemProp->memoryTypeCount; ++memoryItr)
-				cdrawRendererPrintMemoryType_vk(&deviceMemProp->memoryTypes[memoryItr], memoryItr, pref1);
-			printf("\n\t nMemoryHeap = %u: { [flags] (device size) }", deviceMemProp->memoryHeapCount);
-			for (memoryItr = 0; memoryItr < deviceMemProp->memoryHeapCount; ++memoryItr)
-				cdrawRendererPrintMemoryHeap_vk(&deviceMemProp->memoryHeaps[memoryItr], memoryItr, pref1);
-		}
-	}
-
-	// FINAL CREATE LOGICAL DEVICE
-	if (physicalDeviceSelect)
-	{
-		// device queue creation info, starting with graphics-capable
-		VkDeviceQueueCreateInfo const queueCreateInfo[] = {
-			cdrawVkDeviceQueueCreateInfoCtor(
-				queueFamilySelectIdx_graphics,
-				queueCount_graphics,
-				queuePriority_graphics),
-		};
-
-		// device info
-		VkDeviceCreateInfo const deviceCreateInfo = cdrawVkDeviceCreateInfoCtor(
-			buffer_len(queueCreateInfo),
-			queueCreateInfo,
-			nDeviceLayerEnabled,
-			deviceLayerName,
-			nDeviceExtEnabled,
-			deviceExtName,
-			&physicalDeviceDesc_out->deviceFeatUse);
-
-		// create device
-		result = vkCreateDevice(physicalDeviceSelect, &deviceCreateInfo, alloc_opt, &device);
-		if (device)
-			cdraw_assert(result == VK_SUCCESS);
-	}
-
-	// set final outputs or clean up
-	if (!device || !physicalDeviceSelect || (result != VK_SUCCESS))
-	{
-		cdrawRendererDestroyDevice_vk(&device, physicalDeviceDesc_out, alloc_opt);
-		printf("\n Vulkan logical device creation failed.");
-		return false;
-	}
-	*device_out = device;
-	physicalDeviceDesc_out->device = physicalDeviceSelect;
-	cdraw_assert(*device_out && physicalDeviceDesc_out->device);
-	printf("\n Vulkan logical device created.");
-	return true;
-}
+void cdrawVkInstanceRefresh(VkInstance const instance,
+	cdrawVkInstanceFuncTable* const f);
+
+void cdrawVkDeviceRefresh(VkDevice const device,
+	cdrawVkDeviceFuncTable* const f);
 
 
 /******************************************************************************
@@ -1447,63 +254,6 @@ static VkRenderPassBeginInfo cdrawVkRenderPassBeginInfoCtor(
 /******************************************************************************
 * SECTION: Image management.
 ******************************************************************************/
-
-static cdrawVkImage* cdrawVkImageCtor(cdrawVkImage* const imageDesc_out,
-	VkImage const image, VkDeviceMemory const imageMem, VkImageView const imageView)
-{
-	failassertret(imageDesc_out, NULL);
-	failret(image && imageMem && imageView, NULL);
-	imageDesc_out->image = image;
-	imageDesc_out->imageMem = imageMem;
-	imageDesc_out->imageView = imageView;
-	return imageDesc_out;
-}
-
-static void cdrawVkImageDtor(cdrawVkImage* const imageDesc_out)
-{
-	failassertret(imageDesc_out);
-	imageDesc_out->image = VK_NULL_HANDLE;
-	imageDesc_out->imageMem = VK_NULL_HANDLE;
-	imageDesc_out->imageView = VK_NULL_HANDLE;
-}
-
-static bool cdrawVkImageValid(cdrawVkImage const* const imageDesc)
-{
-	cdraw_assert(imageDesc);
-	return (imageDesc->image && imageDesc->imageMem && imageDesc->imageView);
-}
-
-static bool cdrawVkImageUnused(cdrawVkImage const* const imageDesc)
-{
-	cdraw_assert(imageDesc);
-	return (!imageDesc->image && !imageDesc->imageMem && !imageDesc->imageView);
-}
-
-static bool cdrawVkImageDestroy(cdrawVkImage* const imageDesc,
-	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
-{
-	if (!imageDesc)
-		return false;
-
-	cdraw_assert(device);
-	if (imageDesc->imageView)
-	{
-		vkDestroyImageView(device, imageDesc->imageView, alloc_opt);
-		imageDesc->imageView = VK_NULL_HANDLE;
-	}
-	if (imageDesc->imageMem)
-	{
-		vkFreeMemory(device, imageDesc->imageMem, alloc_opt);
-		imageDesc->imageMem = VK_NULL_HANDLE;
-	}
-	if (imageDesc->image)
-	{
-		vkDestroyImage(device, imageDesc->image, alloc_opt);
-		imageDesc->image = VK_NULL_HANDLE;
-	}
-	return true;
-}
-
 
 static VkComponentMapping cdrawVkComponentMappingCtor(
 	VkComponentSwizzle const r,
@@ -2077,7 +827,7 @@ static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out,
 			}
 
 			// set handles
-			if (!cdrawVkImageCtor(depthImage_out_opt, image_depth, imageMem_depth, imageView_depth))
+			if (!cdrawVkImageCtor(depthImage_out_opt, "cdraw Present Depth", image_depth, imageMem_depth, imageView_depth))
 				cdrawVkImageDestroy(depthImage_out_opt, device, alloc_opt);
 		}
 	}
@@ -2315,10 +1065,10 @@ static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r)
 #endif // #if CDRAW_DEBUG
 
 	// wait until idle before drawing
-	vkDeviceWaitIdle(r->device);
+	vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
 	for (idx = 0; idx < nSwapchains; ++idx)
 	{
-		result = vkAcquireNextImageKHR(r->device, swapchains[idx], UINT64_MAX, r->semaphore, VK_NULL_HANDLE, &imageIndices[idx]);
+		result = vkAcquireNextImageKHR(r->logicalDevice.logicalDevice, swapchains[idx], UINT64_MAX, r->semaphore, VK_NULL_HANDLE, &imageIndices[idx]);
 		if (result != VK_SUCCESS)
 			break;
 	}
@@ -2342,18 +1092,18 @@ static result_t cdrawRendererResize_vk(cdrawRenderer_vk* const r, uint32_t const
 	cdraw_assert(r);
 	if ((w_old != w_new) && (h_old != h_new))
 	{
-		vkDeviceWaitIdle(r->device);
+		vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
 
 		// release old swapchain if the window size was valid
 		if (w_old && h_old)
 			result = cdrawRendererDestroySwapchain_vk(&r->swapchain, &r->queue_graphics,
-				r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present, r->device, &r->alloc);
+				r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present, r->logicalDevice.logicalDevice, &r->allocator.allocationCallbacks);
 
 		// create new swapchain if the new window size is valid
 		if (w_new && h_new)
 			result = cdrawRendererCreateSwapchain_vk(&r->swapchain, &r->queue_graphics,
 				r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present,
-				r->device, r->surface, r->cmdPool, r->physicalDevice.device, r->physicalDevice.queueFamilyIdx_graphics, &r->alloc);
+				r->logicalDevice.logicalDevice, r->surface, r->cmdPool, r->logicalDevice.physicalDevice.physicalDevice, r->logicalDevice.queueFamilyIdx_graphics, &r->allocator.allocationCallbacks);
 	}
 	return result;
 }
@@ -2363,6 +1113,23 @@ static result_t cdrawRendererResize_vk(cdrawRenderer_vk* const r, uint32_t const
 /// Vulkan convenience function table.
 /// </summary>
 static cdrawRendererFuncTable gRendererFuncTable_vk;
+
+
+bool cdrawVkDebugCreateDebugReport(VkDebugReportCallbackEXT* const debugReport_out,
+	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
+	cdrawVkInstanceDebugFuncTable const* const f);
+
+bool cdrawVkDebugDestroyDebugReport(VkDebugReportCallbackEXT* const debugReport_out,
+	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
+	cdrawVkInstanceDebugFuncTable const* const f);
+
+bool cdrawVkDebugCreateDebugUtilsMessenger(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
+	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
+	cdrawVkInstanceDebugFuncTable const* const f);
+
+bool cdrawVkDebugDestroyDebugUtilsMessenger(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
+	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
+	cdrawVkInstanceDebugFuncTable const* const f);
 
 
 /******************************************************************************
@@ -2381,50 +1148,42 @@ result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_da
 	memset(r, 0, dataSz);
 
 	// setup allocation callbacks
-	VkAllocationCallbacks const* const alloc_opt = cdrawRendererInternalAllocInit_vk(&r->alloc, &r->allocator);
+	VkAllocationCallbacks const* const alloc_opt = cdrawVkAllocatorInit(&r->allocator, "cdrawVkAllocator", false);
 
 	// CREATE INSTANCE
-	result = cdrawRendererCreateInstance_vk(&r->inst, alloc_opt);
+	result = cdrawVkInstanceCreate(&r->instance, "cdrawVkInstance", alloc_opt);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
 #if CDRAW_DEBUG
-	// refresh instance debug function pointers
-	cdrawRendererRefreshInstanceFuncs_vk_dbg(r->inst, &r->f);
-
 	//// CREATE DEBUG REPORT
-	//result = cdrawRendererCreateDebugReport_vk(&r->debugReport, r->inst, alloc_opt, &r->f);
+	//result = cdrawVkDebugCreateDebugReport(&r->debug.debugReport, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
 	//failassertret(result, result_seterror(errcode_renderer_init));
 
 	// CREATE DEBUG MESSENGER
-	result = cdrawRendererCreateDebugUtilsMessenger_vk(&r->debugMessenger, r->inst, alloc_opt, &r->f);
+	result = cdrawVkDebugCreateDebugUtilsMessenger(&r->debug.debugMessenger, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
 	failassertret(result, result_seterror(errcode_renderer_init));
 #endif // #if CDRAW_DEBUG
 
 	// CREATE LOGICAL DEVICE
-	result = cdrawRendererCreateDevice_vk(&r->device, &r->physicalDevice, r->inst, alloc_opt);
+	result = cdrawVkLogicalDeviceCreate(&r->logicalDevice, "cdrawVkLogicalDevice", &r->instance, alloc_opt);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
-#if CDRAW_DEBUG
-	// refresh device debug function pointers
-	cdrawRendererRefreshDeviceFuncs_vk_dbg(r->device, &r->f);
-#endif // #if CDRAW_DEBUG
-
 	// CREATE PRESENTATION SURFACE
-	result = cdrawRendererCreateSurface_vk(&r->surface, r->inst, p_data, alloc_opt);
+	result = cdrawRendererCreateSurface_vk(&r->surface, r->instance.instance, p_data, alloc_opt);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
 	// CREATE COMMAND POOL
-	result = cdrawRendererCreateCommandPool_vk(&r->cmdPool, r->device, r->physicalDevice.queueFamilyIdx_graphics, alloc_opt);
+	result = cdrawRendererCreateCommandPool_vk(&r->cmdPool, r->logicalDevice.logicalDevice, r->logicalDevice.queueFamilyIdx_graphics, alloc_opt);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
 	// CREATE SEMAPHORES
-	result = cdrawRendererCreateSemaphore_vk(&r->semaphore, r->device, alloc_opt);
+	result = cdrawRendererCreateSemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
 	// CREATE SWAPCHAIN (may not be created due to surface size)
 	result = cdrawRendererCreateSwapchain_vk(&r->swapchain, &r->queue_graphics,
 		r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present,
-		r->device, r->surface, r->cmdPool, r->physicalDevice.device, r->physicalDevice.queueFamilyIdx_graphics, alloc_opt);
+		r->logicalDevice.logicalDevice, r->surface, r->cmdPool, r->logicalDevice.physicalDevice.physicalDevice, r->logicalDevice.queueFamilyIdx_graphics, alloc_opt);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
 	// all done
@@ -2440,40 +1199,40 @@ result_t cdrawRendererDestroy_vk(cdrawRenderer* const renderer)
 	VkAllocationCallbacks const* alloc_opt;
 	asserterr(renderer && renderer->r && renderer->renderAPI == cdrawRenderAPI_Vulkan, errcode_invalidarg);
 	r = ((cdrawRenderer_vk*)renderer->r);
-	alloc_opt = cdrawRendererInternalAllocUse_vk(&r->alloc);
+	alloc_opt = cdrawVkAllocatorUse(&r->allocator);
 
 	// safety
-	vkDeviceWaitIdle(r->device);
+	vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
 
 	// swapchain (requires device and surface; may not have been created due to surface size)
 	cdrawRendererDestroySwapchain_vk(&r->swapchain, &r->queue_graphics,
-		r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present, r->device, alloc_opt);
+		r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present, r->logicalDevice.logicalDevice, alloc_opt);
 
 	// semaphores
-	cdrawRendererDestroySemaphore_vk(&r->semaphore, r->device, alloc_opt);
+	cdrawRendererDestroySemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
 
 	// command pool (requires device)
-	cdrawRendererDestroyCommandPool_vk(&r->cmdPool, r->device, alloc_opt);
+	cdrawRendererDestroyCommandPool_vk(&r->cmdPool, r->logicalDevice.logicalDevice, alloc_opt);
 
 	// presentation surface (requires instance)
-	cdrawRendererDestroySurface_vk(&r->surface, r->inst, alloc_opt);
+	cdrawRendererDestroySurface_vk(&r->surface, r->instance.instance, alloc_opt);
 
 	// logical device (wait for it to finish work)
-	cdrawRendererDestroyDevice_vk(&r->device, &r->physicalDevice, alloc_opt);
+	cdrawVkLogicalDeviceDestroy(&r->logicalDevice, alloc_opt);
 
 #if CDRAW_DEBUG
 	// destroy debug messenger
-	cdrawRendererDestroyDebugUtilsMessenger_vk(&r->debugMessenger, r->inst, alloc_opt, &r->f);
+	cdrawVkDebugDestroyDebugUtilsMessenger(&r->debug.debugMessenger, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
 
 	//// destroy debug report
-	//cdrawRendererDestroyDebugReport_vk(&r->debugReport, r->inst, alloc_opt, &r->f);
+	//cdrawVkDebugDestroyDebugReport(&r->debug.debugReport, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
 #endif // #if CDRAW_DEBUG
 
 	// finally, destroy instance
-	cdrawRendererDestroyInstance_vk(&r->inst, alloc_opt);
+	cdrawVkInstanceDestroy(&r->instance, alloc_opt);
 
 	// clean allocation callbacks
-	cdrawRendererInternalAllocClean_vk(&r->alloc);
+	cdrawVkAllocatorReset(&r->allocator);
 
 	// all done
 	free(renderer->r);
@@ -2489,10 +1248,8 @@ result_t cdrawRendererRefresh_vk(cdrawRenderer const* const renderer)
 	asserterr(renderer && renderer->r && renderer->renderAPI == cdrawRenderAPI_Vulkan, errcode_invalidarg);
 	r = ((cdrawRenderer_vk*)renderer->r);
 
-#if CDRAW_DEBUG
-	cdrawRendererRefreshInstanceFuncs_vk_dbg(r->inst, &r->f);
-	cdrawRendererRefreshDeviceFuncs_vk_dbg(r->device, &r->f);
-#endif // #if CDRAW_DEBUG
+	cdrawVkInstanceRefresh(r->instance.instance, &r->instance.f);
+	cdrawVkDeviceRefresh(r->logicalDevice.logicalDevice, &r->logicalDevice.f);
 
 	result_return();
 }

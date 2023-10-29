@@ -200,14 +200,18 @@ typedef enum errcode_common_t
 
 #define label_base_type						uint64_t															// Basis type of label type.
 typedef byte_t								label_t[sizeof(label_base_type)*4];									// Convenient label type for predefined small strings or tags.
-typedef byte_t								label_long_t[sizeof(label_t)*4];									// Convenient long label type for predefined longer strings or tags.
 #define label_valid(label)					buffer_valid(label)													// True if label string has contents.
-#define label_term(label)					(label[sizeof(label_t)-1]=0)										// Terminate label string.
-#define label_init(label)					buffer_init4(label,0,label_base_type)								// Initialize label string to empty.
-#define label_copy(dst,src)					buffer_copy4(dst,src,0,label_base_type);label_term(dst)				// Copy and terminate label string.
-#define label_long_term(label_long)			(label_long[sizeof(label_long_t)-1]=0)								// Terminate long label string.
-#define label_long_init(label_long)			buffer_init4(label_long,0,label_t)									// Initialize long label string to empty.
-#define label_long_copy(dst,src)			buffer_copy4(dst,src,0,label_t);label_long_term(dst)				// Copy and terminate long label string.
+#define label_term(label)					{ label[sizeof(label_t)-1] = 0; }									// Terminate label string.
+#define label_init(label)					{ buffer_init4(label,0,label_base_type); }							// Initialize label string to empty.
+#define label_copy(dst,src)					{ buffer_copy4(dst,src,0,label_base_type); label_term(dst); }		// Copy and terminate label string.
+#define label_copy_safe(dst,src)			if (label_valid(src)) label_copy(dst,src) else label_init(dst)		// Copy and terminate label string if string is valid, otherwise just init.
+
+typedef byte_t								label_long_t[sizeof(label_t) * 4];									// Convenient long label type for predefined longer strings or tags.
+#define label_long_valid(label_long)		label_valid(label_long)												// True if label string has contents.
+#define label_long_term(label_long)			{ label_long[sizeof(label_long_t)-1] = 0; }							// Terminate long label string.
+#define label_long_init(label_long)			{ buffer_init4(label_long,0,label_base_type); buffer_init4(label_long,4,label_base_type); buffer_init4(label_long,8,label_base_type); buffer_init4(label_long,12,label_base_type); }			// Initialize long label string to empty.
+#define label_long_copy(dst,src)			{ buffer_copy4(dst,src,0,label_base_type); buffer_copy4(dst,src,4,label_base_type); buffer_copy4(dst,src,8,label_base_type); buffer_copy4(dst,src,12,label_base_type); label_long_term(dst); }	// Copy and terminate long label string.
+#define label_long_copy_safe(dst,src)		if (label_long_valid(src)) label_long_copy(dst,src) else label_long_init(dst)																													// Copy and terminate label string if string is valid, otherwise just init.
 
 
 #define gSq(x)								((x)*(x))											// General square of input.

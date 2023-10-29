@@ -205,7 +205,7 @@ CDRAW_INL ptr_t cdrawPluginInternalLoad(cdrawPlugin* const plugin, cdrawPluginIn
 	ptr_t handle = NULL;
 	label_long_t path = "./cdrawPlugin/";
 	label_t ext;
-	failassertret(label_valid(pluginInfo->dylib), NULL);
+	failassertret(label_long_valid(pluginInfo->dylib), NULL);
 	strcat(strcat(path, pluginInfo->dylib), cdrawPluginInternalDylibGetExt(ext, sizeof(ext)));
 	handle = cdrawPluginInternalDylibLoad(path);
 	failassertret(handle, NULL);
@@ -283,7 +283,7 @@ result_t cdrawPluginInfoInit(cdrawPluginInfo* const pluginInfo, label_t const na
 	strncpy(pluginInfo->dylib, label_valid(dylib) ? dylib : def.dylib, sizeof(def.dylib));
 	strncpy(pluginInfo->author, label_valid(author) ? author : def.author, sizeof(def.author));
 	strncpy(pluginInfo->version, label_valid(version) ? version : def.version, sizeof(def.version));
-	strncpy(pluginInfo->details, label_valid(details) ? details : def.details, sizeof(def.details));
+	strncpy(pluginInfo->details, label_long_valid(details) ? details : def.details, sizeof(def.details));
 	if (callbackNames)
 	{
 		size_t i;
