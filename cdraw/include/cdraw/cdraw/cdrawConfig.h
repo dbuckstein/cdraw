@@ -231,6 +231,7 @@ typedef byte_t								label_long_t[sizeof(label_t) * 4];									// Convenient l
 #define gLerp(x0,x1,u)						((x0)+((x1)-(x0))*u)								// General linear interpolation.
 #define gClamp(x,x_min,x_max)				((x)>=(x_min)?(x)<(x_max)?(x):(x_max):(x_min))		// General clamp in range.
 #define gRange(x,x_min,x_max)				((x)>=(x_min)&&(x)<(x_max))							// General range validation (semi-open range).
+#define gCount(x,n)							((x)>0&&(x)<=(n))									// General count validation (semi-open range).
 #define gIndex(x,n)							gRange(x,0,n)										// General index validation (semi-open range).
 #define gSwap(x,y,tmp)						(tmp=x);(x=y);(y=tmp)								// Swap two values.
 #define gSwap3(x,y,z,tmp)					(tmp=x);(x=y);(y=z);(z=tmp)							// Swap three values.

@@ -61,6 +61,11 @@ typedef struct cdrawRenderer_vk
 		cdrawVkLogicalDevice logicalDevice;
 
 		/// <summary>
+		/// Vulkan command pool.
+		/// </summary>
+		cdrawVkCommandPool commandPool;
+
+		/// <summary>
 		/// Allocator data for callbacks.
 		/// </summary>
 		cdrawVkAllocator allocator;
@@ -80,51 +85,18 @@ typedef struct cdrawRenderer_vk
 		/// <summary>
 		/// Vulkan presentation surface.
 		/// </summary>
-		VkSurfaceKHR surface;
+		cdrawVkSurface surface[cdrawVkSurfacePresent_max];
 
 		/// <summary>
-		/// Vulkan swapchain.
+		/// Presentation data.
 		/// </summary>
-		VkSwapchainKHR swapchain;
-
-		/// <summary>
-		/// Presentation semaphore.
-		/// </summary>
-		VkSemaphore semaphore;
-
-		/// <summary>
-		/// Vulkan graphics/presentation queue.
-		/// Should have one for each swapchain image to avoid locking.
-		/// </summary>
-		VkQueue queue_graphics;
-
-		/// <summary>
-		/// Color image view resources associated with swapchain images.
-		/// Images themselves are not needed as they are owned by the swapchain; can query later.
-		/// </summary>
-		VkImageView imageView_present[cdrawVkImagePresent_max];
-
-		/// <summary>
-		/// Depth image for presentation.
-		/// </summary>
-		cdrawVkImage depthImage_present;
+		cdrawVkPresentation presentation[cdrawVkSurfacePresent_max];
 	};
 
 	/// <summary>
-	/// Vulkan handles related to commands.
+	/// Presentation semaphore.
 	/// </summary>
-	struct {
-		/// <summary>
-		/// Vulkan command pool.
-		/// </summary>
-		VkCommandPool cmdPool;
-
-		/// <summary>
-		/// Vulkan command buffers.
-		/// Should have one for each image to be processed.
-		/// </summary>
-		VkCommandBuffer cmdBuf[cdrawVkCmdBufPresent_max];
-	};
+	VkSemaphore semaphore;
 } cdrawRenderer_vk;
 
 

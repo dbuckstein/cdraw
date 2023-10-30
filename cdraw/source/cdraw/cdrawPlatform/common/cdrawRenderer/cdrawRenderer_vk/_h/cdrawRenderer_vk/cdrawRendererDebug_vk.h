@@ -137,10 +137,11 @@ extern "C" {
 	/// </summary>
 	/// <param name="instance">Target instance (non-null and valid).</param>
 	/// <param name="commandBuffer">Target command buffer (non-null and valid).</param>
+	/// <param name="commandBufferIndex">Index of command buffer in array.</param>
 	/// <param name="labelName">Name of label.</param>
 	/// <param name="color_opt">Optional label color in RGBA.</param>
 	/// <returns>True if succcess.</returns>
-	bool cdrawVkDebugUtilsLabelCommandBegin(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer,
+	bool cdrawVkDebugUtilsLabelCommandBegin(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex,
 		label_t const labelName, fp32_t const color_opt[4]);
 
 	/// <summary>
@@ -148,18 +149,20 @@ extern "C" {
 	/// </summary>
 	/// <param name="instance">Target instance (non-null and valid).</param>
 	/// <param name="commandBuffer">Target command buffer (non-null and valid).</param>
+	/// <param name="commandBufferIndex">Index of command buffer in array.</param>
 	/// <returns>True if succcess.</returns>
-	bool cdrawVkDebugUtilsLabelCommandEnd(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer);
+	bool cdrawVkDebugUtilsLabelCommandEnd(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex);
 
 	/// <summary>
 	/// Create insert marker command using debug utility messenger extension.
 	/// </summary>
 	/// <param name="instance">Target instance (non-null and valid).</param>
 	/// <param name="commandBuffer">Target command buffer (non-null and valid).</param>
+	/// <param name="commandBufferIndex">Index of command buffer in array.</param>
 	/// <param name="labelName">Name of label.</param>
 	/// <param name="color_opt">Optional label color in RGBA.</param>
 	/// <returns>True if succcess.</returns>
-	bool cdrawVkDebugUtilsLabelCommandInsert(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer,
+	bool cdrawVkDebugUtilsLabelCommandInsert(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex,
 		label_t const labelName, fp32_t const color_opt[4]);
 
 	/// <summary>
@@ -221,10 +224,11 @@ extern "C" {
 	/// </summary>
 	/// <param name="logicalDevice">Target logical device (non-null and valid).</param>
 	/// <param name="commandBuffer">Target command buffer (non-null and valid).</param>
+	/// <param name="commandBufferIndex">Index of command buffer in array.</param>
 	/// <param name="markerName">Name of marker.</param>
 	/// <param name="color_opt">Optional marker color in RGBA.</param>
 	/// <returns>True if succcess.</returns>
-	bool cdrawVkDebugMarkerCommandBegin(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer,
+	bool cdrawVkDebugMarkerCommandBegin(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex,
 		label_t const markerName, fp32_t const color_opt[4]);
 
 	/// <summary>
@@ -232,18 +236,20 @@ extern "C" {
 	/// </summary>
 	/// <param name="logicalDevice">Target logical device (non-null and valid).</param>
 	/// <param name="commandBuffer">Target command buffer (non-null and valid).</param>
+	/// <param name="commandBufferIndex">Index of command buffer in array.</param>
 	/// <returns>True if succcess.</returns>
-	bool cdrawVkDebugMarkerCommandEnd(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer);
+	bool cdrawVkDebugMarkerCommandEnd(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex);
 
 	/// <summary>
 	/// Marker insert command using debug marker extension.
 	/// </summary>
 	/// <param name="logicalDevice">Target logical device (non-null and valid).</param>
 	/// <param name="commandBuffer">Target command buffer (non-null and valid).</param>
+	/// <param name="commandBufferIndex">Index of command buffer in array.</param>
 	/// <param name="markerName">Name of marker.</param>
 	/// <param name="color_opt">Optional marker color in RGBA.</param>
 	/// <returns>True if succcess.</returns>
-	bool cdrawVkDebugMarkerCommandInsert(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer,
+	bool cdrawVkDebugMarkerCommandInsert(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex,
 		label_t const markerName, fp32_t const color_opt[4]);
 
 

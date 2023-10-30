@@ -134,6 +134,39 @@ static cdrawVkLogicalDevice* cdrawVkLogicalDeviceCtor(cdrawVkLogicalDevice* cons
 /// <param name="logicalDevice_out">Target logical device descriptor (non-null).</param>
 static void cdrawVkLogicalDeviceDtor(cdrawVkLogicalDevice* const logicalDevice_out);
 
+/// <summary>
+/// Constructor for Vulkan command pool descriptor.
+/// </summary>
+/// <param name="commandPool_out">Target command pool descriptor (non-null).</param>
+/// <param name="name">Descriptor name.</param>
+/// <param name="commandPool">Vulkan command pool handle.</param>
+/// <returns>Success: <paramref name="commandPool_out"/>; Failure: <c>NULL</c>.</returns>
+static cdrawVkCommandPool* cdrawVkCommandPoolCtor(cdrawVkCommandPool* const commandPool_out,
+	label_t const name, VkCommandPool const commandPool);
+
+/// <summary>
+/// Destructor interface for Vulkan command pool descriptor.
+/// </summary>
+/// <param name="commandPool_out">Target command pool descriptor (non-null).</param>
+static void cdrawVkCommandPoolDtor(cdrawVkCommandPool* const commandPool_out);
+
+/// <summary>
+/// Constructor for Vulkan command buffer descriptor.
+/// </summary>
+/// <param name="commandBuffer_out">Target command buffer descriptor (non-null).</param>
+/// <param name="name">Descriptor name.</param>
+/// <param name="commandBuffer">Vulkan command buffer handle array.</param>
+/// <param name="commandBufferCount">Handle count.</param>
+/// <returns>Success: <paramref name="commandBuffer_out"/>; Failure: <c>NULL</c>.</returns>
+static cdrawVkCommandBuffer* cdrawVkCommandBufferCtor(cdrawVkCommandBuffer* const commandBuffer_out,
+	label_t const name, VkCommandBuffer const commandBuffer[/*commandBufferCount*/], uint32_t const commandBufferCount);
+
+/// <summary>
+/// Destructor interface for Vulkan command buffer descriptor.
+/// </summary>
+/// <param name="commandBuffer_out">Target command buffer descriptor (non-null).</param>
+static void cdrawVkCommandBufferDtor(cdrawVkCommandBuffer* const commandBuffer_out);
+
 #if CDRAW_DEBUG
 void cdrawVkDeviceDebugRefresh(VkDevice const device,
 	cdrawVkDeviceDebugFuncTable* const f);
@@ -177,7 +210,7 @@ cdrawVkLogicalDevice* cdrawVkLogicalDeviceCtor(cdrawVkLogicalDevice* const logic
 	failassertret(logicalDevice && physicalDevice && physicalDevice->physicalDevice, NULL);
 	label_copy_safe(logicalDevice_out->name, name);
 	logicalDevice_out->logicalDevice = logicalDevice;
-	memcpy(&logicalDevice_out->physicalDevice, physicalDevice, sizeof(logicalDevice_out->physicalDevice));
+	logicalDevice_out->physicalDevice = *physicalDevice;
 	return logicalDevice_out;
 }
 
@@ -192,7 +225,7 @@ bool cdrawVkLogicalDeviceValid(cdrawVkLogicalDevice const* const logicalDevice)
 {
 	cdraw_assert(logicalDevice);
 	return (logicalDevice->logicalDevice && logicalDevice->physicalDevice.physicalDevice
-		&& cdrawVkDeviceFuncValid(&logicalDevice->f));
+		&& cdrawVkDeviceFuncValid(&logicalDevice->f) && uint32_valid(logicalDevice->queueFamilyIdx_graphics));
 }
 
 bool cdrawVkLogicalDeviceUnused(cdrawVkLogicalDevice const* const logicalDevice)
@@ -202,33 +235,78 @@ bool cdrawVkLogicalDeviceUnused(cdrawVkLogicalDevice const* const logicalDevice)
 }
 
 
+cdrawVkCommandPool* cdrawVkCommandPoolCtor(cdrawVkCommandPool* const commandPool_out,
+	label_t const name, VkCommandPool const commandPool)
+{
+	failassertret(commandPool_out && cdrawVkCommandPoolUnused(commandPool_out), NULL);
+	failassertret(commandPool, NULL);
+	label_copy_safe(commandPool_out->name, name);
+	commandPool_out->commandPool = commandPool;
+	return commandPool_out;
+}
+
+void cdrawVkCommandPoolDtor(cdrawVkCommandPool* const commandPool_out)
+{
+	failassertret(commandPool_out);
+	label_init(commandPool_out->name);
+	commandPool_out->commandPool = VK_NULL_HANDLE;
+}
+
+bool cdrawVkCommandPoolValid(cdrawVkCommandPool const* const commandPool)
+{
+	cdraw_assert(commandPool);
+	return (commandPool->commandPool);
+}
+
+bool cdrawVkCommandPoolUnused(cdrawVkCommandPool const* const commandPool)
+{
+	cdraw_assert(commandPool);
+	return (!commandPool->commandPool);
+}
+
+
 cdrawVkCommandBuffer* cdrawVkCommandBufferCtor(cdrawVkCommandBuffer* const commandBuffer_out,
-	label_t const name, VkCommandBuffer const commandBuffer)
+	label_t const name, VkCommandBuffer const commandBuffer[/*commandBufferCount*/], uint32_t const commandBufferCount)
 {
 	failassertret(commandBuffer_out && cdrawVkCommandBufferUnused(commandBuffer_out), NULL);
-	failassertret(commandBuffer, NULL);
+	failassertret(commandBuffer && gCount(commandBufferCount, cdrawVkCommandBuffer_max), NULL);
 	label_copy_safe(commandBuffer_out->name, name);
-	commandBuffer_out->commandBuffer = commandBuffer;
+	memcpy(commandBuffer_out->commandBuffer, commandBuffer, sizeof(VkCommandBuffer) * commandBufferCount);
+	commandBuffer_out->commandBufferCount = commandBufferCount;
 	return commandBuffer_out;
 }
 
 void cdrawVkCommandBufferDtor(cdrawVkCommandBuffer* const commandBuffer_out)
 {
+	uint32_t idx;
 	failassertret(commandBuffer_out);
 	label_init(commandBuffer_out->name);
-	commandBuffer_out->commandBuffer = VK_NULL_HANDLE;
+	for (idx = 0; idx < commandBuffer_out->commandBufferCount; ++idx)
+		commandBuffer_out->commandBuffer[idx] = VK_NULL_HANDLE;
 }
 
 bool cdrawVkCommandBufferValid(cdrawVkCommandBuffer const* const commandBuffer)
 {
+	uint32_t idx;
 	cdraw_assert(commandBuffer);
-	return (commandBuffer->commandBuffer);
+	if (!commandBuffer->commandBufferCount)
+		return false;
+	for (idx = 0; idx < commandBuffer->commandBufferCount; ++idx)
+		if (!commandBuffer->commandBuffer[idx])
+			return false;
+	return true;
 }
 
 bool cdrawVkCommandBufferUnused(cdrawVkCommandBuffer const* const commandBuffer)
 {
+	uint32_t idx;
 	cdraw_assert(commandBuffer);
-	return (!commandBuffer->commandBuffer);
+	if (commandBuffer->commandBufferCount)
+		return false;
+	for (idx = 0; idx < commandBuffer->commandBufferCount; ++idx)
+		if (commandBuffer->commandBuffer[idx])
+			return false;
+	return true;
 }
 
 
@@ -259,6 +337,28 @@ bool cdrawVkQueueUnused(cdrawVkQueue const* const queue)
 {
 	cdraw_assert(queue);
 	return (!queue->queue);
+}
+
+
+VkSubmitInfo cdrawVkSubmitInfoCtor(
+	uint32_t const waitSemaphoreCount,
+	VkSemaphore const waitSemaphores[/*waitSemaphoreCount*/],
+	VkPipelineStageFlags const waitDstStageMask[/*waitSemaphoreCount*/],
+	uint32_t const commandBufferCount,
+	VkCommandBuffer const commandBuffers[/*commandBufferCount*/],
+	uint32_t const signalSemaphoreCount,
+	VkSemaphore const signalSemaphores[/*signalSemaphoreCount*/])
+{
+	VkSubmitInfo submitInfo = { 0 };
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.waitSemaphoreCount = waitSemaphoreCount;
+	submitInfo.pWaitSemaphores = waitSemaphores;
+	submitInfo.pWaitDstStageMask = waitDstStageMask;
+	submitInfo.commandBufferCount = commandBufferCount;
+	submitInfo.pCommandBuffers = commandBuffers;
+	submitInfo.signalSemaphoreCount = signalSemaphoreCount;
+	submitInfo.pSignalSemaphores = signalSemaphores;
+	return submitInfo;
 }
 
 
@@ -383,7 +483,7 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 	VkDevice logicalDevice = VK_NULL_HANDLE;
 	cdrawVkPhysicalDevice physicalDeviceSelect = { 0 };
 
-	failassertret(logicalDevice_out && cdrawVkLogicalDeviceUnused(logicalDevice_out) && instance && cdrawVkInstanceValid(instance) && surfaceCountMax, false);
+	failassertret(logicalDevice_out && cdrawVkLogicalDeviceUnused(logicalDevice_out) && instance && cdrawVkInstanceValid(instance) && gCount(surfaceCountMax, cdrawVkSurfacePresent_max), false);
 	printf("\n Creating Vulkan logical device \"%s\"...", name);
 
 	// get physical devices
@@ -630,4 +730,156 @@ bool cdrawVkLogicalDeviceDestroy(cdrawVkLogicalDevice* const logicalDevice_out,
 	printf("\n Vulkan logical device \"%s\" destroyed.", logicalDevice_out->name);
 	label_init(logicalDevice_out->name);
 	return true;
+}
+
+
+/******************************************************************************
+* SECTION: Command buffer management.
+* Reference: Singh, c.5.
+* Substantial improvements: translated to C and organized.
+******************************************************************************/
+
+static VkCommandPoolCreateInfo cdrawVkCommandPoolCreateInfoCtor(
+	VkCommandPoolCreateFlags const flags,
+	uint32_t const queueFamilyIndex)
+{
+	VkCommandPoolCreateInfo commandPoolCreateInfo = { 0 };
+	commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	commandPoolCreateInfo.flags = flags;
+	commandPoolCreateInfo.queueFamilyIndex = queueFamilyIndex;
+	return commandPoolCreateInfo;
+}
+
+bool cdrawVkCommandPoolCreate(cdrawVkCommandPool* const commandPool_out,
+	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt)
+{
+	VkResult result = VK_SUCCESS;
+	VkCommandPool commandPool = VK_NULL_HANDLE;
+	failassertret(commandPool_out && cdrawVkCommandPoolUnused(commandPool_out) && cdrawVkLogicalDeviceValid(logicalDevice), false);
+	printf("\n Creating Vulkan command pool \"%s\"...", name);
+
+	// FINAL CREATE COMMAND POOL
+	{
+		// transient: will be changed frequently and have shorter lifespan
+		// reset: buffers can be set individually via vkResetCommandBuffer or vkBeginCommandBuffer; 
+		//	otherwise can only be reset in batch with vkResetCommandPool
+		//		-> resetting is good if the same set of commands will be run repeatedly
+		VkCommandPoolCreateFlags const cmdPoolFlags =
+			(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+		VkCommandPoolCreateInfo const cmdPoolCreateInfo = cdrawVkCommandPoolCreateInfoCtor(cmdPoolFlags, logicalDevice->queueFamilyIdx_graphics);
+		result = vkCreateCommandPool(logicalDevice->logicalDevice, &cmdPoolCreateInfo, alloc_opt, &commandPool);
+		if (commandPool)
+			cdraw_assert(result == VK_SUCCESS);
+	}
+
+	// set final outputs or clean up
+	if (!commandPool || (result != VK_SUCCESS))
+	{
+		cdrawVkCommandPoolDestroy(commandPool_out, logicalDevice, alloc_opt);
+		printf("\n Vulkan command buffer pool \"%s\" creation failed.", name);
+		return false;
+	}
+	cdrawVkCommandPoolCtor(commandPool_out, name, commandPool);
+	cdraw_assert(cdrawVkCommandPoolValid(commandPool_out));
+	printf("\n Vulkan command pool \"%s\" created.", name);
+	return true;
+}
+
+bool cdrawVkCommandPoolDestroy(cdrawVkCommandPool* const commandPool_out,
+	cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt)
+{
+	failassertret(commandPool_out, false);
+	if (cdrawVkCommandPoolUnused(commandPool_out))
+		return true;
+
+	cdraw_assert(logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice));
+	printf("\n Destroying Vulkan command pool \"%s\"...", commandPool_out->name);
+	//if (commandPool_out->commandPool)
+	{
+		vkDestroyCommandPool(logicalDevice->logicalDevice, commandPool_out->commandPool, alloc_opt);
+		commandPool_out->commandPool = VK_NULL_HANDLE;
+	}
+	printf("\n Vulkan command pool \"%s\" destroyed.", commandPool_out->name);
+	label_init(commandPool_out->name);
+	return true;
+}
+
+static VkCommandBufferAllocateInfo cdrawVkCommandBufferAllocateInfoCtor(
+	VkCommandPool const commandPool,
+	VkCommandBufferLevel const level,
+	uint32_t const commandBufferCount)
+{
+	VkCommandBufferAllocateInfo commandBufferAllocateInfo = { 0 };
+	commandBufferAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	commandBufferAllocateInfo.commandPool = commandPool;
+	commandBufferAllocateInfo.level = level;
+	commandBufferAllocateInfo.commandBufferCount = commandBufferCount;
+	return commandBufferAllocateInfo;
+}
+
+bool cdrawVkCommandBufferAlloc(cdrawVkCommandBuffer* const commandBuffer_out,
+	label_t const name, uint32_t const commandBufferCount, cdrawVkCommandPool const* const commandPool, cdrawVkLogicalDevice const* const logicalDevice, VkCommandBufferLevel const commandBufferLevel)
+{
+	VkCommandBuffer commandBuffer[cdrawVkCommandBuffer_max] = { VK_NULL_HANDLE };
+
+	uint32_t idx;
+	VkResult result = VK_SUCCESS;
+	failassertret(commandBuffer_out && cdrawVkCommandBufferUnused(commandBuffer_out) && gCount(commandBufferCount, cdrawVkCommandBuffer_max)
+		&& commandPool && cdrawVkCommandPoolValid(commandPool) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice), false);
+	printf("\n Allocating Vulkan command buffers \"%s[%u]\"...", name, commandBufferCount);
+
+	// FINAL CREATE COMMAND BUFFER
+	{
+		// primary: can be submitted to queue
+		// secondary: child of primary, cannot be submitted
+		VkCommandBufferAllocateInfo const cmdBufAllocInfo = cdrawVkCommandBufferAllocateInfoCtor(commandPool->commandPool, commandBufferLevel, commandBufferCount);
+		result = vkAllocateCommandBuffers(logicalDevice->logicalDevice, &cmdBufAllocInfo, commandBuffer);
+		if (result == VK_SUCCESS)
+		{
+			for (idx = 0; idx < commandBufferCount; ++idx)
+				if (!commandBuffer[idx])
+					break;
+			cdraw_assert(idx == commandBufferCount);
+		}
+	}
+
+	// set final outputs or clean up
+	if (result != VK_SUCCESS)
+	{
+		cdrawVkCommandBufferFree(commandBuffer_out, commandPool, logicalDevice);
+		printf("\n Vulkan command buffers \"%s[%u]\" allocation failed.", name, commandBufferCount);
+		return false;
+	}
+	cdrawVkCommandBufferCtor(commandBuffer_out, name, commandBuffer, commandBufferCount);
+	printf("\n Vulkan command buffers \"%s[%u]\" allocation succeeded.", name, commandBufferCount);
+	cdraw_assert(cdrawVkCommandBufferValid(commandBuffer_out));
+	return true;
+}
+
+bool cdrawVkCommandBufferFree(cdrawVkCommandBuffer* const commandBuffer_out,
+	cdrawVkCommandPool const* const commandPool, cdrawVkLogicalDevice const* const logicalDevice)
+{
+	if (cdrawVkCommandBufferUnused(commandBuffer_out))
+		return true;
+
+	cdraw_assert(commandPool && cdrawVkCommandPoolValid(commandPool) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice));
+	printf("\n Freeing Vulkan command buffers \"%s[%u]\"...", commandBuffer_out->name, commandBuffer_out->commandBufferCount);
+	//if (commandBuffer_out->commandBufferCount)
+	{
+		vkFreeCommandBuffers(logicalDevice->logicalDevice, commandPool->commandPool, commandBuffer_out->commandBufferCount, commandBuffer_out->commandBuffer);
+	}
+	printf("\n Vulkan command buffers \"%s[%u]\" freed.", commandBuffer_out->name, commandBuffer_out->commandBufferCount);
+	cdrawVkCommandBufferDtor(commandBuffer_out);
+	return true;
+}
+
+VkCommandBufferBeginInfo cdrawVkCommandBufferBeginInfoCtor(
+	VkCommandBufferUsageFlags const usageFlags,
+	VkCommandBufferInheritanceInfo const* const inheritanceInfo)
+{
+	VkCommandBufferBeginInfo commandBufferBeginInfo = { 0 };
+	commandBufferBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	commandBufferBeginInfo.flags = usageFlags;
+	commandBufferBeginInfo.pInheritanceInfo = inheritanceInfo; // ignored for primary buffers (Sellers, c.3)
+	return commandBufferBeginInfo;
 }

@@ -444,28 +444,28 @@ bool cdrawVkDebugUtilsObjectTag(cdrawVkInstance const* const instance, cdrawVkLo
 	return (instance->f.f_debug.vkSetDebugUtilsObjectTagEXT(logicalDevice->logicalDevice, &debugUtilsObjectTagInfo) == VK_SUCCESS);
 }
 
-bool cdrawVkDebugUtilsLabelCommandBegin(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer,
+bool cdrawVkDebugUtilsLabelCommandBegin(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex,
 	label_t const labelName, fp32_t const color_opt[4])
 {
-	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkCommandBufferValid(commandBuffer));
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkCommandBufferValid(commandBuffer) && (commandBufferIndex < commandBuffer->commandBufferCount));
 	VkDebugUtilsLabelEXT const debugUtilsLabel = cdrawVkDebugUtilsLabelCtor(labelName, color_opt);
-	instance->f.f_debug.vkCmdBeginDebugUtilsLabelEXT(commandBuffer->commandBuffer, &debugUtilsLabel);
+	instance->f.f_debug.vkCmdBeginDebugUtilsLabelEXT(commandBuffer->commandBuffer[commandBufferIndex], &debugUtilsLabel);
 	return true;
 }
 
-bool cdrawVkDebugUtilsLabelCommandEnd(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer)
+bool cdrawVkDebugUtilsLabelCommandEnd(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex)
 {
-	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkCommandBufferValid(commandBuffer));
-	instance->f.f_debug.vkCmdEndDebugUtilsLabelEXT(commandBuffer->commandBuffer);
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkCommandBufferValid(commandBuffer) && (commandBufferIndex < commandBuffer->commandBufferCount));
+	instance->f.f_debug.vkCmdEndDebugUtilsLabelEXT(commandBuffer->commandBuffer[commandBufferIndex]);
 	return true;
 }
 
-bool cdrawVkDebugUtilsLabelCommandInsert(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer,
+bool cdrawVkDebugUtilsLabelCommandInsert(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex,
 	label_t const labelName, fp32_t const color_opt[4])
 {
-	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkCommandBufferValid(commandBuffer));
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkCommandBufferValid(commandBuffer) && (commandBufferIndex < commandBuffer->commandBufferCount));
 	VkDebugUtilsLabelEXT const debugUtilsLabel = cdrawVkDebugUtilsLabelCtor(labelName, color_opt);
-	instance->f.f_debug.vkCmdInsertDebugUtilsLabelEXT(commandBuffer->commandBuffer, &debugUtilsLabel);
+	instance->f.f_debug.vkCmdInsertDebugUtilsLabelEXT(commandBuffer->commandBuffer[commandBufferIndex], &debugUtilsLabel);
 	return true;
 }
 
@@ -510,28 +510,28 @@ bool cdrawVkDebugMarkerObjectTag(cdrawVkLogicalDevice const* const logicalDevice
 	return (logicalDevice->f.f_debug.vkDebugMarkerSetObjectTagEXT(logicalDevice->logicalDevice, &debugMarkerObjectTagInfo) == VK_SUCCESS);
 }
 
-bool cdrawVkDebugMarkerCommandBegin(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer,
+bool cdrawVkDebugMarkerCommandBegin(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex,
 	label_t const markerName, fp32_t const color_opt[4])
 {
-	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice) && cdrawVkCommandBufferValid(commandBuffer));
+	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice) && cdrawVkCommandBufferValid(commandBuffer) && (commandBufferIndex < commandBuffer->commandBufferCount));
 	VkDebugMarkerMarkerInfoEXT const debugMarkerMarkerInfo = cdrawVkDebugMarkerMarkerInfoCtor(markerName, color_opt);
-	logicalDevice->f.f_debug.vkCmdDebugMarkerBeginEXT(commandBuffer->commandBuffer, &debugMarkerMarkerInfo);
+	logicalDevice->f.f_debug.vkCmdDebugMarkerBeginEXT(commandBuffer->commandBuffer[commandBufferIndex], &debugMarkerMarkerInfo);
 	return true;
 }
 
-bool cdrawVkDebugMarkerCommandEnd(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer)
+bool cdrawVkDebugMarkerCommandEnd(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex)
 {
-	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice) && cdrawVkCommandBufferValid(commandBuffer));
-	logicalDevice->f.f_debug.vkCmdDebugMarkerEndEXT(commandBuffer->commandBuffer);
+	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice) && cdrawVkCommandBufferValid(commandBuffer) && (commandBufferIndex < commandBuffer->commandBufferCount));
+	logicalDevice->f.f_debug.vkCmdDebugMarkerEndEXT(commandBuffer->commandBuffer[commandBufferIndex]);
 	return true;
 }
 
-bool cdrawVkDebugMarkerCommandInsert(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer,
+bool cdrawVkDebugMarkerCommandInsert(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer, uint32_t const commandBufferIndex,
 	label_t const markerName, fp32_t const color_opt[4])
 {
-	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice) && cdrawVkCommandBufferValid(commandBuffer));
+	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice) && cdrawVkCommandBufferValid(commandBuffer) && (commandBufferIndex < commandBuffer->commandBufferCount));
 	VkDebugMarkerMarkerInfoEXT const debugMarkerMarkerInfo = cdrawVkDebugMarkerMarkerInfoCtor(markerName, color_opt);
-	logicalDevice->f.f_debug.vkCmdDebugMarkerInsertEXT(commandBuffer->commandBuffer, &debugMarkerMarkerInfo);
+	logicalDevice->f.f_debug.vkCmdDebugMarkerInsertEXT(commandBuffer->commandBuffer[commandBufferIndex], &debugMarkerMarkerInfo);
 	return true;
 }
 

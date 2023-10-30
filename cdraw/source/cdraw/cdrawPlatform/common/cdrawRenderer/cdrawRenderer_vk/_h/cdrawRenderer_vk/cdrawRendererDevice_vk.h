@@ -120,6 +120,50 @@ typedef struct cdrawVkLogicalDevice
 	cdrawVkDeviceFuncTable f;
 } cdrawVkLogicalDevice;
 
+
+enum
+{
+	cdrawVkCommandBuffer_max = 4,
+};
+
+
+/// <summary>
+/// Vulkan command pool descriptor.
+/// </summary>
+typedef struct cdrawVkCommandPool
+{
+	/// <summary>
+	/// Descriptor name.
+	/// </summary>
+	label_t name;
+
+	/// <summary>
+	/// Vulkan command pool handle.
+	/// </summary>
+	VkCommandPool commandPool;
+} cdrawVkCommandPool;
+
+/// <summary>
+/// Vulkan command buffer descriptor.
+/// </summary>
+typedef struct cdrawVkCommandBuffer
+{
+	/// <summary>
+	/// Descriptor name.
+	/// </summary>
+	label_t name;
+
+	/// <summary>
+	/// Vulkan command buffer handle.
+	/// </summary>
+	VkCommandBuffer commandBuffer[cdrawVkCommandBuffer_max];
+
+	/// <summary>
+	/// Number of command buffers.
+	/// </summary>
+	uint32_t commandBufferCount;
+} cdrawVkCommandBuffer;
+
 /// <summary>
 /// Vulkan queue descriptor.
 /// </summary>
@@ -135,22 +179,6 @@ typedef struct cdrawVkQueue
 	/// </summary>
 	VkQueue queue;
 } cdrawVkQueue;
-
-/// <summary>
-/// Vulkan command buffer descriptor.
-/// </summary>
-typedef struct cdrawVkCommandBuffer
-{
-	/// <summary>
-	/// Descriptor name.
-	/// </summary>
-	label_t name;
-
-	/// <summary>
-	/// Vulkan command buffer handle.
-	/// </summary>
-	VkCommandBuffer commandBuffer;
-} cdrawVkCommandBuffer;
 
 
 #ifdef __cplusplus
@@ -193,20 +221,39 @@ extern "C" {
 		VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
-	/// Constructor for Vulkan command buffer descriptor.
+	/// Indicate whether descriptor is valid (set up correctly) and should not be modified.
 	/// </summary>
-	/// <param name="commandBuffer_out">Target command buffer descriptor (non-null).</param>
-	/// <param name="name">Descriptor name.</param>
-	/// <param name="commandBuffer">Vulkan command buffer handle.</param>
-	/// <returns>Success: <paramref name="commandBuffer_out"/>; Failure: <c>NULL</c>.</returns>
-	cdrawVkCommandBuffer* cdrawVkCommandBufferCtor(cdrawVkCommandBuffer* const commandBuffer_out,
-		label_t const name, VkCommandBuffer const commandBuffer);
+	/// <param name="commandPool">Descriptor (non-null).</param>
+	/// <returns>True if valid.</returns>
+	bool cdrawVkCommandPoolValid(cdrawVkCommandPool const* const commandPool);
 
 	/// <summary>
-	/// Destructor interface for Vulkan command buffer descriptor.
+	/// Indicate whether descriptor is unused (not set up) and can be modified.
 	/// </summary>
-	/// <param name="commandBuffer_out">Target command buffer descriptor (non-null).</param>
-	void cdrawVkCommandBufferDtor(cdrawVkCommandBuffer* const commandBuffer_out);
+	/// <param name="commandPool">Descriptor (non-null).</param>
+	/// <returns>True if unused.</returns>
+	bool cdrawVkCommandPoolUnused(cdrawVkCommandPool const* const commandPool);
+
+	/// <summary>
+	/// Create command pool descriptor.
+	/// </summary>
+	/// <param name="commandPool_out">Target descriptor (non-null and unused).</param>
+	/// <param name="name">Descriptor name.</param>
+	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if created.</returns>
+	bool cdrawVkCommandPoolCreate(cdrawVkCommandPool* const commandPool_out,
+		label_t const name, cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Destroy command pool.
+	/// </summary>
+	/// <param name="commandPool_out">Target descriptor (non-null and valid).</param>
+	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if destroyed.</returns>
+	bool cdrawVkCommandPoolDestroy(cdrawVkCommandPool* const commandPool_out,
+		cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
 	/// Indicate whether descriptor is valid (set up correctly) and should not be modified.
@@ -221,6 +268,39 @@ extern "C" {
 	/// <param name="commandBuffer">Descriptor (non-null).</param>
 	/// <returns>True if unused.</returns>
 	bool cdrawVkCommandBufferUnused(cdrawVkCommandBuffer const* const commandBuffer);
+
+	/// <summary>
+	/// Allocate command buffer set.
+	/// </summary>
+	/// <param name="commandBuffer_out">Target descriptor (non-null and unused).</param>
+	/// <param name="name">Descriptor name.</param>
+	/// <param name="commandBufferCount">Number of buffers to allocate.</param>
+	/// <param name="commandPool">Command pool descriptor (non-null and valid).</param>
+	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
+	/// <param name="commandBufferLevel">Select primary or secondary buffers.</param>
+	/// <returns>True if allocated.</returns>
+	bool cdrawVkCommandBufferAlloc(cdrawVkCommandBuffer* const commandBuffer_out,
+		label_t const name, uint32_t const commandBufferCount, cdrawVkCommandPool const* const commandPool, cdrawVkLogicalDevice const* const logicalDevice, VkCommandBufferLevel const commandBufferLevel);
+
+	/// <summary>
+	/// Free command buffer set.
+	/// </summary>
+	/// <param name="commandBuffer_out">Target descriptor (non-null and valid).</param>
+	/// <param name="commandPool">Command pool descriptor (non-null and valid).</param>
+	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
+	/// <returns>True if freed.</returns>
+	bool cdrawVkCommandBufferFree(cdrawVkCommandBuffer* const commandBuffer_out,
+		cdrawVkCommandPool const* const commandPool, cdrawVkLogicalDevice const* const logicalDevice);
+
+	/// <summary>
+	/// Construct command buffer begin info.
+	/// </summary>
+	/// <param name="usageFlags">Command buffer usage flags.</param>
+	/// <param name="inheritanceInfo">Inheritance info (null for primary).</param>
+	/// <returns>Info descriptor.</returns>
+	VkCommandBufferBeginInfo cdrawVkCommandBufferBeginInfoCtor(
+		VkCommandBufferUsageFlags const usageFlags,
+		VkCommandBufferInheritanceInfo const* const inheritanceInfo);
 
 	/// <summary>
 	/// Constructor for Vulkan queue descriptor.
@@ -252,6 +332,25 @@ extern "C" {
 	/// <returns>True if unused.</returns>
 	bool cdrawVkQueueUnused(cdrawVkQueue const* const queue);
 
+	/// <summary>
+	/// Construct info descriptor for queue submission.
+	/// </summary>
+	/// <param name="waitSemaphoreCount">Number of semaphores to wait on before submit.</param>
+	/// <param name="waitSemaphores">Set of semaphores to wait on before submit.</param>
+	/// <param name="waitDstStageMask">Set of pipeline stages (corresponding to semaphores) at which semaphores will wait.</param>
+	/// <param name="commandBufferCount">Number of command buffers to submit.</param>
+	/// <param name="commandBuffers">Command buffers to submit.</param>
+	/// <param name="signalSemaphoreCount">Number of semaphores to signal on complete.</param>
+	/// <param name="signalSemaphores">Set of semaphores to signal on complete.</param>
+	/// <returns>Info descriptor.</returns>
+	VkSubmitInfo cdrawVkSubmitInfoCtor(
+		uint32_t const waitSemaphoreCount,
+		VkSemaphore const waitSemaphores[/*waitSemaphoreCount*/],
+		VkPipelineStageFlags const waitDstStageMask[/*waitSemaphoreCount*/],
+		uint32_t const commandBufferCount,
+		VkCommandBuffer const commandBuffers[/*commandBufferCount*/],
+		uint32_t const signalSemaphoreCount,
+		VkSemaphore const signalSemaphores[/*signalSemaphoreCount*/]);
 
 #ifdef __cplusplus
 }

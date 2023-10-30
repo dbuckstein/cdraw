@@ -34,6 +34,17 @@
 * Private implementations.
 ******************************************************************************/
 
+/// <summary>
+/// Constructor for Vulkan surface descriptor.
+/// </summary>
+/// <param name="surface_out">Target surface descriptor (non-null).</param>
+/// <param name="name">Descriptor name.</param>
+/// <param name="surface">Vulkan surface handle.</param>
+/// <returns>Success: <paramref name="surface_out"/>; Failure: <c>NULL</c>.</returns>
+cdrawVkSurface* cdrawVkSurfaceCtor(cdrawVkSurface* const surface_out,
+	label_t const name, VkSurfaceKHR const surface);
+
+
 cstrk_t cdrawVkSurfacePlatformExtName()
 {
 	cstrk_t result = NULL;
@@ -53,6 +64,16 @@ bool cdrawVkPhysicalDeviceGetPlatformPresentationSupport(VkPhysicalDevice const 
 }
 
 
+/******************************************************************************
+* Public implementations.
+******************************************************************************/
+
+/******************************************************************************
+* SECTION: Surface management (Windows).
+* Reference: Singh, c.6.
+* Substantial improvements: translated to C and organized.
+******************************************************************************/
+
 #if CDRAW_TARGET_WINDOWS
 static VkWin32SurfaceCreateInfoKHR cdrawVkSurfaceCreateInfoCtor(
 	HINSTANCE const hInst,
@@ -66,27 +87,14 @@ static VkWin32SurfaceCreateInfoKHR cdrawVkSurfaceCreateInfoCtor(
 }
 #endif // #if CDRAW_TARGET_WINDOWS
 
-
-/******************************************************************************
-* Public implementations.
-******************************************************************************/
-
-/******************************************************************************
-* SECTION: Surface management (Windows).
-* Reference: Singh, c.6.
-* Substantial improvements: translated to C and organized.
-******************************************************************************/
-
-bool cdrawRendererDestroySurface_vk(VkSurfaceKHR* const surface_out,
-	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt);
-
-static bool cdrawRendererInternalCreateSurface_win_vk(VkSurfaceKHR* const surface_out,
-	VkInstance const inst, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt)
+bool cdrawVkSurfaceCreate(cdrawVkSurface* const surface_out,
+	label_t const name, cdrawVkInstance const* const instance, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
 	VkSurfaceKHR surface = VK_NULL_HANDLE;
-	cdraw_assert(surface_out && !*surface_out);
-	printf("\n Creating Vulkan presentation surface...");
+
+	failassertret(surface_out && cdrawVkSurfaceUnused(surface_out) && instance && cdrawVkInstanceValid(instance) && p_data, false);
+	printf("\n Creating Vulkan presentation surface \"%s\"...", name);
 
 	// FINAL CREATE SURFACE
 	if (result == VK_SUCCESS)
@@ -105,7 +113,7 @@ static bool cdrawRendererInternalCreateSurface_win_vk(VkSurfaceKHR* const surfac
 
 		// create surface
 		cdraw_assert(data->hInst && data->hWnd);
-		result = vkCreateWin32SurfaceKHR(inst, &surfaceCreateInfo, alloc_opt, &surface);
+		result = vkCreateWin32SurfaceKHR(instance->instance, &surfaceCreateInfo, alloc_opt, &surface);
 #endif // #if CDRAW_TARGET_WINDOWS
 		if (surface)
 			cdraw_assert(result == VK_SUCCESS);
@@ -114,20 +122,14 @@ static bool cdrawRendererInternalCreateSurface_win_vk(VkSurfaceKHR* const surfac
 	// set final outputs or clean up
 	if (!surface || (result != VK_SUCCESS))
 	{
-		cdrawRendererDestroySurface_vk(&surface, inst, alloc_opt);
-		printf("\n Vulkan presentation surface creation failed.");
+		cdrawVkSurfaceDestroy(surface_out, instance, alloc_opt);
+		printf("\n Vulkan presentation surface \"%s\" creation failed.", name);
 		return false;
 	}
-	*surface_out = surface;
-	cdraw_assert(*surface_out);
-	printf("\n Vulkan presentation surface created.");
+	cdrawVkSurfaceCtor(surface_out, name, surface);
+	printf("\n Vulkan presentation surface \"%s\" created.", name);
+	cdraw_assert(cdrawVkSurfaceValid(surface_out));
 	return true;
-}
-
-bool cdrawRendererCreateSurface_vk(VkSurfaceKHR* const surface_out,
-	VkInstance const inst, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt)
-{
-	return cdrawRendererInternalCreateSurface_win_vk(surface_out, inst, p_data, alloc_opt);
 }
 
 

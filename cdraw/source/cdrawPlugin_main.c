@@ -143,7 +143,7 @@ result_t cb_win_attach(cdrawTestPluginData* const data, int32_t const w, int32_t
 	cdrawRenderer* const renderer = &data->renderer;
 	cdraw_assert(!renderer->r && !renderer->renderAPI);
 	result = cdrawRendererRefreshAPI(cdrawRenderAPI_Vulkan);
-	result = cdrawRendererCreate(renderer, cdrawRenderAPI_Vulkan, windowPlatform_opt);
+	result = cdrawRendererCreate(renderer, cdrawRenderAPI_Vulkan, 1, windowPlatform_opt);
 	cdrawRendererPrint(renderer);
 	data->w = w;
 	data->h = h;
@@ -178,7 +178,7 @@ result_t cb_win_deactivate(cdrawTestPluginData* const data, ptrk_t const windowP
 result_t cb_win_resize(cdrawTestPluginData* const data, int32_t const w, int32_t const h)
 {
 	cdraw_assert(data);
-	cdrawRendererResize(&data->renderer, data->w, data->h, w, h);
+	cdrawRendererResize(&data->renderer, 0, data->w, data->h, w, h);
 	data->w = w;
 	data->h = h;
 	return printf("\n" __FUNCTION__ "(%p, %d, %d)", data, w, h);
@@ -209,7 +209,7 @@ result_t cb_idle(cdrawTestPluginData* const data)
 		//printf("\n" __FUNCTION__ ": t=%.3lf", t);
 	
 		if (data->activated)
-			cdrawRendererDisplay(&data->renderer);
+			cdrawRendererDisplay(&data->renderer, 0);
 	}
 	return 0;// printf("\n" __FUNCTION__ "(%p)", data);
 }

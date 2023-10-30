@@ -26,13 +26,13 @@
 #include <stdio.h>
 
 
-result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_data_opt);
+result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, uint32_t const surfaceCountMax, ptrk_t const p_data_opt);
 result_t cdrawRendererDestroy_vk(cdrawRenderer* const renderer);
 result_t cdrawRendererRefresh_vk(cdrawRenderer const* const renderer);
 result_t cdrawRendererRefreshAPI_vk();
 
 
-result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, ptrk_t const p_data_opt)
+result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, uint32_t const windowsAllowed, ptrk_t const p_data_opt)
 {
 	result_init();
 	asserterr_ptr(renderer, errcode_invalidarg);
@@ -47,7 +47,7 @@ result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const
 		printf("\n cdrawRendererCreate: Software rendering has not yet been implemented for this platform.");
 		break;
 	case cdrawRenderAPI_Vulkan:
-		result = cdrawRendererCreate_vk(renderer, p_data_opt);
+		result = cdrawRendererCreate_vk(renderer, windowsAllowed, p_data_opt);
 		break;
 	case cdrawRenderAPI_OpenGL:
 		printf("\n cdrawRendererCreate: OpenGL rendering has not yet been implemented for this platform.");

@@ -29,10 +29,140 @@ enum
 };
 
 
+/// <summary>
+/// Vulkan surface descriptor.
+/// </summary>
+typedef struct cdrawVkSurface
+{
+	/// <summary>
+	/// Descriptor name.
+	/// </summary>
+	label_t name;
+
+	/// <summary>
+	/// Vulkan surface handle.
+	/// </summary>
+	VkSurfaceKHR surface;
+} cdrawVkSurface;
+
+
+/// <summary>
+/// Collection of Vulkan handles and data related to presentation.
+/// </summary>
+typedef struct cdrawVkPresentation
+{
+	/// <summary>
+	/// Descriptor name.
+	/// </summary>
+	label_t name;
+
+	/// <summary>
+	/// Vulkan swapchain.
+	/// </summary>
+	VkSwapchainKHR swapchain;
+
+	/// <summary>
+	/// Vulkan graphics/presentation queue.
+	/// Should have one for each swapchain image to avoid locking.
+	/// </summary>
+	VkQueue queue_graphics;
+
+	/// <summary>
+	/// Color image view resources associated with swapchain images.
+	/// Images themselves are not needed as they are owned by the swapchain; can query later.
+	/// </summary>
+	VkImageView imageView_present[cdrawVkImagePresent_max];
+
+	/// <summary>
+	/// Depth image for presentation.
+	/// </summary>
+	cdrawVkImage depthImage_present;
+
+	/// <summary>
+	/// Vulkan command buffers for presentation.
+	/// Should have one for each image to be processed.
+	/// </summary>
+	cdrawVkCommandBuffer commandBuffer_presentation[cdrawVkImagePresent_max];
+} cdrawVkPresentation;
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif // #ifdef __cplusplus
-	
+
+	/// <summary>
+	/// Indicate whether descriptor is valid (set up correctly) and should not be modified.
+	/// </summary>
+	/// <param name="surface">Descriptor (non-null).</param>
+	/// <returns>True if valid.</returns>
+	bool cdrawVkSurfaceValid(cdrawVkSurface const* const surface);
+
+	/// <summary>
+	/// Indicate whether descriptor is unused (not set up) and can be modified.
+	/// </summary>
+	/// <param name="surface">Descriptor (non-null).</param>
+	/// <returns>True if unused.</returns>
+	bool cdrawVkSurfaceUnused(cdrawVkSurface const* const surface);
+
+	/// <summary>
+	/// Create Vulkan surface descriptor.
+	/// </summary>
+	/// <param name="surface_out">Target descriptor (non-null and unused).</param>
+	/// <param name="name">Descriptor name.</param>
+	/// <param name="instance">Instance descriptor (non-null and valid).</param>
+	/// <param name="p_data">Pointer to platform data (non-null).</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if created.</returns>
+	bool cdrawVkSurfaceCreate(cdrawVkSurface* const surface_out,
+		label_t const name, cdrawVkInstance const* const instance, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Destroy Vulkan surface descriptor.
+	/// </summary>
+	/// <param name="surface_out">Target descriptor (non-null and valid).</param>
+	/// <param name="instance">Instance descriptor (non-null and valid).</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if destroyed.</returns>
+	bool cdrawVkSurfaceDestroy(cdrawVkSurface* const surface_out,
+		cdrawVkInstance const* const instance, VkAllocationCallbacks const* const alloc_opt);
+
+
+	/// <summary>
+	/// Indicate whether descriptor is valid (set up correctly) and should not be modified.
+	/// </summary>
+	/// <param name="presentation">Descriptor (non-null).</param>
+	/// <returns>True if valid.</returns>
+	bool cdrawVkPresentationValid(cdrawVkPresentation const* const presentation);
+
+	/// <summary>
+	/// Indicate whether descriptor is unused (not set up) and can be modified.
+	/// </summary>
+	/// <param name="presentation">Descriptor (non-null).</param>
+	/// <returns>True if unused.</returns>
+	bool cdrawVkPresentationUnused(cdrawVkPresentation const* const presentation);
+
+	/// <summary>
+	/// Create Vulkan presentation descriptor.
+	/// </summary>
+	/// <param name="presentation_out">Target descriptor (non-null and unused).</param>
+	/// <param name="name">Descriptor name.</param>
+	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
+	/// <param name="surface">Surface descriptor (non-null and valid).</param>
+	/// <param name="commandPool">Command pool descriptor (non-null and valid).</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if created.</returns>
+	bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
+		label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkSurface const* const surface, cdrawVkCommandPool const* const commandPool, VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Destroy Vulkan presentation descriptor.
+	/// </summary>
+	/// <param name="presentation_out">Target descriptor (non-null and valid).</param>
+	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if destroyed.</returns>
+	bool cdrawVkPresentationDestroy(cdrawVkPresentation* const presentation_out,
+		cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt);
 
 
 #ifdef __cplusplus
