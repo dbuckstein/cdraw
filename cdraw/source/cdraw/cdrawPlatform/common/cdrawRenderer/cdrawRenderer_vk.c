@@ -51,7 +51,7 @@ bool cdrawRendererDestroySurface_vk(VkSurfaceKHR* const surface_out,
 {
 	cdraw_assert(surface_out);
 	if (!*surface_out)
-		return false;
+		return true;
 	printf("\n Destroying Vulkan presentation surface...");
 
 	cdraw_assert(inst);
@@ -77,7 +77,7 @@ static bool cdrawRendererDestroyCommandPool_vk(VkCommandPool* const cmdPool_out,
 {
 	cdraw_assert(cmdPool_out);
 	if (!*cmdPool_out)
-		return false;
+		return true;
 	printf("\n Destroying Vulkan command pool...");
 
 	cdraw_assert(cmdPool_out && *cmdPool_out && device);
@@ -100,11 +100,11 @@ static VkCommandPoolCreateInfo cdrawVkCommandPoolCreateInfoCtor(
 }
 
 static bool cdrawRendererCreateCommandPool_vk(VkCommandPool* const cmdPool_out,
-	VkDevice const device, int32_t const queueFamilyIdx_graphics, VkAllocationCallbacks const* const alloc_opt)
+	VkDevice const device, uint32_t const queueFamilyIdx_graphics, VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
 	VkCommandPool cmdPool = VK_NULL_HANDLE;
-	cdraw_assert(cmdPool_out && !*cmdPool_out && device && queueFamilyIdx_graphics >= 0);
+	cdraw_assert(cmdPool_out && !*cmdPool_out && device && uint32_valid(queueFamilyIdx_graphics));
 	printf("\n Creating Vulkan command pool...");
 
 	// FINAL CREATE COMMAND POOL
@@ -389,7 +389,7 @@ static void cdrawRendererCmdImageSetLayout_vk(VkImage const image,
 {
 	VkImageMemoryBarrier imageMemBarrier;
 
-	cdraw_assert(image && cmdBuf && queueFamilyIndex >= 0);
+	cdraw_assert(image && cmdBuf && uint32_valid(queueFamilyIndex));
 
 	imageMemBarrier = cdrawVkImageMemoryBarrierCtor(srcAccessMask, dstAccessMask,
 		oldLayout, newLayout, queueFamilyIndex, queueFamilyIndex, image, imageSubResourceRange);
@@ -455,7 +455,7 @@ static bool cdrawRendererDestroySwapchain_vk(VkSwapchainKHR* const swapchain_out
 	uint32_t idx;
 	cdraw_assert(swapchain_out);
 	if (!*swapchain_out)
-		return false;
+		return true;
 	printf("\n Destroying Vulkan swapchain...");
 
 	cdrawVkImageDestroy(depthImage_out_opt, device, alloc_opt);
@@ -515,7 +515,7 @@ static VkSwapchainCreateInfoKHR cdrawVkSwapchainCreateInfoCtor(
 
 static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out, VkQueue* const queue_out,
 	VkImageView imageViews_out[], uint32_t const imageViewCount, cdrawVkImage* const depthImage_out_opt,
-	VkDevice const device, VkSurfaceKHR const surface, VkCommandPool const cmdPool, VkPhysicalDevice const physicalDevice, int32_t const queueFamilyIdx_graphics, VkAllocationCallbacks const* const alloc_opt)
+	VkDevice const device, VkSurfaceKHR const surface, VkCommandPool const cmdPool, VkPhysicalDevice const physicalDevice, uint32_t const queueFamilyIdx_graphics, VkAllocationCallbacks const* const alloc_opt)
 {
 	uint32_t idx;
 
@@ -556,7 +556,7 @@ static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out,
 	VkResult result = VK_SUCCESS;
 	VkSwapchainKHR swapchain = VK_NULL_HANDLE;
 	VkQueue queue = VK_NULL_HANDLE;
-	cdraw_assert(swapchain_out && !*swapchain_out && queue_out && !*queue_out && imageViews_out && imageViewCount && device && surface && physicalDevice && queueFamilyIdx_graphics >= 0);
+	cdraw_assert(swapchain_out && !*swapchain_out && queue_out && !*queue_out && imageViews_out && imageViewCount && device && surface && physicalDevice && uint32_valid(queueFamilyIdx_graphics));
 	for (idx = 0; idx < imageViewCount; ++idx)
 		cdraw_assert(!imageViews_out[idx]);
 	printf("\n Creating Vulkan swapchain...");
@@ -833,7 +833,7 @@ static bool cdrawRendererCreateSwapchain_vk(VkSwapchainKHR* const swapchain_out,
 	}
 
 	// set final outputs or clean up
-	if (result != VK_SUCCESS)
+	if (!swapchain || !queue || (result != VK_SUCCESS))
 	{
 		cdrawRendererDestroySwapchain_vk(&swapchain, &queue, imageViews_out, imageViewCount, depthImage_out_opt, device, alloc_opt);
 		printf("\n Vulkan swapchain creation failed.");
@@ -856,7 +856,7 @@ static bool cdrawRendererDestroySemaphore_vk(VkSemaphore* const semaphore_out,
 {
 	cdraw_assert(semaphore_out);
 	if (!*semaphore_out)
-		return false;
+		return true;
 	printf("\n Destroying Vulkan semaphore...");
 
 	cdraw_assert(device);
@@ -1090,6 +1090,8 @@ static result_t cdrawRendererResize_vk(cdrawRenderer_vk* const r, uint32_t const
 {
 	VkResult result = VK_SUCCESS;
 	cdraw_assert(r);
+	if (!r->swapchain || !r->queue_graphics)
+		return result;
 	if ((w_old != w_new) && (h_old != h_new))
 	{
 		vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
@@ -1105,6 +1107,89 @@ static result_t cdrawRendererResize_vk(cdrawRenderer_vk* const r, uint32_t const
 				r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present,
 				r->logicalDevice.logicalDevice, r->surface, r->cmdPool, r->logicalDevice.physicalDevice.physicalDevice, r->logicalDevice.queueFamilyIdx_graphics, &r->allocator.allocationCallbacks);
 	}
+	return result;
+}
+
+
+static result_t cdrawRendererAttachWindow_vk(cdrawRenderer_vk* const r, uint32_t const windowIndex, ptrk_t const p_data)
+{
+	result_init();
+	bool result = false;
+	VkAllocationCallbacks const* alloc_opt;
+	cdraw_assert(r);
+	if (!r->instance.instance || !r->logicalDevice.logicalDevice)
+		result_return();
+
+	cdraw_assert(windowIndex < cdrawVkSurfacePresent_max);
+	cdraw_assert(p_data);
+	alloc_opt = cdrawVkAllocatorUse(&r->allocator);
+
+	// safety
+	vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
+
+	{
+		// CREATE PRESENTATION SURFACE
+		result = cdrawRendererCreateSurface_vk(&r->surface, r->instance.instance, p_data, alloc_opt);
+		failassertret(result, result_seterror(errcode_renderer_init));
+
+		// CREATE COMMAND POOL
+		result = cdrawRendererCreateCommandPool_vk(&r->cmdPool, r->logicalDevice.logicalDevice, r->logicalDevice.queueFamilyIdx_graphics, alloc_opt);
+		failassertret(result, result_seterror(errcode_renderer_init));
+
+		// CREATE SEMAPHORES
+		result = cdrawRendererCreateSemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
+		failassertret(result, result_seterror(errcode_renderer_init));
+
+		// CREATE SWAPCHAIN (may not be created due to surface size)
+		result = cdrawRendererCreateSwapchain_vk(&r->swapchain, &r->queue_graphics,
+			r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present,
+			r->logicalDevice.logicalDevice, r->surface, r->cmdPool, r->logicalDevice.physicalDevice.physicalDevice, r->logicalDevice.queueFamilyIdx_graphics, alloc_opt);
+		failassertret(result, result_seterror(errcode_renderer_init));
+	}
+	result_return();
+}
+
+
+static result_t cdrawRendererDetachWindow_vk(cdrawRenderer_vk* const r, uint32_t const windowIndex)
+{
+	result_init();
+	bool result = false;
+	VkAllocationCallbacks const* alloc_opt;
+	cdraw_assert(r);
+	if (!r->instance.instance || !r->logicalDevice.logicalDevice)
+		result_return();
+
+	cdraw_assert(windowIndex < cdrawVkSurfacePresent_max);
+	alloc_opt = cdrawVkAllocatorUse(&r->allocator);
+
+	{
+		// swapchain (requires device and surface; may not have been created due to surface size)
+		result = cdrawRendererDestroySwapchain_vk(&r->swapchain, &r->queue_graphics,
+			r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present, r->logicalDevice.logicalDevice, alloc_opt);
+		failassertret(result, result_seterror(errcode_renderer_init));
+
+		// semaphores
+		result = cdrawRendererDestroySemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
+		failassertret(result, result_seterror(errcode_renderer_init));
+
+		// command pool (requires device)
+		result = cdrawRendererDestroyCommandPool_vk(&r->cmdPool, r->logicalDevice.logicalDevice, alloc_opt);
+		failassertret(result, result_seterror(errcode_renderer_init));
+
+		// presentation surface (requires instance)
+		result = cdrawRendererDestroySurface_vk(&r->surface, r->instance.instance, alloc_opt);
+		failassertret(result, result_seterror(errcode_renderer_init));
+	}
+	result_return();
+}
+
+
+static result_t cdrawRendererWindowCountMax_vk(cdrawRenderer_vk const* const r, uint32_t* const count_out)
+{
+	VkResult result = VK_SUCCESS;
+	cdraw_assert(r);
+	cdraw_assert(count_out);
+	*count_out = (r->instance.instance && r->logicalDevice.logicalDevice) ? cdrawVkSurfacePresent_max : 0;
 	return result;
 }
 
@@ -1136,7 +1221,7 @@ bool cdrawVkDebugDestroyDebugUtilsMessenger(VkDebugUtilsMessengerEXT* const debu
 * Public implementations.
 ******************************************************************************/
 
-result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_data)
+result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_data_opt)
 {
 	result_init();
 	bool result = false;
@@ -1165,26 +1250,14 @@ result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_da
 #endif // #if CDRAW_DEBUG
 
 	// CREATE LOGICAL DEVICE
-	result = cdrawVkLogicalDeviceCreate(&r->logicalDevice, "cdrawVkLogicalDevice", &r->instance, alloc_opt);
+	result = cdrawVkLogicalDeviceCreate(&r->logicalDevice, "cdrawVkLogicalDevice", &r->instance, 1, alloc_opt);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
-	// CREATE PRESENTATION SURFACE
-	result = cdrawRendererCreateSurface_vk(&r->surface, r->instance.instance, p_data, alloc_opt);
-	failassertret(result, result_seterror(errcode_renderer_init));
-
-	// CREATE COMMAND POOL
-	result = cdrawRendererCreateCommandPool_vk(&r->cmdPool, r->logicalDevice.logicalDevice, r->logicalDevice.queueFamilyIdx_graphics, alloc_opt);
-	failassertret(result, result_seterror(errcode_renderer_init));
-
-	// CREATE SEMAPHORES
-	result = cdrawRendererCreateSemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
-	failassertret(result, result_seterror(errcode_renderer_init));
-
-	// CREATE SWAPCHAIN (may not be created due to surface size)
-	result = cdrawRendererCreateSwapchain_vk(&r->swapchain, &r->queue_graphics,
-		r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present,
-		r->logicalDevice.logicalDevice, r->surface, r->cmdPool, r->logicalDevice.physicalDevice.physicalDevice, r->logicalDevice.queueFamilyIdx_graphics, alloc_opt);
-	failassertret(result, result_seterror(errcode_renderer_init));
+	if (p_data_opt)
+	{
+		result_t result_attach = cdrawRendererAttachWindow_vk(r, 0, p_data_opt);
+		failassertret(result_isclean(result_attach), result_seterror(errcode_renderer_init));
+	}
 
 	// all done
 	renderer->r = r;
@@ -1195,41 +1268,37 @@ result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_da
 result_t cdrawRendererDestroy_vk(cdrawRenderer* const renderer)
 {
 	result_init();
+	bool result = false;
+	uint32_t i;
 	cdrawRenderer_vk* r;
 	VkAllocationCallbacks const* alloc_opt;
 	asserterr(renderer && renderer->r && renderer->renderAPI == cdrawRenderAPI_Vulkan, errcode_invalidarg);
 	r = ((cdrawRenderer_vk*)renderer->r);
 	alloc_opt = cdrawVkAllocatorUse(&r->allocator);
 
-	// safety
-	vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
-
-	// swapchain (requires device and surface; may not have been created due to surface size)
-	cdrawRendererDestroySwapchain_vk(&r->swapchain, &r->queue_graphics,
-		r->imageView_present, buffer_len(r->imageView_present), &r->depthImage_present, r->logicalDevice.logicalDevice, alloc_opt);
-
-	// semaphores
-	cdrawRendererDestroySemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
-
-	// command pool (requires device)
-	cdrawRendererDestroyCommandPool_vk(&r->cmdPool, r->logicalDevice.logicalDevice, alloc_opt);
-
-	// presentation surface (requires instance)
-	cdrawRendererDestroySurface_vk(&r->surface, r->instance.instance, alloc_opt);
+	for (i = 0; i < cdrawVkSurfacePresent_max; ++i)
+	{
+		result_t result_detach = cdrawRendererDetachWindow_vk(r, i);
+		failassertret(result_isclean(result_detach), result_seterror(errcode_renderer_init));
+	}
 
 	// logical device (wait for it to finish work)
-	cdrawVkLogicalDeviceDestroy(&r->logicalDevice, alloc_opt);
+	result = cdrawVkLogicalDeviceDestroy(&r->logicalDevice, alloc_opt);
+	failassertret(result, result_seterror(errcode_renderer_init));
 
 #if CDRAW_DEBUG
 	// destroy debug messenger
-	cdrawVkDebugDestroyDebugUtilsMessenger(&r->debug.debugMessenger, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
+	result = cdrawVkDebugDestroyDebugUtilsMessenger(&r->debug.debugMessenger, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
+	failassertret(result, result_seterror(errcode_renderer_init));
 
 	//// destroy debug report
-	//cdrawVkDebugDestroyDebugReport(&r->debug.debugReport, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
+	//result = cdrawVkDebugDestroyDebugReport(&r->debug.debugReport, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
+	//failassertret(result, result_seterror(errcode_renderer_init));
 #endif // #if CDRAW_DEBUG
 
 	// finally, destroy instance
-	cdrawVkInstanceDestroy(&r->instance, alloc_opt);
+	result = cdrawVkInstanceDestroy(&r->instance, alloc_opt);
+	failassertret(result, result_seterror(errcode_renderer_init));
 
 	// clean allocation callbacks
 	cdrawVkAllocatorReset(&r->allocator);
@@ -1261,6 +1330,9 @@ result_t cdrawRendererRefreshAPI_vk()
 	gRendererFuncTable_vk.cdrawRendererPrint = cdrawRendererPrint_vk;
 	gRendererFuncTable_vk.cdrawRendererDisplay = cdrawRendererDisplay_vk;
 	gRendererFuncTable_vk.cdrawRendererResize = cdrawRendererResize_vk;
+	gRendererFuncTable_vk.cdrawRendererAttachWindow = cdrawRendererAttachWindow_vk;
+	gRendererFuncTable_vk.cdrawRendererDetachWindow = cdrawRendererDetachWindow_vk;
+	gRendererFuncTable_vk.cdrawRendererWindowsSupported = cdrawRendererWindowCountMax_vk;
 
 	result_return();
 }

@@ -23,6 +23,7 @@
 #define _CDRAW_WINDOW_H_
 
 #include "cdrawPlugin.h"
+#include "cdrawRenderer.h"
 
 /******************************************************************************
 * Public interfaces.
@@ -165,7 +166,7 @@ extern "C" {
 	/// Attach plugin to window for automated event processing.
 	/// </summary>
 	/// <param name="window">Target window.</param>
-	/// <param name="plugin">Plugin to attach.</param>
+	/// <param name="plugin">Plugin to attach to window.</param>
 	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawWindowPluginAttach(cdrawWindow* const window, cdrawPlugin* const plugin);
 
@@ -175,6 +176,15 @@ extern "C" {
 	/// <param name="window">Target window.</param>
 	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawWindowPluginDetach(cdrawWindow* const window);
+
+	/// <summary>
+	/// Attach window to renderer.
+	/// </summary>
+	/// <param name="window">Target window.</param>
+	/// <param name="renderer">Renderer to which window is attached.</param>
+	/// <param name="windowIndex">Index of window in renderer's management.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawWindowAttachToRenderer(cdrawWindow const* const window, cdrawRenderer const* const renderer, uint32_t const windowIndex);
 
 
 #ifdef __cplusplus

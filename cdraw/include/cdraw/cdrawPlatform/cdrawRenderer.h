@@ -69,6 +69,9 @@ typedef struct cdrawRendererFuncTable {
 	cdrawRendererFunc cdrawRendererPrint;
 	cdrawRendererFunc cdrawRendererDisplay;
 	cdrawRendererFunc cdrawRendererResize;
+	cdrawRendererFunc cdrawRendererAttachWindow;
+	cdrawRendererFunc cdrawRendererDetachWindow;
+	cdrawRendererFunc cdrawRendererWindowsSupported;
 } cdrawRendererFuncTable;
 
 /// <summary>
@@ -106,7 +109,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="renderer">Target renderer.</param>
 	/// <param name="renderAPI">Desired rendering API (must be supported on local platform).</param>
-	/// <param name="p_data_opt">Optional pointer to platform data.</param>
+	/// <param name="p_data_opt">Optional pointer to platform data (will set up for window in first slot if present).</param>
 	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, ptrk_t const p_data_opt);
 
@@ -155,6 +158,31 @@ extern "C" {
 	/// <param name="h_new">New display height</param>
 	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawRendererResize(cdrawRenderer const* const renderer, uint32_t const w_old, uint32_t const h_old, uint32_t const w_new, uint32_t const h_new);
+
+	/// <summary>
+	/// Invoke renderer attach window (check index against limit).
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="windowIndex">Index of window to attach and manage.</param>
+	/// <param name="p_data">Pointer to platform data.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererAttachWindow(cdrawRenderer const* const renderer, uint32_t const windowIndex, ptrk_t const p_data);
+
+	/// <summary>
+	/// Invoke renderer detach window (check index against limit).
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="windowIndex">Index of window to detach.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererDetachWindow(cdrawRenderer const* const renderer, uint32_t const windowIndex);
+
+	/// <summary>
+	/// Invoke renderer check window support count.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="count_out">Pointer to store window support count.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererWindowsSupported(cdrawRenderer const* const renderer, uint32_t* const count_out);
 
 
 #ifdef __cplusplus

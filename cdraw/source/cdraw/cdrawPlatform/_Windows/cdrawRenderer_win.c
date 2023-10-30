@@ -26,7 +26,7 @@
 #include <stdio.h>
 
 
-result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_data);
+result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, ptrk_t const p_data_opt);
 result_t cdrawRendererDestroy_vk(cdrawRenderer* const renderer);
 result_t cdrawRendererRefresh_vk(cdrawRenderer const* const renderer);
 result_t cdrawRendererRefreshAPI_vk();

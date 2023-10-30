@@ -41,5 +41,24 @@ CDRAW_INL result_t cdrawRendererResize(cdrawRenderer const* const renderer, uint
 	return renderer->f->cdrawRendererResize(renderer->r, w_old, h_old, w_new, h_new);
 }
 
+CDRAW_INL result_t cdrawRendererAttachWindow(cdrawRenderer const* const renderer, uint32_t const windowIndex, ptrk_t const p_data)
+{
+	cdraw_assert(renderer && renderer->r && renderer->f && renderer->f->cdrawRendererAttachWindow);
+	return renderer->f->cdrawRendererAttachWindow(renderer->r, windowIndex, p_data);
+}
+
+CDRAW_INL result_t cdrawRendererDetachWindow(cdrawRenderer const* const renderer, uint32_t const windowIndex)
+{
+	cdraw_assert(renderer && renderer->r && renderer->f && renderer->f->cdrawRendererDetachWindow);
+	return renderer->f->cdrawRendererDetachWindow(renderer->r, windowIndex);
+
+}
+
+CDRAW_INL result_t cdrawRendererWindowsSupported(cdrawRenderer const* const renderer, uint32_t* const count_out)
+{
+	cdraw_assert(renderer && renderer->r && renderer->f && renderer->f->cdrawRendererWindowsSupported);
+	return renderer->f->cdrawRendererWindowsSupported(renderer->r, count_out);
+}
+
 
 #endif // #if (!(defined _CDRAW_RENDERER_INL_) && (defined _CDRAW_RENDERER_H_))

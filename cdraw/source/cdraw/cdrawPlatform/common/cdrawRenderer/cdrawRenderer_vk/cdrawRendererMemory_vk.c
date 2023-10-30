@@ -20,6 +20,7 @@
 */
 
 #include "_h/cdrawRenderer_vk.h"
+#include "_h/cdrawRenderer_vk/cdrawRendererMemory_vk.h"
 
 #include <string.h>
 
@@ -110,7 +111,7 @@ VkAllocationCallbacks const* cdrawVkAllocatorUse(cdrawVkAllocator const* const a
 	return (allocator->allocationCallbacks.pUserData ? &allocator->allocationCallbacks : NULL);
 }
 
-VkAllocationCallbacks* cdrawVkAllocatorInit(cdrawVkAllocator* const allocator_out,
+VkAllocationCallbacks const* cdrawVkAllocatorInit(cdrawVkAllocator* const allocator_out,
 	label_t const name, bool const enable)
 {
 	cdraw_assert(allocator_out);

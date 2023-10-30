@@ -102,7 +102,12 @@ typedef struct cdrawVkLogicalDevice
 	/// Index of graphics queue family.
 	/// Should have additional one for dedicated compute.
 	/// </summary>
-	int32_t queueFamilyIdx_graphics;
+	uint32_t queueFamilyIdx_graphics;
+
+	/// <summary>
+	/// Maximum number of surfaces expected to use this device.
+	/// </summary>
+	uint32_t surfaceCountMax;
 
 	/// <summary>
 	/// Description of physical device used to create logical device.
@@ -114,6 +119,38 @@ typedef struct cdrawVkLogicalDevice
 	/// </summary>
 	cdrawVkDeviceFuncTable f;
 } cdrawVkLogicalDevice;
+
+/// <summary>
+/// Vulkan queue descriptor.
+/// </summary>
+typedef struct cdrawVkQueue
+{
+	/// <summary>
+	/// Descriptor name.
+	/// </summary>
+	label_t name;
+
+	/// <summary>
+	/// Vulkan queue handle.
+	/// </summary>
+	VkQueue queue;
+} cdrawVkQueue;
+
+/// <summary>
+/// Vulkan command buffer descriptor.
+/// </summary>
+typedef struct cdrawVkCommandBuffer
+{
+	/// <summary>
+	/// Descriptor name.
+	/// </summary>
+	label_t name;
+
+	/// <summary>
+	/// Vulkan command buffer handle.
+	/// </summary>
+	VkCommandBuffer commandBuffer;
+} cdrawVkCommandBuffer;
 
 
 #ifdef __cplusplus
@@ -135,15 +172,16 @@ extern "C" {
 	bool cdrawVkLogicalDeviceUnused(cdrawVkLogicalDevice const* const logicalDevice);
 
 	/// <summary>
-	/// 
+	/// Create logical device.
 	/// </summary>
 	/// <param name="logicalDevice_out">Target logical device descriptor (non-null and unused).</param>
 	/// <param name="name">Descriptor name.</param>
 	/// <param name="instance">Instance descriptor.</param>
+	/// <param name="surfaceCountMax">Application-defined maximum number of windows expected.</param>
 	/// <param name="alloc_opt">Optional allocation callbacks.</param>
 	/// <returns>True if created.</returns>
 	bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
-		label_t const name, cdrawVkInstance const* const instance, VkAllocationCallbacks const* const alloc_opt);
+		label_t const name, cdrawVkInstance const* const instance, uint32_t const surfaceCountMax, VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
 	/// Destroy logical device.
@@ -153,6 +191,66 @@ extern "C" {
 	/// <returns>True if destroyed.</returns>
 	bool cdrawVkLogicalDeviceDestroy(cdrawVkLogicalDevice* const logicalDevice_out,
 		VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Constructor for Vulkan command buffer descriptor.
+	/// </summary>
+	/// <param name="commandBuffer_out">Target command buffer descriptor (non-null).</param>
+	/// <param name="name">Descriptor name.</param>
+	/// <param name="commandBuffer">Vulkan command buffer handle.</param>
+	/// <returns>Success: <paramref name="commandBuffer_out"/>; Failure: <c>NULL</c>.</returns>
+	cdrawVkCommandBuffer* cdrawVkCommandBufferCtor(cdrawVkCommandBuffer* const commandBuffer_out,
+		label_t const name, VkCommandBuffer const commandBuffer);
+
+	/// <summary>
+	/// Destructor interface for Vulkan command buffer descriptor.
+	/// </summary>
+	/// <param name="commandBuffer_out">Target command buffer descriptor (non-null).</param>
+	void cdrawVkCommandBufferDtor(cdrawVkCommandBuffer* const commandBuffer_out);
+
+	/// <summary>
+	/// Indicate whether descriptor is valid (set up correctly) and should not be modified.
+	/// </summary>
+	/// <param name="commandBuffer">Descriptor (non-null).</param>
+	/// <returns>True if valid.</returns>
+	bool cdrawVkCommandBufferValid(cdrawVkCommandBuffer const* const commandBuffer);
+
+	/// <summary>
+	/// Indicate whether descriptor is unused (not set up) and can be modified.
+	/// </summary>
+	/// <param name="commandBuffer">Descriptor (non-null).</param>
+	/// <returns>True if unused.</returns>
+	bool cdrawVkCommandBufferUnused(cdrawVkCommandBuffer const* const commandBuffer);
+
+	/// <summary>
+	/// Constructor for Vulkan queue descriptor.
+	/// </summary>
+	/// <param name="queue_out">Target queue descriptor (non-null).</param>
+	/// <param name="name">Descriptor name.</param>
+	/// <param name="queue">Vulkan queue handle.</param>
+	/// <returns>Success: <paramref name="queue_out"/>; Failure: <c>NULL</c>.</returns>
+	cdrawVkQueue* cdrawVkQueueCtor(cdrawVkQueue* const queue_out,
+		label_t const name, VkQueue const queue);
+
+	/// <summary>
+	/// Destructor interface for Vulkan queue descriptor.
+	/// </summary>
+	/// <param name="queue_out">Target queue descriptor (non-null).</param>
+	void cdrawVkQueueDtor(cdrawVkQueue* const queue_out);
+
+	/// <summary>
+	/// Indicate whether descriptor is valid (set up correctly) and should not be modified.
+	/// </summary>
+	/// <param name="queue">Descriptor (non-null).</param>
+	/// <returns>True if valid.</returns>
+	bool cdrawVkQueueValid(cdrawVkQueue const* const queue);
+
+	/// <summary>
+	/// Indicate whether descriptor is unused (not set up) and can be modified.
+	/// </summary>
+	/// <param name="queue">Descriptor (non-null).</param>
+	/// <returns>True if unused.</returns>
+	bool cdrawVkQueueUnused(cdrawVkQueue const* const queue);
 
 
 #ifdef __cplusplus

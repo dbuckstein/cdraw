@@ -20,6 +20,7 @@
 */
 
 #include "_h/cdrawRenderer_vk.h"
+#include "_h/cdrawRenderer_vk/cdrawRendererPresentation_vk.h"
 
 
 /******************************************************************************

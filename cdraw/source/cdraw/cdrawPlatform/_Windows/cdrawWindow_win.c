@@ -1670,5 +1670,14 @@ result_t cdrawWindowPluginDetach(cdrawWindow* const window)
 	result_return();
 }
 
+result_t cdrawWindowAttachToRenderer(cdrawWindow const* const window, cdrawRenderer const* const renderer, uint32_t const windowIndex)
+{
+	result_init();
+	asserterr(window && p_window, errcode_invalidarg);
+	asserterr(renderer && renderer->r, errcode_invalidarg);
+	result_inc(cdrawRendererAttachWindow(renderer, windowIndex, p_window));
+	result_return();
+}
+
 
 #endif // #if CDRAW_TARGET_WINDOWS

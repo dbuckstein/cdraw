@@ -71,7 +71,7 @@ extern "C" {
 	/// <param name="name">Name of descriptor.</param>
 	/// <param name="enable">Using flag, true to prepare for use.</param>
 	/// <returns></returns>
-	VkAllocationCallbacks* cdrawVkAllocatorInit(cdrawVkAllocator* const allocator_out,
+	VkAllocationCallbacks const* cdrawVkAllocatorInit(cdrawVkAllocator* const allocator_out,
 		label_t const name, bool const enable);
 
 	/// <summary>

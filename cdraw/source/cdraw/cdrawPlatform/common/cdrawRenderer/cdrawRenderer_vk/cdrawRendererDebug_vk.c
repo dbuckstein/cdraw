@@ -99,6 +99,83 @@ static VkBool32 cdrawVkDebugInternalDebugUtilsMessengerCallback(
 }
 
 
+static VkDebugUtilsObjectNameInfoEXT cdrawVkDebugUtilsObjectNameInfoCtor(
+	ptrk_t const object, VkObjectType const objectType, label_t const objectName)
+{
+	VkDebugUtilsObjectNameInfoEXT debugUtilsObjectNameInfo = { 0 };
+	debugUtilsObjectNameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+	debugUtilsObjectNameInfo.objectHandle = (uint64_t)object;
+	debugUtilsObjectNameInfo.objectType = objectType;
+	debugUtilsObjectNameInfo.pObjectName = objectName;
+	return debugUtilsObjectNameInfo;
+}
+
+static VkDebugUtilsObjectTagInfoEXT cdrawVkDebugUtilsObjectTagInfoCtor(
+	ptrk_t const object, VkObjectType const objectType, uint64_t const tagName, size_t const tagSize, ptrk_t const tag)
+{
+	VkDebugUtilsObjectTagInfoEXT debugUtilsObjectTagInfo = { 0 };
+	debugUtilsObjectTagInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT;
+	debugUtilsObjectTagInfo.objectHandle = (uint64_t)object;
+	debugUtilsObjectTagInfo.objectType = objectType;
+	debugUtilsObjectTagInfo.tagName = tagName;
+	debugUtilsObjectTagInfo.tagSize = tagSize;
+	debugUtilsObjectTagInfo.pTag = tag;
+	return debugUtilsObjectTagInfo;
+}
+
+static VkDebugUtilsLabelEXT cdrawVkDebugUtilsLabelCtor(
+	label_t const labelName, fp32_t const color_opt[4])
+{
+	VkDebugUtilsLabelEXT debugUtilsLabel = { 0 };
+	fp32_t* const color = debugUtilsLabel.color;
+	debugUtilsLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+	debugUtilsLabel.pLabelName = labelName;
+	if (color_opt)
+		memcpy(color, color_opt, sizeof(debugUtilsLabel.color));
+	else
+		color[0] = color[1] = color[2] = color[3] = 1.0f;
+	return debugUtilsLabel;
+}
+
+static VkDebugMarkerObjectNameInfoEXT cdrawVkDebugMarkerObjectNameInfoCtor(
+	ptrk_t const object, VkDebugReportObjectTypeEXT const objectType, label_t const objectName)
+{
+	VkDebugMarkerObjectNameInfoEXT debugMarkerObjectNameInfo = { 0 };
+	debugMarkerObjectNameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
+	debugMarkerObjectNameInfo.object = (uint64_t)object;
+	debugMarkerObjectNameInfo.objectType = objectType;
+	debugMarkerObjectNameInfo.pObjectName = objectName;
+	return debugMarkerObjectNameInfo;
+}
+
+static VkDebugMarkerObjectTagInfoEXT cdrawVkDebugMarkerObjectTagInfoCtor(
+	ptrk_t const object, VkDebugReportObjectTypeEXT const objectType, uint64_t const tagName, size_t const tagSize, ptrk_t const tag)
+{
+	VkDebugMarkerObjectTagInfoEXT debugMarkerObjectTagInfo = { 0 };
+	debugMarkerObjectTagInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT;
+	debugMarkerObjectTagInfo.object = (uint64_t)object;
+	debugMarkerObjectTagInfo.objectType = objectType;
+	debugMarkerObjectTagInfo.tagName = tagName;
+	debugMarkerObjectTagInfo.tagSize = tagSize;
+	debugMarkerObjectTagInfo.pTag = tag;
+	return debugMarkerObjectTagInfo;
+}
+
+static VkDebugMarkerMarkerInfoEXT cdrawVkDebugMarkerMarkerInfoCtor(
+	label_t const markerName, fp32_t const color_opt[4])
+{
+	VkDebugMarkerMarkerInfoEXT debugMarkerMarkerInfo = { 0 };
+	fp32_t* const color = debugMarkerMarkerInfo.color;
+	debugMarkerMarkerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
+	debugMarkerMarkerInfo.pMarkerName = markerName;
+	if (color_opt)
+		memcpy(color, color_opt, sizeof(debugMarkerMarkerInfo.color));
+	else
+		color[0] = color[1] = color[2] = color[3] = 1.0f;
+	return debugMarkerMarkerInfo;
+}
+
+
 /******************************************************************************
 * Private implementations.
 ******************************************************************************/
@@ -273,81 +350,6 @@ bool cdrawVkDebugCreateDebugUtilsMessenger(VkDebugUtilsMessengerEXT* const debug
 	return true;
 }
 
-VkDebugUtilsObjectNameInfoEXT cdrawVkDebugUtilsObjectNameInfoCtor(
-	ptrk_t const object, VkObjectType const objectType, label_t const objectName)
-{
-	VkDebugUtilsObjectNameInfoEXT debugUtilsObjectNameInfo = { 0 };
-	debugUtilsObjectNameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-	debugUtilsObjectNameInfo.objectHandle = (uint64_t)object;
-	debugUtilsObjectNameInfo.objectType = objectType;
-	debugUtilsObjectNameInfo.pObjectName = objectName;
-	return debugUtilsObjectNameInfo;
-}
-
-VkDebugUtilsObjectTagInfoEXT cdrawVkDebugUtilsObjectTagInfoCtor(
-	ptrk_t const object, VkObjectType const objectType, uint64_t const tagName, size_t const tagSize, ptrk_t const tag)
-{
-	VkDebugUtilsObjectTagInfoEXT debugUtilsObjectTagInfo = { 0 };
-	debugUtilsObjectTagInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT;
-	debugUtilsObjectTagInfo.objectHandle = (uint64_t)object;
-	debugUtilsObjectTagInfo.objectType = objectType;
-	debugUtilsObjectTagInfo.tagName = tagName;
-	debugUtilsObjectTagInfo.tagSize = tagSize;
-	debugUtilsObjectTagInfo.pTag = tag;
-	return debugUtilsObjectTagInfo;
-}
-
-VkDebugUtilsLabelEXT cdrawVkDebugUtilsLabelCtor(
-	label_t const labelName, fp32_t const color_opt[4])
-{
-	VkDebugUtilsLabelEXT debugUtilsLabel = { 0 };
-	fp32_t* const color = debugUtilsLabel.color;
-	debugUtilsLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
-	debugUtilsLabel.pLabelName = labelName;
-	if (color_opt)
-		memcpy(color, color_opt, sizeof(debugUtilsLabel.color));
-	else
-		color[0] = color[1] = color[2] = color[3] = 1.0f;
-	return debugUtilsLabel;
-}
-
-VkDebugMarkerObjectNameInfoEXT cdrawVkDebugMarkerObjectNameInfoCtor(
-	ptrk_t const object, VkDebugReportObjectTypeEXT const objectType, label_t const objectName)
-{
-	VkDebugMarkerObjectNameInfoEXT debugMarkerObjectNameInfo = { 0 };
-	debugMarkerObjectNameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_NAME_INFO_EXT;
-	debugMarkerObjectNameInfo.object = (uint64_t)object;
-	debugMarkerObjectNameInfo.objectType = objectType;
-	debugMarkerObjectNameInfo.pObjectName = objectName;
-	return debugMarkerObjectNameInfo;
-}
-
-VkDebugMarkerObjectTagInfoEXT cdrawVkDebugMarkerObjectTagInfoCtor(
-	ptrk_t const object, VkDebugReportObjectTypeEXT const objectType, uint64_t const tagName, size_t const tagSize, ptrk_t const tag)
-{
-	VkDebugMarkerObjectTagInfoEXT debugMarkerObjectTagInfo = { 0 };
-	debugMarkerObjectTagInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_OBJECT_TAG_INFO_EXT;
-	debugMarkerObjectTagInfo.object = (uint64_t)object;
-	debugMarkerObjectTagInfo.objectType = objectType;
-	debugMarkerObjectTagInfo.tagName = tagName;
-	debugMarkerObjectTagInfo.tagSize = tagSize;
-	debugMarkerObjectTagInfo.pTag = tag;
-	return debugMarkerObjectTagInfo;
-}
-
-VkDebugMarkerMarkerInfoEXT cdrawVkDebugMarkerMarkerInfoCtor(
-	label_t const markerName, fp32_t const color_opt[4])
-{
-	VkDebugMarkerMarkerInfoEXT debugMarkerMarkerInfo = { 0 };
-	fp32_t* const color = debugMarkerMarkerInfo.color;
-	debugMarkerMarkerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
-	debugMarkerMarkerInfo.pMarkerName = markerName;
-	if (color_opt)
-		memcpy(color, color_opt, sizeof(debugMarkerMarkerInfo.color));
-	else
-		color[0] = color[1] = color[2] = color[3] = 1.0f;
-	return debugMarkerMarkerInfo;
-}
 
 void cdrawVkInstanceDebugRefresh(VkInstance const instance,
 	cdrawVkInstanceDebugFuncTable* const f)
@@ -425,6 +427,113 @@ bool cdrawVkDeviceDebugFuncValid(cdrawVkDeviceDebugFuncTable const* const f)
 /******************************************************************************
 * Public implementations.
 ******************************************************************************/
+
+bool cdrawVkDebugUtilsObjectName(cdrawVkInstance const* const instance, cdrawVkLogicalDevice const* const logicalDevice,
+	ptrk_t const object, VkObjectType const objectType, label_t const objectName)
+{
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkLogicalDeviceValid(logicalDevice));
+	VkDebugUtilsObjectNameInfoEXT const debugUtilsObjectNameInfo = cdrawVkDebugUtilsObjectNameInfoCtor(object, objectType, objectName);
+	return (instance->f.f_debug.vkSetDebugUtilsObjectNameEXT(logicalDevice->logicalDevice, &debugUtilsObjectNameInfo) == VK_SUCCESS);
+}
+
+bool cdrawVkDebugUtilsObjectTag(cdrawVkInstance const* const instance, cdrawVkLogicalDevice const* const logicalDevice,
+	ptrk_t const object, VkObjectType const objectType, uint64_t const tagName, size_t const tagSize, ptrk_t const tag)
+{
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkLogicalDeviceValid(logicalDevice));
+	VkDebugUtilsObjectTagInfoEXT const debugUtilsObjectTagInfo = cdrawVkDebugUtilsObjectTagInfoCtor(object, objectType, tagName, tagSize, tag);
+	return (instance->f.f_debug.vkSetDebugUtilsObjectTagEXT(logicalDevice->logicalDevice, &debugUtilsObjectTagInfo) == VK_SUCCESS);
+}
+
+bool cdrawVkDebugUtilsLabelCommandBegin(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer,
+	label_t const labelName, fp32_t const color_opt[4])
+{
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkCommandBufferValid(commandBuffer));
+	VkDebugUtilsLabelEXT const debugUtilsLabel = cdrawVkDebugUtilsLabelCtor(labelName, color_opt);
+	instance->f.f_debug.vkCmdBeginDebugUtilsLabelEXT(commandBuffer->commandBuffer, &debugUtilsLabel);
+	return true;
+}
+
+bool cdrawVkDebugUtilsLabelCommandEnd(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer)
+{
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkCommandBufferValid(commandBuffer));
+	instance->f.f_debug.vkCmdEndDebugUtilsLabelEXT(commandBuffer->commandBuffer);
+	return true;
+}
+
+bool cdrawVkDebugUtilsLabelCommandInsert(cdrawVkInstance const* const instance, cdrawVkCommandBuffer const* const commandBuffer,
+	label_t const labelName, fp32_t const color_opt[4])
+{
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkCommandBufferValid(commandBuffer));
+	VkDebugUtilsLabelEXT const debugUtilsLabel = cdrawVkDebugUtilsLabelCtor(labelName, color_opt);
+	instance->f.f_debug.vkCmdInsertDebugUtilsLabelEXT(commandBuffer->commandBuffer, &debugUtilsLabel);
+	return true;
+}
+
+bool cdrawVkDebugUtilsLabelQueueBegin(cdrawVkInstance const* const instance, cdrawVkQueue const* const queue,
+	label_t const labelName, fp32_t const color_opt[4])
+{
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkQueueValid(queue));
+	VkDebugUtilsLabelEXT const debugUtilsLabel = cdrawVkDebugUtilsLabelCtor(labelName, color_opt);
+	instance->f.f_debug.vkQueueBeginDebugUtilsLabelEXT(queue->queue, &debugUtilsLabel);
+	return true;
+}
+
+bool cdrawVkDebugUtilsLabelQueueEnd(cdrawVkInstance const* const instance, cdrawVkQueue const* const queue)
+{
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkQueueValid(queue));
+	instance->f.f_debug.vkQueueEndDebugUtilsLabelEXT(queue->queue);
+	return true;
+}
+
+bool cdrawVkDebugUtilsLabelQueueInsert(cdrawVkInstance const* const instance, cdrawVkQueue const* const queue,
+	label_t const labelName, fp32_t const color_opt[4])
+{
+	cdraw_assert(cdrawVkInstanceValid(instance) && cdrawVkQueueValid(queue));
+	VkDebugUtilsLabelEXT const debugUtilsLabel = cdrawVkDebugUtilsLabelCtor(labelName, color_opt);
+	instance->f.f_debug.vkQueueInsertDebugUtilsLabelEXT(queue->queue, &debugUtilsLabel);
+	return true;
+}
+
+bool cdrawVkDebugMarkerObjectName(cdrawVkLogicalDevice const* const logicalDevice,
+	ptrk_t const object, VkDebugReportObjectTypeEXT const objectType, label_t const objectName)
+{
+	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice));
+	VkDebugMarkerObjectNameInfoEXT const debugMarkerObjectNameInfo = cdrawVkDebugMarkerObjectNameInfoCtor(object, objectType, objectName);
+	return (logicalDevice->f.f_debug.vkDebugMarkerSetObjectNameEXT(logicalDevice->logicalDevice, &debugMarkerObjectNameInfo) == VK_SUCCESS);
+}
+
+bool cdrawVkDebugMarkerObjectTag(cdrawVkLogicalDevice const* const logicalDevice,
+	ptrk_t const object, VkDebugReportObjectTypeEXT const objectType, uint64_t const tagName, size_t const tagSize, ptrk_t const tag)
+{
+	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice));
+	VkDebugMarkerObjectTagInfoEXT const debugMarkerObjectTagInfo = cdrawVkDebugMarkerObjectTagInfoCtor(object, objectType, tagName, tagSize, tag);
+	return (logicalDevice->f.f_debug.vkDebugMarkerSetObjectTagEXT(logicalDevice->logicalDevice, &debugMarkerObjectTagInfo) == VK_SUCCESS);
+}
+
+bool cdrawVkDebugMarkerCommandBegin(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer,
+	label_t const markerName, fp32_t const color_opt[4])
+{
+	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice) && cdrawVkCommandBufferValid(commandBuffer));
+	VkDebugMarkerMarkerInfoEXT const debugMarkerMarkerInfo = cdrawVkDebugMarkerMarkerInfoCtor(markerName, color_opt);
+	logicalDevice->f.f_debug.vkCmdDebugMarkerBeginEXT(commandBuffer->commandBuffer, &debugMarkerMarkerInfo);
+	return true;
+}
+
+bool cdrawVkDebugMarkerCommandEnd(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer)
+{
+	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice) && cdrawVkCommandBufferValid(commandBuffer));
+	logicalDevice->f.f_debug.vkCmdDebugMarkerEndEXT(commandBuffer->commandBuffer);
+	return true;
+}
+
+bool cdrawVkDebugMarkerCommandInsert(cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandBuffer const* const commandBuffer,
+	label_t const markerName, fp32_t const color_opt[4])
+{
+	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice) && cdrawVkCommandBufferValid(commandBuffer));
+	VkDebugMarkerMarkerInfoEXT const debugMarkerMarkerInfo = cdrawVkDebugMarkerMarkerInfoCtor(markerName, color_opt);
+	logicalDevice->f.f_debug.vkCmdDebugMarkerInsertEXT(commandBuffer->commandBuffer, &debugMarkerMarkerInfo);
+	return true;
+}
 
 
 #endif // #if CDRAW_DEBUG

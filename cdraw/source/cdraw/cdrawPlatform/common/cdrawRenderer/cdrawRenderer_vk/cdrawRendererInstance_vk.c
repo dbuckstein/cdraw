@@ -70,9 +70,9 @@ static bool cdrawVkInstanceFuncValid(
 	cdrawVkInstanceFuncTable const* const f)
 {
 	cdraw_assert(f);
-	return (
+	return (true
 #if CDRAW_DEBUG
-		cdrawVkInstanceDebugFuncValid(&f->f_debug)
+		&& cdrawVkInstanceDebugFuncValid(&f->f_debug)
 #endif // #if CDRAW_DEBUG
 		);
 }
@@ -106,7 +106,7 @@ VkDebugUtilsMessengerCreateInfoEXT cdrawVkDebugUtilsMessengerCreateInfoCtorDefau
 cdrawVkInstance* cdrawVkInstanceCtor(cdrawVkInstance* const instance_out,
 	label_t const name, VkInstance const instance)
 {
-	failassertret(instance_out, NULL);
+	failassertret(instance_out && cdrawVkInstanceUnused(instance_out), NULL);
 	failassertret(instance, NULL);
 	label_copy_safe(instance_out->name, name);
 	instance_out->instance = instance;
@@ -191,7 +191,7 @@ static VkInstanceCreateInfo cdrawVkInstanceCreateInfoCtor(
 	return instanceCreateInfo;
 }
 
-cstrk_t cdrawRendererInternalPlatformSurfaceExtName_vk();
+cstrk_t cdrawVkSurfacePlatformExtName();
 
 bool cdrawVkInstanceCreate(cdrawVkInstance* const instance_out,
 	label_t const name, VkAllocationCallbacks const* const alloc_opt)
@@ -239,7 +239,7 @@ bool cdrawVkInstanceCreate(cdrawVkInstance* const instance_out,
 	};
 	cstrk_t const instExtName_require[] = {
 		VK_KHR_SURFACE_EXTENSION_NAME,
-		cdrawRendererInternalPlatformSurfaceExtName_vk(),
+		cdrawVkSurfacePlatformExtName(),
 		NULL
 	};
 	cstrk_t instExtName[buffer_len(instExtName_request) + buffer_len(instExtName_require)] = { NULL };
@@ -389,7 +389,7 @@ bool cdrawVkInstanceDestroy(cdrawVkInstance* const instance_out,
 {
 	failassertret(instance_out, false);
 	if (cdrawVkInstanceUnused(instance_out))
-		return false;
+		return true;
 
 	printf("\n Destroying Vulkan instance \"%s\"...", instance_out->name);
 	//if (instance_out->instance)

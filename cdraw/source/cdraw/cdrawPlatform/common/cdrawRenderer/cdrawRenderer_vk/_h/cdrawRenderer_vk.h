@@ -38,8 +38,7 @@
 
 enum
 {
-	cdrawVkImagePresent_max = 4,	// convenience: max number of presentation images
-	cdrawVkCmdBufPresent_max = 1,	// convenience: max number of presentation command buffers
+	cdrawVkSurfacePresent_max = 1,	// convenience: max number of presentation setups
 };
 
 /// <summary>

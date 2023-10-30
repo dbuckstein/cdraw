@@ -155,9 +155,9 @@ static bool cdrawVkDeviceFuncValid(
 	cdrawVkDeviceFuncTable const* const f)
 {
 	cdraw_assert(f);
-	return (
+	return (true
 #if CDRAW_DEBUG
-		cdrawVkDeviceDebugFuncValid(&f->f_debug)
+		&& cdrawVkDeviceDebugFuncValid(&f->f_debug)
 #endif // #if CDRAW_DEBUG
 		);
 }
@@ -173,7 +173,7 @@ int32_t cdrawVkExtensionPropertiesPrint(VkExtensionProperties const* const extPr
 cdrawVkLogicalDevice* cdrawVkLogicalDeviceCtor(cdrawVkLogicalDevice* const logicalDevice_out,
 	label_t const name, VkDevice const logicalDevice, cdrawVkPhysicalDevice const* const physicalDevice)
 {
-	failassertret(logicalDevice_out, NULL);
+	failassertret(logicalDevice_out && cdrawVkLogicalDeviceUnused(logicalDevice_out), NULL);
 	failassertret(logicalDevice && physicalDevice && physicalDevice->physicalDevice, NULL);
 	label_copy_safe(logicalDevice_out->name, name);
 	logicalDevice_out->logicalDevice = logicalDevice;
@@ -199,6 +199,66 @@ bool cdrawVkLogicalDeviceUnused(cdrawVkLogicalDevice const* const logicalDevice)
 {
 	cdraw_assert(logicalDevice);
 	return (!logicalDevice->logicalDevice && !logicalDevice->physicalDevice.physicalDevice);
+}
+
+
+cdrawVkCommandBuffer* cdrawVkCommandBufferCtor(cdrawVkCommandBuffer* const commandBuffer_out,
+	label_t const name, VkCommandBuffer const commandBuffer)
+{
+	failassertret(commandBuffer_out && cdrawVkCommandBufferUnused(commandBuffer_out), NULL);
+	failassertret(commandBuffer, NULL);
+	label_copy_safe(commandBuffer_out->name, name);
+	commandBuffer_out->commandBuffer = commandBuffer;
+	return commandBuffer_out;
+}
+
+void cdrawVkCommandBufferDtor(cdrawVkCommandBuffer* const commandBuffer_out)
+{
+	failassertret(commandBuffer_out);
+	label_init(commandBuffer_out->name);
+	commandBuffer_out->commandBuffer = VK_NULL_HANDLE;
+}
+
+bool cdrawVkCommandBufferValid(cdrawVkCommandBuffer const* const commandBuffer)
+{
+	cdraw_assert(commandBuffer);
+	return (commandBuffer->commandBuffer);
+}
+
+bool cdrawVkCommandBufferUnused(cdrawVkCommandBuffer const* const commandBuffer)
+{
+	cdraw_assert(commandBuffer);
+	return (!commandBuffer->commandBuffer);
+}
+
+
+cdrawVkQueue* cdrawVkQueueCtor(cdrawVkQueue* const queue_out,
+	label_t const name, VkQueue const queue)
+{
+	failassertret(queue_out && cdrawVkQueueUnused(queue_out), NULL);
+	failassertret(queue, NULL);
+	label_copy_safe(queue_out->name, name);
+	queue_out->queue = queue;
+	return queue_out;
+}
+
+void cdrawVkQueueDtor(cdrawVkQueue* const queue_out)
+{
+	failassertret(queue_out);
+	label_init(queue_out->name);
+	queue_out->queue = VK_NULL_HANDLE;
+}
+
+bool cdrawVkQueueValid(cdrawVkQueue const* const queue)
+{
+	cdraw_assert(queue);
+	return (queue->queue);
+}
+
+bool cdrawVkQueueUnused(cdrawVkQueue const* const queue)
+{
+	cdraw_assert(queue);
+	return (!queue->queue);
 }
 
 
@@ -242,10 +302,10 @@ static VkDeviceCreateInfo cdrawVkDeviceCreateInfoCtor(
 	return deviceCreateInfo;
 }
 
-bool cdrawRendererInternalPlatformQueueFamilySupportsPresentation_vk(VkPhysicalDevice const physicalDevice, uint32_t const queueFamilyIndex);
+bool cdrawVkPhysicalDeviceGetPlatformPresentationSupport(VkPhysicalDevice const physicalDevice, uint32_t const queueFamilyIndex);
 
 bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
-	label_t const name, cdrawVkInstance const* const instance, VkAllocationCallbacks const* const alloc_opt)
+	label_t const name, cdrawVkInstance const* const instance, uint32_t const surfaceCountMax, VkAllocationCallbacks const* const alloc_opt)
 {
 	// print prefixes
 	cstrk_t const pref1 = "\t    ", pref1A = "\t -> ", pref2 = "\t\t    ", pref2A = "\t\t -> ", pref3 = "\t\t\t    ", pref3A = "\t\t\t -> ";
@@ -267,7 +327,7 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 	VkQueueFlagBits const queueFamilySelectType_graphics_require = (
 		//| VK_QUEUE_COMPUTE_BIT // can be added later or make a new queue
 		VK_QUEUE_GRAPHICS_BIT);
-	int32_t queueFamilySelectIdx_graphics = -1;
+	uint32_t queueFamilySelectIdx_graphics = uint32_invalid;
 	uint32_t const queueCount_graphics = 1;
 
 	// device layers (deprecated)
@@ -323,7 +383,7 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 	VkDevice logicalDevice = VK_NULL_HANDLE;
 	cdrawVkPhysicalDevice physicalDeviceSelect = { 0 };
 
-	failassertret(logicalDevice_out && cdrawVkLogicalDeviceUnused(logicalDevice_out) && instance && cdrawVkInstanceValid(instance), false);
+	failassertret(logicalDevice_out && cdrawVkLogicalDeviceUnused(logicalDevice_out) && instance && cdrawVkInstanceValid(instance) && surfaceCountMax, false);
 	printf("\n Creating Vulkan logical device \"%s\"...", name);
 
 	// get physical devices
@@ -451,8 +511,8 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 				{
 					// save best queue family supporting graphics and presentation
 					if (flagcheckexcl(pQueueFamilyProp[familyItr].queueFlags, queueFamilySelectType_graphics_require)
-						&& cdrawRendererInternalPlatformQueueFamilySupportsPresentation_vk(physicalDeviceSelect.physicalDevice, familyItr)
-						&& queueFamilySelectIdx_graphics < 0)
+						&& cdrawVkPhysicalDeviceGetPlatformPresentationSupport(physicalDeviceSelect.physicalDevice, familyItr)
+						&& !uint32_valid(queueFamilySelectIdx_graphics))
 					{
 						queueFamilySelectIdx_graphics = familyItr;
 						cdrawRendererPrintQueueFamily_vk(&pQueueFamilyProp[familyItr], queueFamilySelectIdx_graphics, pref2A);
@@ -461,10 +521,11 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 						cdrawRendererPrintQueueFamily_vk(&pQueueFamilyProp[familyItr], familyItr, pref2);
 				}
 
-				if (queueFamilySelectIdx_graphics >= 0)
+				if (uint32_valid(queueFamilySelectIdx_graphics))
 				{
 					logicalDevice_out->queueFamilyProp_graphics = pQueueFamilyProp[queueFamilySelectIdx_graphics];
 					logicalDevice_out->queueFamilyIdx_graphics = queueFamilySelectIdx_graphics;
+					logicalDevice_out->surfaceCountMax = surfaceCountMax;
 				}
 
 				free(pQueueFamilyProp);
@@ -550,7 +611,7 @@ bool cdrawVkLogicalDeviceDestroy(cdrawVkLogicalDevice* const logicalDevice_out,
 {
 	failassertret(logicalDevice_out, false);
 	if (cdrawVkLogicalDeviceUnused(logicalDevice_out))
-		return false;
+		return true;
 
 	printf("\n Destroying Vulkan logical device \"%s\"...", logicalDevice_out->name);
 	//if (logicalDevice_out->logicalDevice)
@@ -561,7 +622,7 @@ bool cdrawVkLogicalDeviceDestroy(cdrawVkLogicalDevice* const logicalDevice_out,
 		vkDestroyDevice(logicalDevice_out->logicalDevice, alloc_opt);
 		logicalDevice_out->logicalDevice = VK_NULL_HANDLE;
 	}
-	if (logicalDevice_out->physicalDevice.physicalDevice)
+	//if (logicalDevice_out->physicalDevice.physicalDevice)
 	{
 		logicalDevice_out->physicalDevice.physicalDevice = VK_NULL_HANDLE;
 		memset(&logicalDevice_out->physicalDevice, 0, sizeof(logicalDevice_out->physicalDevice));

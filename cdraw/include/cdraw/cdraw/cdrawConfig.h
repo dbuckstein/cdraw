@@ -142,8 +142,21 @@ typedef uint64_t							qword_t;	// Quad-word type (8 bytes).
 #define uint16_invalid						UINT16_MAX	// Global value representing invalid 16-bit unsigned integer.
 #define uint32_invalid						UINT32_MAX	// Global value representing invalid 32-bit unsigned integer.
 #define uint64_invalid						UINT64_MAX	// Global value representing invalid 64-bit unsigned integer.
+#define fp_invalid							NAN			// Global value representing invalid floating point number (NaN).
 #define ptr_invalid							NULL		// Global value representing invalid pointer.
 #define cstr_invalid						""			// Global value representing invalid non-null c-style string (also invalid if null).
+
+#define int8_valid(x)						((x)!=int8_invalid)								// True if value is not invalid constant.
+#define int16_valid(x)						((x)!=int16_invalid)							// True if value is not invalid constant.
+#define int32_valid(x)						((x)!=int32_invalid)							// True if value is not invalid constant.
+#define int64_valid(x)						((x)!=int64_invalid)							// True if value is not invalid constant.
+#define uint8_valid(x)						((x)!=uint8_invalid)							// True if value is not invalid constant.
+#define uint16_valid(x)						((x)!=uint16_invalid)							// True if value is not invalid constant.
+#define uint32_valid(x)						((x)!=uint32_invalid)							// True if value is not invalid constant.
+#define uint64_valid(x)						((x)!=uint64_invalid)							// True if value is not invalid constant.
+#define fp_valid(x)							(!isnan(x))										// True if value is not NaN.
+#define ptr_valid(x)						((x)!=ptr_invalid)								// True if pointer is initialized.
+#define cstr_valid(x)						(ptr_valid(x)&&(*(x)>0x00i8)&&(*(x)<=0x7Fi8))	// True if pointer is initialized and first character is non-terminating and within standard ASCII range.
 
 
 typedef uint32_t							bitflag_t[8];												// Convenient storage type for 256 bits.
@@ -189,7 +202,6 @@ typedef enum errcode_common_t
 #define result_getwarn(result,warncode)		flagcheck(result_getwarns(result), (1<<(warncode&0xF)))	// Get specific warning code (bit) from result.
 
 
-#define ptr_valid(x)						((x)!=ptr_invalid)										// True if pointer is initialized.
 #define buffer_valid(x)						(ptr_valid(x)&&*(x)!=0)									// True if pointer is initialized and value it points to is non-zero.
 #define buffer_len(x)						(sizeof(x) / sizeof(*(x)))								// Calculate number of elements in buffer (note: does not work on raw pointers).
 #define buffer_init1(dst,offset,type)		(((type*)(dst))[offset]=(type)0)						// Initialize single value in buffer to zero.
@@ -200,7 +212,7 @@ typedef enum errcode_common_t
 
 #define label_base_type						uint64_t															// Basis type of label type.
 typedef byte_t								label_t[sizeof(label_base_type)*4];									// Convenient label type for predefined small strings or tags.
-#define label_valid(label)					buffer_valid(label)													// True if label string has contents.
+#define label_valid(label)					cstr_valid(label)													// True if label string has contents.
 #define label_term(label)					{ label[sizeof(label_t)-1] = 0; }									// Terminate label string.
 #define label_init(label)					{ buffer_init4(label,0,label_base_type); }							// Initialize label string to empty.
 #define label_copy(dst,src)					{ buffer_copy4(dst,src,0,label_base_type); label_term(dst); }		// Copy and terminate label string.
