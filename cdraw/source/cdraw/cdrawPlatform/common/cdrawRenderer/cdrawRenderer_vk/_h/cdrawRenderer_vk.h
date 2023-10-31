@@ -33,6 +33,7 @@
 #include "cdrawRenderer_vk/cdrawRendererInstance_vk.h"
 #include "cdrawRenderer_vk/cdrawRendererDevice_vk.h"
 #include "cdrawRenderer_vk/cdrawRendererImage_vk.h"
+#include "cdrawRenderer_vk/cdrawRendererFramebuffer_vk.h"
 #include "cdrawRenderer_vk/cdrawRendererPresentation_vk.h"
 
 

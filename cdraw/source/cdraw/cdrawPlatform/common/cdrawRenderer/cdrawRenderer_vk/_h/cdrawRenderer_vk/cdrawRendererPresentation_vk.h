@@ -22,6 +22,9 @@
 #if ((!defined _CDRAW_RENDERER_PRESENTATION_VK_H_) && (defined _CDRAW_RENDERER_VK_H_))
 #define _CDRAW_RENDERER_PRESENTATION_VK_H_
 
+#include "cdrawRendererFramebuffer_vk.h"
+
+
 enum
 {
 	cdrawVkImagePresent_max = 4,	// convenience: max number of presentation images
@@ -65,7 +68,7 @@ typedef struct cdrawVkPresentation
 	/// Vulkan graphics/presentation queue.
 	/// Should have one for each swapchain image to avoid locking.
 	/// </summary>
-	VkQueue queue_graphics;
+	cdrawVkQueue queue_graphics;
 
 	/// <summary>
 	/// Color image view resources associated with swapchain images.
@@ -74,15 +77,25 @@ typedef struct cdrawVkPresentation
 	VkImageView imageView_present[cdrawVkImagePresent_max];
 
 	/// <summary>
-	/// Depth image for presentation.
+	/// Depth/stencil image for presentation.
 	/// </summary>
-	cdrawVkImage depthImage_present;
+	cdrawVkImage depthStencilImage_present;
 
 	/// <summary>
 	/// Vulkan command buffers for presentation.
 	/// Should have one for each image to be processed.
 	/// </summary>
 	cdrawVkCommandBuffer commandBuffer_presentation[cdrawVkImagePresent_max];
+
+	/// <summary>
+	/// Vulkan render pass for presentation.
+	/// </summary>
+	cdrawVkRenderPass renderPass_present;
+
+	/// <summary>
+	/// Vulkan framebuffer for presentation.
+	/// </summary>
+	cdrawVkFramebuffer framebuffer_present;
 } cdrawVkPresentation;
 
 

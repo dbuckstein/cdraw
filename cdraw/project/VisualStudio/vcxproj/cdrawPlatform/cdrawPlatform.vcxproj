@@ -190,6 +190,7 @@
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererDebug_vk.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererDevice_vk.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererFramebuffer_vk.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererImage_vk.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererInstance_vk.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererMemory_vk.c" />
@@ -218,6 +219,7 @@
     <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk.h" />
     <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererDebug_vk.h" />
     <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererDevice_vk.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererFramebuffer_vk.h" />
     <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererImage_vk.h" />
     <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererInstance_vk.h" />
     <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererMemory_vk.h" />

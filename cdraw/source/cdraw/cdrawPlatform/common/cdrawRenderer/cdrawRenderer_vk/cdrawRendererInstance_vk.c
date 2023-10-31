@@ -257,8 +257,6 @@ bool cdrawVkInstanceCreate(cdrawVkInstance* const instance_out,
 	cstrk_t nameCmp;
 
 	VkResult result = VK_SUCCESS;
-	VkInstance instance = VK_NULL_HANDLE;
-
 	failassertret(instance_out && cdrawVkInstanceUnused(instance_out), false);
 	printf("\n Creating Vulkan instance \"%s\"...", name);
 
@@ -365,22 +363,22 @@ bool cdrawVkInstanceCreate(cdrawVkInstance* const instance_out,
 			instExtName);
 
 		// create instance
-		result = vkCreateInstance(&instCreateInfo, alloc_opt, &instance);
-		if (instance)
+		result = vkCreateInstance(&instCreateInfo, alloc_opt, &instance_out->instance);
+		if (instance_out->instance)
 			cdraw_assert(result == VK_SUCCESS);
 	}
 
 	// set final outputs or clean up
-	if (!instance || (result != VK_SUCCESS))
+	cdrawVkInstanceRefresh(instance_out->instance, &instance_out->f);
+	if (!cdrawVkInstanceValid(instance_out) || (result != VK_SUCCESS))
 	{
 		cdrawVkInstanceDestroy(instance_out, alloc_opt);
 		printf("\n Vulkan instance \"%s\" creation failed.", name);
 		return false;
 	}
-	cdrawVkInstanceCtor(instance_out, name, instance);
-	cdrawVkInstanceRefresh(instance, &instance_out->f);
-	cdraw_assert(cdrawVkInstanceValid(instance_out));
 	printf("\n Vulkan instance \"%s\" created.", name);
+	label_copy_safe(instance_out->name, name);
+	cdraw_assert(cdrawVkInstanceValid(instance_out));
 	return true;
 }
 

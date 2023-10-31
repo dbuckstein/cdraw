@@ -34,17 +34,6 @@
 * Private implementations.
 ******************************************************************************/
 
-/// <summary>
-/// Constructor for Vulkan surface descriptor.
-/// </summary>
-/// <param name="surface_out">Target surface descriptor (non-null).</param>
-/// <param name="name">Descriptor name.</param>
-/// <param name="surface">Vulkan surface handle.</param>
-/// <returns>Success: <paramref name="surface_out"/>; Failure: <c>NULL</c>.</returns>
-cdrawVkSurface* cdrawVkSurfaceCtor(cdrawVkSurface* const surface_out,
-	label_t const name, VkSurfaceKHR const surface);
-
-
 cstrk_t cdrawVkSurfacePlatformExtName()
 {
 	cstrk_t result = NULL;
@@ -91,8 +80,6 @@ bool cdrawVkSurfaceCreate(cdrawVkSurface* const surface_out,
 	label_t const name, cdrawVkInstance const* const instance, ptrk_t const p_data, VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
-	VkSurfaceKHR surface = VK_NULL_HANDLE;
-
 	failassertret(surface_out && cdrawVkSurfaceUnused(surface_out) && instance && cdrawVkInstanceValid(instance) && p_data, false);
 	printf("\n Creating Vulkan presentation surface \"%s\"...", name);
 
@@ -113,21 +100,21 @@ bool cdrawVkSurfaceCreate(cdrawVkSurface* const surface_out,
 
 		// create surface
 		cdraw_assert(data->hInst && data->hWnd);
-		result = vkCreateWin32SurfaceKHR(instance->instance, &surfaceCreateInfo, alloc_opt, &surface);
+		result = vkCreateWin32SurfaceKHR(instance->instance, &surfaceCreateInfo, alloc_opt, &surface_out->surface);
 #endif // #if CDRAW_TARGET_WINDOWS
-		if (surface)
+		if (surface_out->surface)
 			cdraw_assert(result == VK_SUCCESS);
 	}
 
 	// set final outputs or clean up
-	if (!surface || (result != VK_SUCCESS))
+	if (!cdrawVkSurfaceValid(surface_out) || (result != VK_SUCCESS))
 	{
 		cdrawVkSurfaceDestroy(surface_out, instance, alloc_opt);
 		printf("\n Vulkan presentation surface \"%s\" creation failed.", name);
 		return false;
 	}
-	cdrawVkSurfaceCtor(surface_out, name, surface);
 	printf("\n Vulkan presentation surface \"%s\" created.", name);
+	label_copy_safe(surface_out->name, name);
 	cdraw_assert(cdrawVkSurfaceValid(surface_out));
 	return true;
 }

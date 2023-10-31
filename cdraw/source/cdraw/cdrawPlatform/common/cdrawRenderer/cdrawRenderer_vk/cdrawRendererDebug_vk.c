@@ -248,7 +248,7 @@ VkDebugUtilsMessengerCreateInfoEXT cdrawVkDebugUtilsMessengerCreateInfoCtorDefau
 * Substantial improvements: translated to C and organized.
 ******************************************************************************/
 
-bool cdrawVkDebugDestroyDebugReport(VkDebugReportCallbackEXT* const debugReport_out,
+bool cdrawVkDebugReportDestroy(VkDebugReportCallbackEXT* const debugReport_out,
 	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
 	cdrawVkInstanceDebugFuncTable const* const f)
 {
@@ -266,7 +266,7 @@ bool cdrawVkDebugDestroyDebugReport(VkDebugReportCallbackEXT* const debugReport_
 	return true;
 }
 
-bool cdrawVkDebugCreateDebugReport(VkDebugReportCallbackEXT* const debugReport_out,
+bool cdrawVkDebugReportCreate(VkDebugReportCallbackEXT* const debugReport_out,
 	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
 	cdrawVkInstanceDebugFuncTable const* const f)
 {
@@ -288,7 +288,7 @@ bool cdrawVkDebugCreateDebugReport(VkDebugReportCallbackEXT* const debugReport_o
 	// set final outputs or clean up
 	if (!debugReport || (result != VK_SUCCESS))
 	{
-		cdrawVkDebugDestroyDebugReport(&debugReport, inst, alloc_opt, f);
+		cdrawVkDebugReportDestroy(&debugReport, inst, alloc_opt, f);
 		printf("\n Vulkan debug report creation failed.");
 		return false;
 	}
@@ -298,7 +298,7 @@ bool cdrawVkDebugCreateDebugReport(VkDebugReportCallbackEXT* const debugReport_o
 	return true;
 }
 
-bool cdrawVkDebugDestroyDebugUtilsMessenger(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
+bool cdrawVkDebugUtilsMessengerDestroy(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
 	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
 	cdrawVkInstanceDebugFuncTable const* const f)
 {
@@ -318,7 +318,7 @@ bool cdrawVkDebugDestroyDebugUtilsMessenger(VkDebugUtilsMessengerEXT* const debu
 	return true;
 }
 
-bool cdrawVkDebugCreateDebugUtilsMessenger(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
+bool cdrawVkDebugUtilsMessengerCreate(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
 	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
 	cdrawVkInstanceDebugFuncTable const* const f)
 {
@@ -340,7 +340,7 @@ bool cdrawVkDebugCreateDebugUtilsMessenger(VkDebugUtilsMessengerEXT* const debug
 	// set final outputs or clean up
 	if (!debugUtilsMsg || (result != VK_SUCCESS))
 	{
-		cdrawVkDebugDestroyDebugUtilsMessenger(&debugUtilsMsg, inst, alloc_opt, f);
+		cdrawVkDebugUtilsMessengerDestroy(&debugUtilsMsg, inst, alloc_opt, f);
 		printf("\n Vulkan debug utility messenger creation failed.");
 		return false;
 	}

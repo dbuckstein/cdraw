@@ -40,24 +40,6 @@ void cdrawVkDeviceRefresh(VkDevice const device,
 	cdrawVkDeviceFuncTable* const f);
 
 
-static VkRenderPassBeginInfo cdrawVkRenderPassBeginInfoCtor(
-	VkRenderPass const renderPass,
-	VkFramebuffer const framebuffer,
-	VkRect2D const renderArea,
-	uint32_t const clearValueCount,
-	VkClearValue const clearValues[/*clearValueCount*/])
-{
-	VkRenderPassBeginInfo renderPassBeginInfo = { 0 };
-	renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-	renderPassBeginInfo.renderPass = renderPass;
-	renderPassBeginInfo.framebuffer = framebuffer;
-	renderPassBeginInfo.renderArea = renderArea;
-	renderPassBeginInfo.clearValueCount = clearValueCount;
-	renderPassBeginInfo.pClearValues = clearValues;
-	return renderPassBeginInfo;
-}
-
-
 /******************************************************************************
 * SECTION: Synchronization utilities.
 ******************************************************************************/
@@ -287,7 +269,7 @@ static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r, uint32_
 	}
 	if (result == VK_SUCCESS)
 	{
-		result = vkQueuePresentKHR(presentation->queue_graphics, &presentInfo);
+		result = vkQueuePresentKHR(presentation->queue_graphics.queue, &presentInfo);
 		if (result != VK_SUCCESS)
 		{
 			// handle display error
@@ -340,12 +322,15 @@ static result_t cdrawRendererAttachWindow_vk(cdrawRenderer_vk* const r, uint32_t
 	vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
 
 	{
+		cdrawVkSurface* const surface = &r->surface[windowIndex];
+		cdrawVkPresentation* const presentation = &r->presentation[windowIndex];
+
 		// CREATE PRESENTATION SURFACE
-		result = cdrawVkSurfaceCreate(&r->surface[windowIndex], "cdrawVkSurface", &r->instance, p_data, alloc_opt);
+		result = cdrawVkSurfaceCreate(surface, "cdrawVkSurface", & r->instance, p_data, alloc_opt);
 		failassertret(result, result_seterror(errcode_renderer_init));
 
 		// CREATE PRESENTATION (may not be created due to surface size)
-		result = cdrawVkPresentationCreate(&r->presentation[windowIndex], "cdrawVkPresentation", &r->logicalDevice, &r->surface[windowIndex], &r->commandPool, alloc_opt);
+		result = cdrawVkPresentationCreate(presentation, "cdrawVkPresentation", &r->logicalDevice, surface, &r->commandPool, alloc_opt);
 		failassertret(result, result_seterror(errcode_renderer_init));
 	}
 	result_return();
@@ -365,12 +350,15 @@ static result_t cdrawRendererDetachWindow_vk(cdrawRenderer_vk* const r, uint32_t
 	alloc_opt = cdrawVkAllocatorUse(&r->allocator);
 
 	{
+		cdrawVkSurface* const surface = &r->surface[windowIndex];
+		cdrawVkPresentation* const presentation = &r->presentation[windowIndex];
+
 		// presentation (requires device and surface; may not have been created due to surface size)
-		result = cdrawVkPresentationDestroy(&r->presentation[windowIndex], &r->logicalDevice, alloc_opt);
+		result = cdrawVkPresentationDestroy(presentation, &r->logicalDevice, alloc_opt);
 		failassertret(result, result_seterror(errcode_renderer_init));
 
 		// presentation surface (requires instance)
-		result = cdrawVkSurfaceDestroy(&r->surface[windowIndex], &r->instance, alloc_opt);
+		result = cdrawVkSurfaceDestroy(surface, &r->instance, alloc_opt);
 		failassertret(result, result_seterror(errcode_renderer_init));
 	}
 	result_return();
@@ -393,19 +381,19 @@ static result_t cdrawRendererWindowCountMax_vk(cdrawRenderer_vk const* const r, 
 static cdrawRendererFuncTable gRendererFuncTable_vk;
 
 
-bool cdrawVkDebugCreateDebugReport(VkDebugReportCallbackEXT* const debugReport_out,
+bool cdrawVkDebugReportCreate(VkDebugReportCallbackEXT* const debugReport_out,
 	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
 	cdrawVkInstanceDebugFuncTable const* const f);
 
-bool cdrawVkDebugDestroyDebugReport(VkDebugReportCallbackEXT* const debugReport_out,
+bool cdrawVkDebugReportDestroy(VkDebugReportCallbackEXT* const debugReport_out,
 	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
 	cdrawVkInstanceDebugFuncTable const* const f);
 
-bool cdrawVkDebugCreateDebugUtilsMessenger(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
+bool cdrawVkDebugUtilsMessengerCreate(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
 	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
 	cdrawVkInstanceDebugFuncTable const* const f);
 
-bool cdrawVkDebugDestroyDebugUtilsMessenger(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
+bool cdrawVkDebugUtilsMessengerDestroy(VkDebugUtilsMessengerEXT* const debugUtilsMsg_out,
 	VkInstance const inst, VkAllocationCallbacks const* const alloc_opt,
 	cdrawVkInstanceDebugFuncTable const* const f);
 
@@ -434,11 +422,11 @@ result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, uint32_t const su
 
 #if CDRAW_DEBUG
 	//// CREATE DEBUG REPORT
-	//result = cdrawVkDebugCreateDebugReport(&r->debug.debugReport, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
+	//result = cdrawVkDebugReportCreate(&r->debug.debugReport, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
 	//failassertret(result, result_seterror(errcode_renderer_init));
 
 	// CREATE DEBUG MESSENGER
-	result = cdrawVkDebugCreateDebugUtilsMessenger(&r->debug.debugMessenger, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
+	result = cdrawVkDebugUtilsMessengerCreate(&r->debug.debugMessenger, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
 	failassertret(result, result_seterror(errcode_renderer_init));
 #endif // #if CDRAW_DEBUG
 
@@ -497,11 +485,11 @@ result_t cdrawRendererDestroy_vk(cdrawRenderer* const renderer)
 
 #if CDRAW_DEBUG
 	// destroy debug messenger
-	result = cdrawVkDebugDestroyDebugUtilsMessenger(&r->debug.debugMessenger, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
+	result = cdrawVkDebugUtilsMessengerDestroy(&r->debug.debugMessenger, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
 	failassertret(result, result_seterror(errcode_renderer_init));
 
 	//// destroy debug report
-	//result = cdrawVkDebugDestroyDebugReport(&r->debug.debugReport, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
+	//result = cdrawVkDebugReportDestroy(&r->debug.debugReport, r->instance.instance, alloc_opt, &r->instance.f.f_debug);
 	//failassertret(result, result_seterror(errcode_renderer_init));
 #endif // #if CDRAW_DEBUG
 

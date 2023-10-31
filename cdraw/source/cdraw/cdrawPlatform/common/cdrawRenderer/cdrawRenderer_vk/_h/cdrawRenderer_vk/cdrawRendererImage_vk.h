@@ -57,22 +57,6 @@ extern "C" {
 #endif // #ifdef __cplusplus
 
 	/// <summary>
-	/// Constructor for Vulkan image descriptor.
-	/// </summary>
-	/// <param name="image_out">Target image descriptor (non-null).</param>
-	/// <param name="name">Descriptor name.</param>
-	/// <param name="image">Vulkan image handle.</param>
-	/// <returns>Success: <paramref name="image_out"/>; Failure: <c>NULL</c>.</returns>
-	cdrawVkImage* cdrawVkImageCtor(cdrawVkImage* const image_out,
-		label_t const name, VkImage const image, VkDeviceMemory const imageMem, VkImageView const imageView);
-
-	/// <summary>
-	/// Destructor interface for Vulkan image descriptor.
-	/// </summary>
-	/// <param name="image_out">Target image descriptor (non-null).</param>
-	void cdrawVkImageDtor(cdrawVkImage* const image_out);
-
-	/// <summary>
 	/// Indicate whether descriptor is valid (set up correctly) and should not be modified.
 	/// </summary>
 	/// <param name="image">Image descriptor (non-null).</param>
@@ -91,21 +75,68 @@ extern "C" {
 	/// </summary>
 	/// <param name="image_out">Target image descriptor (non-null and unused).</param>
 	/// <param name="name">Descriptor name.</param>
-	/// <param name="device">Device handle.</param>
+	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
 	/// <param name="alloc_opt">Optional allocation callbacks.</param>
 	/// <returns>True if created.</returns>
 	bool cdrawVkImageCreate(cdrawVkImage* const image_out,
-		label_t const name, VkDevice const device, VkAllocationCallbacks const* const alloc_opt);
+		label_t const name, cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
 	/// Destroy image and dependencies.
 	/// </summary>
 	/// <param name="image_out">Target image descriptor (non-null and valid).</param>
-	/// <param name="device">Device handle.</param>
+	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
 	/// <param name="alloc_opt">Optional allocation callbacks.</param>
 	/// <returns>True if destroyed.</returns>
 	bool cdrawVkImageDestroy(cdrawVkImage* const image_out,
-		VkDevice const device, VkAllocationCallbacks const* const alloc_opt);
+		cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Create depth/stencil image and dependencies.
+	/// </summary>
+	/// <param name="image_out">Target image descriptor (non-null and unused).</param>
+	/// <param name="name">Descriptor name.</param>
+	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
+	/// <param name="commandPool">Command pool descriptor (non-null and valid).</param>
+	/// <param name="queue">Queue descriptor (non-null and valid).</param>
+	/// <param name="width">Image width.</param>
+	/// <param name="height">Image height.</param>
+	/// <param name="useDepthFloat">True to use floating point storage for depth component; False to use medium-precision integer storage.</param>
+	/// <param name="useStencil">True to use stencil component; False to disable stencil.</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if created.</returns>
+	bool cdrawVkImageCreateDepthStencil2D(cdrawVkImage* const image_out,
+		label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandPool const* const commandPool, cdrawVkQueue const* const queue,
+		uint32_t const width, uint32_t const height, bool const useDepthFloat, bool const useStencil,
+		VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Construct image view create info.
+	/// </summary>
+	/// <param name="image">Vulkan image handle.</param>
+	/// <param name="viewType">View type flag.</param>
+	/// <param name="format">Image format.</param>
+	/// <param name="components">Component mapping.</param>
+	/// <param name="subresourceRange">Underlying resource details.</param>
+	/// <returns>Image view create info structure.</returns>
+	VkImageViewCreateInfo cdrawVkImageViewCreateInfoCtor(
+		VkImage const image,
+		VkImageViewType const viewType,
+		VkFormat const format,
+		VkComponentMapping const components,
+		VkImageSubresourceRange const subresourceRange);
+
+	/// <summary>
+	/// Get default component mapping structure (RGBA).
+	/// </summary>
+	/// <returns>Component mapping structure.</returns>
+	VkComponentMapping cdrawVkComponentMappingCtorDefault();
+
+	/// <summary>
+	/// Get default subresource range structure for color image.
+	/// </summary>
+	/// <returns>Subresource range structure.</returns>
+	VkImageSubresourceRange cdrawVkImageSubresourceRangeCtorDefaultColor();
 
 
 #ifdef __cplusplus

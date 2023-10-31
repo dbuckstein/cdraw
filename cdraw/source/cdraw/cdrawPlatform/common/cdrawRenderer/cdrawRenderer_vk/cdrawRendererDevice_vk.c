@@ -283,6 +283,7 @@ void cdrawVkCommandBufferDtor(cdrawVkCommandBuffer* const commandBuffer_out)
 	label_init(commandBuffer_out->name);
 	for (idx = 0; idx < commandBuffer_out->commandBufferCount; ++idx)
 		commandBuffer_out->commandBuffer[idx] = VK_NULL_HANDLE;
+	commandBuffer_out->commandBufferCount = 0;
 }
 
 bool cdrawVkCommandBufferValid(cdrawVkCommandBuffer const* const commandBuffer)
@@ -480,9 +481,6 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 	cstrk_t nameCmp;
 
 	VkResult result = VK_SUCCESS;
-	VkDevice logicalDevice = VK_NULL_HANDLE;
-	cdrawVkPhysicalDevice physicalDeviceSelect = { 0 };
-
 	failassertret(logicalDevice_out && cdrawVkLogicalDeviceUnused(logicalDevice_out) && instance && cdrawVkInstanceValid(instance) && gCount(surfaceCountMax, cdrawVkSurfacePresent_max), false);
 	printf("\n Creating Vulkan logical device \"%s\"...", name);
 
@@ -515,7 +513,7 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 			// select physical device
 			if (physicalDeviceSelectIdx >= 0)
 			{
-				physicalDeviceSelect.physicalDevice = pPhysicalDevice[physicalDeviceSelectIdx];
+				logicalDevice_out->physicalDevice.physicalDevice = pPhysicalDevice[physicalDeviceSelectIdx];
 			}
 
 			free(pPhysicalDevice);
@@ -524,16 +522,16 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 	}
 
 	// setup logical device from selected physical device
-	if (physicalDeviceSelect.physicalDevice)
+	if (logicalDevice_out->physicalDevice.physicalDevice)
 	{
 		// device layers; may be zero (deprecated for use in logical device)
-		result = vkEnumerateDeviceLayerProperties(physicalDeviceSelect.physicalDevice, &nDeviceLayer, NULL);
+		result = vkEnumerateDeviceLayerProperties(logicalDevice_out->physicalDevice.physicalDevice, &nDeviceLayer, NULL);
 		if (result == VK_SUCCESS && nDeviceLayer)
 		{
 			pDeviceLayerProp = (VkLayerProperties*)malloc(sizeof(VkLayerProperties) * nDeviceLayer);
 			if (pDeviceLayerProp)
 			{
-				result = vkEnumerateDeviceLayerProperties(physicalDeviceSelect.physicalDevice, &nDeviceLayer, pDeviceLayerProp);
+				result = vkEnumerateDeviceLayerProperties(logicalDevice_out->physicalDevice.physicalDevice, &nDeviceLayer, pDeviceLayerProp);
 				cdraw_assert(result == VK_SUCCESS);
 				printf("\n\t\t pDeviceLayerProp[%u]: ", nDeviceLayer);
 				for (layerItr = 0; layerItr < nDeviceLayer; ++layerItr)
@@ -547,13 +545,13 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 					cdrawVkLayerPropertiesPrint(&pDeviceLayerProp[layerItr], layerItr, (layerIdx >= 0 ? pref2A : pref2));
 
 					// device extensions; may be zero
-					result = vkEnumerateDeviceExtensionProperties(physicalDeviceSelect.physicalDevice, nameCmp, &nDeviceExt, NULL);
+					result = vkEnumerateDeviceExtensionProperties(logicalDevice_out->physicalDevice.physicalDevice, nameCmp, &nDeviceExt, NULL);
 					if (result == VK_SUCCESS && nDeviceExt)
 					{
 						pDeviceExtProp = (VkExtensionProperties*)malloc(sizeof(VkExtensionProperties) * nDeviceExt);
 						if (pDeviceExtProp)
 						{
-							result = vkEnumerateDeviceExtensionProperties(physicalDeviceSelect.physicalDevice, nameCmp, &nDeviceExt, pDeviceExtProp);
+							result = vkEnumerateDeviceExtensionProperties(logicalDevice_out->physicalDevice.physicalDevice, nameCmp, &nDeviceExt, pDeviceExtProp);
 							cdraw_assert(result == VK_SUCCESS);
 							printf("\n\t\t\t pDeviceExtProp[%u]:", nDeviceExt);
 							for (extItr = 0; extItr < nDeviceExt; ++extItr)
@@ -599,19 +597,19 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 		cdraw_assert(nDeviceExtEnabled == cdrawUtilityPtrCount(deviceExtName, deviceExtName_baseLen));
 
 		// set up queue family info
-		vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceSelect.physicalDevice, &nQueueFamily, NULL);
+		vkGetPhysicalDeviceQueueFamilyProperties(logicalDevice_out->physicalDevice.physicalDevice, &nQueueFamily, NULL);
 		if (nQueueFamily)
 		{
 			pQueueFamilyProp = (VkQueueFamilyProperties*)malloc(sizeof(VkQueueFamilyProperties) * nQueueFamily);
 			if (pQueueFamilyProp)
 			{
-				vkGetPhysicalDeviceQueueFamilyProperties(physicalDeviceSelect.physicalDevice, &nQueueFamily, pQueueFamilyProp);
+				vkGetPhysicalDeviceQueueFamilyProperties(logicalDevice_out->physicalDevice.physicalDevice, &nQueueFamily, pQueueFamilyProp);
 				printf("\n\t\t pQueueFamilyProp[%u]: { [flags] (count; timestamp valid bits; min image transfer granularity) }", nQueueFamily);
 				for (familyItr = 0; familyItr < nQueueFamily; ++familyItr)
 				{
 					// save best queue family supporting graphics and presentation
 					if (flagcheckexcl(pQueueFamilyProp[familyItr].queueFlags, queueFamilySelectType_graphics_require)
-						&& cdrawVkPhysicalDeviceGetPlatformPresentationSupport(physicalDeviceSelect.physicalDevice, familyItr)
+						&& cdrawVkPhysicalDeviceGetPlatformPresentationSupport(logicalDevice_out->physicalDevice.physicalDevice, familyItr)
 						&& !uint32_valid(queueFamilySelectIdx_graphics))
 					{
 						queueFamilySelectIdx_graphics = familyItr;
@@ -636,12 +634,12 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 		// device features
 		{
 			VkPhysicalDeviceFeatures
-				* const deviceFeat = &physicalDeviceSelect.physicalDeviceFeat,
-				* const deviceFeatUse = &physicalDeviceSelect.physicalDeviceFeatUse;
+				* const deviceFeat = &logicalDevice_out->physicalDevice.physicalDeviceFeat,
+				* const deviceFeatUse = &logicalDevice_out->physicalDevice.physicalDeviceFeatUse;
 			cdraw_assert(deviceFeat && deviceFeatUse);
 
-			vkGetPhysicalDeviceProperties(physicalDeviceSelect.physicalDevice, &physicalDeviceSelect.physicalDeviceProp);
-			vkGetPhysicalDeviceFeatures(physicalDeviceSelect.physicalDevice, deviceFeat);
+			vkGetPhysicalDeviceProperties(logicalDevice_out->physicalDevice.physicalDevice, &logicalDevice_out->physicalDevice.physicalDeviceProp);
+			vkGetPhysicalDeviceFeatures(logicalDevice_out->physicalDevice.physicalDevice, deviceFeat);
 			memset(deviceFeatUse, 0, sizeof(*deviceFeatUse));
 			deviceFeatUse->geometryShader = VK_TRUE;
 			deviceFeatUse->tessellationShader = VK_TRUE;
@@ -652,10 +650,10 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 		// device memory
 		{
 			VkPhysicalDeviceMemoryProperties
-				* const deviceMemProp = &physicalDeviceSelect.physicalDeviceMemProp;
+				* const deviceMemProp = &logicalDevice_out->physicalDevice.physicalDeviceMemProp;
 			cdraw_assert(deviceMemProp);
 
-			vkGetPhysicalDeviceMemoryProperties(physicalDeviceSelect.physicalDevice, deviceMemProp);
+			vkGetPhysicalDeviceMemoryProperties(logicalDevice_out->physicalDevice.physicalDevice, deviceMemProp);
 			printf("\n\t nMemoryType = %u: { [flags] (heap index) }", deviceMemProp->memoryTypeCount);
 			for (memoryItr = 0; memoryItr < deviceMemProp->memoryTypeCount; ++memoryItr)
 				cdrawRendererPrintMemoryType_vk(&deviceMemProp->memoryTypes[memoryItr], memoryItr, pref1);
@@ -666,7 +664,7 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 	}
 
 	// FINAL CREATE LOGICAL DEVICE
-	if (physicalDeviceSelect.physicalDevice)
+	if (logicalDevice_out->physicalDevice.physicalDevice)
 	{
 		// device queue creation info, starting with graphics-capable
 		VkDeviceQueueCreateInfo const queueCreateInfo[] = {
@@ -684,25 +682,25 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 			deviceLayerName,
 			nDeviceExtEnabled,
 			deviceExtName,
-			&physicalDeviceSelect.physicalDeviceFeatUse);
+			&logicalDevice_out->physicalDevice.physicalDeviceFeatUse);
 
 		// create device
-		result = vkCreateDevice(physicalDeviceSelect.physicalDevice, &deviceCreateInfo, alloc_opt, &logicalDevice);
-		if (logicalDevice)
+		result = vkCreateDevice(logicalDevice_out->physicalDevice.physicalDevice, &deviceCreateInfo, alloc_opt, &logicalDevice_out->logicalDevice);
+		if (logicalDevice_out->logicalDevice)
 			cdraw_assert(result == VK_SUCCESS);
 	}
 
 	// set final outputs or clean up
-	if (!logicalDevice || !physicalDeviceSelect.physicalDevice || (result != VK_SUCCESS))
+	cdrawVkDeviceRefresh(logicalDevice_out->logicalDevice, &logicalDevice_out->f);
+	if (!cdrawVkLogicalDeviceValid(logicalDevice_out) || (result != VK_SUCCESS))
 	{
 		cdrawVkLogicalDeviceDestroy(logicalDevice_out, alloc_opt);
 		printf("\n Vulkan logical device \"%s\" creation failed.", name);
 		return false;
 	}
-	cdrawVkLogicalDeviceCtor(logicalDevice_out, name, logicalDevice, &physicalDeviceSelect);
-	cdrawVkDeviceRefresh(logicalDevice, &logicalDevice_out->f);
-	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice_out));
 	printf("\n Vulkan logical device \"%s\" created.", name);
+	label_copy_safe(logicalDevice_out->name, name);
+	cdraw_assert(cdrawVkLogicalDeviceValid(logicalDevice_out));
 	return true;
 }
 
@@ -754,7 +752,6 @@ bool cdrawVkCommandPoolCreate(cdrawVkCommandPool* const commandPool_out,
 	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
-	VkCommandPool commandPool = VK_NULL_HANDLE;
 	failassertret(commandPool_out && cdrawVkCommandPoolUnused(commandPool_out) && cdrawVkLogicalDeviceValid(logicalDevice), false);
 	printf("\n Creating Vulkan command pool \"%s\"...", name);
 
@@ -767,21 +764,21 @@ bool cdrawVkCommandPoolCreate(cdrawVkCommandPool* const commandPool_out,
 		VkCommandPoolCreateFlags const cmdPoolFlags =
 			(VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 		VkCommandPoolCreateInfo const cmdPoolCreateInfo = cdrawVkCommandPoolCreateInfoCtor(cmdPoolFlags, logicalDevice->queueFamilyIdx_graphics);
-		result = vkCreateCommandPool(logicalDevice->logicalDevice, &cmdPoolCreateInfo, alloc_opt, &commandPool);
-		if (commandPool)
+		result = vkCreateCommandPool(logicalDevice->logicalDevice, &cmdPoolCreateInfo, alloc_opt, &commandPool_out->commandPool);
+		if (commandPool_out->commandPool)
 			cdraw_assert(result == VK_SUCCESS);
 	}
 
 	// set final outputs or clean up
-	if (!commandPool || (result != VK_SUCCESS))
+	if (!cdrawVkCommandPoolValid(commandPool_out) || (result != VK_SUCCESS))
 	{
 		cdrawVkCommandPoolDestroy(commandPool_out, logicalDevice, alloc_opt);
 		printf("\n Vulkan command buffer pool \"%s\" creation failed.", name);
 		return false;
 	}
-	cdrawVkCommandPoolCtor(commandPool_out, name, commandPool);
-	cdraw_assert(cdrawVkCommandPoolValid(commandPool_out));
 	printf("\n Vulkan command pool \"%s\" created.", name);
+	label_copy_safe(commandPool_out->name, name);
+	cdraw_assert(cdrawVkCommandPoolValid(commandPool_out));
 	return true;
 }
 
@@ -820,8 +817,6 @@ static VkCommandBufferAllocateInfo cdrawVkCommandBufferAllocateInfoCtor(
 bool cdrawVkCommandBufferAlloc(cdrawVkCommandBuffer* const commandBuffer_out,
 	label_t const name, uint32_t const commandBufferCount, cdrawVkCommandPool const* const commandPool, cdrawVkLogicalDevice const* const logicalDevice, VkCommandBufferLevel const commandBufferLevel)
 {
-	VkCommandBuffer commandBuffer[cdrawVkCommandBuffer_max] = { VK_NULL_HANDLE };
-
 	uint32_t idx;
 	VkResult result = VK_SUCCESS;
 	failassertret(commandBuffer_out && cdrawVkCommandBufferUnused(commandBuffer_out) && gCount(commandBufferCount, cdrawVkCommandBuffer_max)
@@ -833,25 +828,26 @@ bool cdrawVkCommandBufferAlloc(cdrawVkCommandBuffer* const commandBuffer_out,
 		// primary: can be submitted to queue
 		// secondary: child of primary, cannot be submitted
 		VkCommandBufferAllocateInfo const cmdBufAllocInfo = cdrawVkCommandBufferAllocateInfoCtor(commandPool->commandPool, commandBufferLevel, commandBufferCount);
-		result = vkAllocateCommandBuffers(logicalDevice->logicalDevice, &cmdBufAllocInfo, commandBuffer);
+		result = vkAllocateCommandBuffers(logicalDevice->logicalDevice, &cmdBufAllocInfo, commandBuffer_out->commandBuffer);
 		if (result == VK_SUCCESS)
 		{
 			for (idx = 0; idx < commandBufferCount; ++idx)
-				if (!commandBuffer[idx])
+				if (!commandBuffer_out->commandBuffer[idx])
 					break;
 			cdraw_assert(idx == commandBufferCount);
 		}
 	}
 
 	// set final outputs or clean up
-	if (result != VK_SUCCESS)
+	commandBuffer_out->commandBufferCount = commandBufferCount;
+	if (!cdrawVkCommandBufferValid(commandBuffer_out) || (result != VK_SUCCESS))
 	{
 		cdrawVkCommandBufferFree(commandBuffer_out, commandPool, logicalDevice);
 		printf("\n Vulkan command buffers \"%s[%u]\" allocation failed.", name, commandBufferCount);
 		return false;
 	}
-	cdrawVkCommandBufferCtor(commandBuffer_out, name, commandBuffer, commandBufferCount);
 	printf("\n Vulkan command buffers \"%s[%u]\" allocation succeeded.", name, commandBufferCount);
+	label_copy_safe(commandBuffer_out->name, name);
 	cdraw_assert(cdrawVkCommandBufferValid(commandBuffer_out));
 	return true;
 }

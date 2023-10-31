@@ -120,6 +120,9 @@
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererDebug_vk.c">
       <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererFramebuffer_vk.c">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform.h">
@@ -162,6 +165,9 @@
       <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererPresentation_vk.h">
+      <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererFramebuffer_vk.h">
       <Filter>Source Files\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk</Filter>
     </ClInclude>
   </ItemGroup>

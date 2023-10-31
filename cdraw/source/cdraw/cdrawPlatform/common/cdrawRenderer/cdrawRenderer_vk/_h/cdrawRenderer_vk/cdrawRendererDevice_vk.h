@@ -22,6 +22,8 @@
 #if ((!defined _CDRAW_RENDERER_DEVICE_VK_H_) && (defined _CDRAW_RENDERER_VK_H_))
 #define _CDRAW_RENDERER_DEVICE_VK_H_
 
+#include "cdrawRendererInstance_vk.h"
+
 
 /// <summary>
 /// Get Vulkan device-dependent function address.

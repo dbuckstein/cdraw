@@ -26,11 +26,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "cdraw/cdrawCore/cdrawUtility.h"
-
 /******************************************************************************
 * Private implementations.
 ******************************************************************************/
+
+/// <summary>
+/// Constructor for Vulkan surface descriptor.
+/// </summary>
+/// <param name="surface_out">Target surface descriptor (non-null).</param>
+/// <param name="name">Descriptor name.</param>
+/// <param name="surface">Vulkan surface handle.</param>
+/// <returns>Success: <paramref name="surface_out"/>; Failure: <c>NULL</c>.</returns>
+static cdrawVkSurface* cdrawVkSurfaceCtor(cdrawVkSurface* const surface_out,
+	label_t const name, VkSurfaceKHR const surface);
 
 /// <summary>
 /// Destructor interface for Vulkan surface descriptor.
@@ -54,7 +62,6 @@ static cdrawVkPresentation* cdrawVkPresentationCtor(cdrawVkPresentation* const p
 /// </summary>
 /// <param name="presentation_out">Target presentation descriptor (non-null).</param>
 static void cdrawVkPresentationDtor(cdrawVkPresentation* const presentation_out);
-
 
 
 /******************************************************************************
@@ -98,7 +105,7 @@ cdrawVkPresentation* cdrawVkPresentationCtor(cdrawVkPresentation* const presenta
 	failassertret(swapchain && queue_graphics, NULL);
 	label_copy_safe(presentation_out->name, name);
 	presentation_out->swapchain = swapchain;
-	presentation_out->queue_graphics = queue_graphics;
+	cdrawVkQueueCtor(&presentation_out->queue_graphics, "queue_presentation", queue_graphics);
 	return presentation_out;
 }
 
@@ -106,20 +113,20 @@ void cdrawVkPresentationDtor(cdrawVkPresentation* const presentation_out)
 {
 	failassertret(presentation_out);
 	label_init(presentation_out->name);
+	cdrawVkQueueDtor(&presentation_out->queue_graphics);
 	presentation_out->swapchain = VK_NULL_HANDLE;
-	presentation_out->queue_graphics = VK_NULL_HANDLE;
 }
 
 bool cdrawVkPresentationValid(cdrawVkPresentation const* const presentation)
 {
 	cdraw_assert(presentation);
-	return (presentation->swapchain && presentation->queue_graphics);
+	return (presentation->swapchain && cdrawVkQueueValid(&presentation->queue_graphics));
 }
 
 bool cdrawVkPresentationUnused(cdrawVkPresentation const* const presentation)
 {
 	cdraw_assert(presentation);
-	return (!presentation->swapchain && !presentation->queue_graphics);
+	return (!presentation->swapchain && cdrawVkQueueUnused(&presentation->queue_graphics));
 }
 
 
@@ -146,197 +153,6 @@ bool cdrawVkSurfaceDestroy(cdrawVkSurface* const surface_out,
 	printf("\n Vulkan surface \"%s\" destroyed.", surface_out->name);
 	label_init(surface_out->name);
 	return true;
-}
-
-
-/******************************************************************************
-* SECTION: Image management.
-******************************************************************************/
-
-static VkComponentMapping cdrawVkComponentMappingCtor(
-	VkComponentSwizzle const r,
-	VkComponentSwizzle const g,
-	VkComponentSwizzle const b,
-	VkComponentSwizzle const a)
-{
-	VkComponentMapping componentMapping;
-	componentMapping.r = r;
-	componentMapping.g = g;
-	componentMapping.b = b;
-	componentMapping.a = a;
-	return componentMapping;
-}
-
-static VkComponentMapping cdrawVkComponentMappingCtorDefault()
-{
-	return cdrawVkComponentMappingCtor(VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A);
-}
-
-static VkImageSubresourceRange cdrawVkImageSubresourceRangeCtor(
-	VkImageAspectFlags const aspectMask,
-	uint32_t const baseMipLevel,
-	uint32_t const levelCount,
-	uint32_t const baseArrayLayer,
-	uint32_t const layerCount)
-{
-	VkImageSubresourceRange subresourceRange;
-	subresourceRange.aspectMask = aspectMask;
-	subresourceRange.baseMipLevel = baseMipLevel;
-	subresourceRange.levelCount = levelCount;
-	subresourceRange.baseArrayLayer = baseArrayLayer;
-	subresourceRange.layerCount = layerCount;
-	return subresourceRange;
-}
-
-static VkImageSubresourceRange cdrawVkImageSubresourceRangeCtorDefaultColor()
-{
-	VkImageAspectFlags const aspectFlags = (VK_IMAGE_ASPECT_COLOR_BIT);
-	return cdrawVkImageSubresourceRangeCtor(aspectFlags, 0, 1, 0, 1);
-}
-
-static VkImageSubresourceRange cdrawVkImageSubresourceRangeCtorDefaultDepth()
-{
-	VkImageAspectFlags const aspectFlags = (VK_IMAGE_ASPECT_DEPTH_BIT);
-	return cdrawVkImageSubresourceRangeCtor(aspectFlags, 0, 1, 0, 1);
-}
-
-static VkImageSubresourceRange cdrawVkImageSubresourceRangeCtorDefaultDepthStencil()
-{
-	VkImageAspectFlags const aspectFlags = (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT);
-	return cdrawVkImageSubresourceRangeCtor(aspectFlags, 0, 1, 0, 1);
-}
-
-static VkImageCreateInfo cdrawVkImageCreateInfoCtor(
-	VkImageType	const imageType,
-	VkFormat const format,
-	VkExtent3D const extent,
-	uint32_t const mipLevels,
-	uint32_t const arrayLayers,
-	VkSampleCountFlagBits const samples,
-	VkImageTiling const tiling,
-	VkImageUsageFlags const usage,
-	VkSharingMode const sharingMode,
-	uint32_t const queueFamilyIndexCount,
-	uint32_t const queueFamilyIndices[/*queueFamilyIndexCount*/],
-	VkImageLayout const initialLayout)
-{
-	VkImageCreateInfo imageCreateInfo = { 0 };
-	imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	imageCreateInfo.imageType = imageType;
-	imageCreateInfo.format = format;
-	imageCreateInfo.extent = extent;
-	imageCreateInfo.mipLevels = mipLevels;
-	imageCreateInfo.arrayLayers = arrayLayers;
-	imageCreateInfo.samples = samples;
-	imageCreateInfo.tiling = tiling;
-	imageCreateInfo.usage = usage;
-	imageCreateInfo.sharingMode = sharingMode;
-	imageCreateInfo.queueFamilyIndexCount = queueFamilyIndexCount;
-	imageCreateInfo.pQueueFamilyIndices = queueFamilyIndices;
-	imageCreateInfo.initialLayout = initialLayout;
-	return imageCreateInfo;
-}
-
-static VkImageViewCreateInfo cdrawVkImageViewCreateInfoCtor(
-	VkImage const image,
-	VkImageViewType const viewType,
-	VkFormat const format,
-	VkComponentMapping const components,
-	VkImageSubresourceRange const subresourceRange)
-{
-	VkImageViewCreateInfo imageViewCreateInfo = { 0 };
-	imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-	imageViewCreateInfo.image = image;
-	imageViewCreateInfo.viewType = viewType;
-	imageViewCreateInfo.format = format;
-	imageViewCreateInfo.components = components;
-	imageViewCreateInfo.subresourceRange = subresourceRange;
-	return imageViewCreateInfo;
-}
-
-static VkImageMemoryBarrier cdrawVkImageMemoryBarrierCtor(
-	VkAccessFlags const srcAccessMask,
-	VkAccessFlags const dstAccessMask,
-	VkImageLayout const oldLayout,
-	VkImageLayout const newLayout,
-	uint32_t const srcQueueFamilyIndex,
-	uint32_t const dstQueueFamilyIndex,
-	VkImage const image,
-	VkImageSubresourceRange const subresourceRange)
-{
-	VkImageMemoryBarrier imageMemoryBarrier = { 0 };
-	imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageMemoryBarrier.srcAccessMask = srcAccessMask;
-	imageMemoryBarrier.dstAccessMask = dstAccessMask;
-	imageMemoryBarrier.oldLayout = oldLayout;
-	imageMemoryBarrier.newLayout = newLayout;
-	imageMemoryBarrier.srcQueueFamilyIndex = srcQueueFamilyIndex;
-	imageMemoryBarrier.dstQueueFamilyIndex = dstQueueFamilyIndex;
-	imageMemoryBarrier.image = image;
-	imageMemoryBarrier.subresourceRange = subresourceRange;
-	return imageMemoryBarrier;
-}
-
-static void cdrawRendererCmdImageSetLayout_vk(VkImage const image,
-	VkCommandBuffer const cmdBuf,
-	uint32_t const queueFamilyIndex,
-	VkAccessFlags const srcAccessMask, VkAccessFlags const dstAccessMask,
-	VkPipelineStageFlags const srcStageMask, VkPipelineStageFlags const dstStageMask,
-	VkImageLayout const oldLayout, VkImageLayout const newLayout,
-	VkImageSubresourceRange const imageSubResourceRange)
-{
-	VkImageMemoryBarrier imageMemBarrier;
-
-	cdraw_assert(image && cmdBuf && uint32_valid(queueFamilyIndex));
-
-	imageMemBarrier = cdrawVkImageMemoryBarrierCtor(srcAccessMask, dstAccessMask,
-		oldLayout, newLayout, queueFamilyIndex, queueFamilyIndex, image, imageSubResourceRange);
-
-	// safety
-	if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-		imageMemBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-	// safety: ensure operations on image are completed
-	// (Singh, c.6)
-	switch (newLayout)
-	{
-		// image is destination of command
-	case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-	case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-		imageMemBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		break;
-
-		// image is read-only resource for shaders
-	case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-		imageMemBarrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		imageMemBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		break;
-
-		// image is for framebuffer color
-	case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-		imageMemBarrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-		break;
-
-		// image is for framebuffer depth/stencil
-	case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-		imageMemBarrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		break;
-	}
-
-	// record command
-	vkCmdPipelineBarrier(cmdBuf, srcStageMask, dstStageMask,
-		0, 0, NULL, 0, NULL, 1, &imageMemBarrier);
-}
-
-static VkFormat cdrawVkFormatDepthStencil(bool const useDepthHiPrec, bool const useStencil)
-{
-	// depth/stencil buffer: can change bit size of depth and add _S8_UINT for stencil
-	VkFormat format = VK_FORMAT_D16_UNORM;
-	if (useStencil)
-		format = useDepthHiPrec ? VK_FORMAT_D32_SFLOAT_S8_UINT : VK_FORMAT_D16_UNORM_S8_UINT;
-	else if (useDepthHiPrec)
-		format = VK_FORMAT_D32_SFLOAT;
-	return format;
 }
 
 
@@ -423,14 +239,10 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 	};
 	VkPhysicalDevice const physicalDevice = logicalDeviceValid ? logicalDevice->physicalDevice.physicalDevice : NULL;
 
-	VkImageViewCreateInfo imageViewCreateInfo;
 	VkImageView* const imageViews_out = presentation_out->imageView_present;
-	cdrawVkImage* const depthImage_out_opt = &presentation_out->depthImage_present;
+	cdrawVkImage* const depthStencilImage_out_opt = &presentation_out->depthStencilImage_present;
 
 	VkResult result = VK_SUCCESS;
-	VkSwapchainKHR swapchain = VK_NULL_HANDLE;
-	VkQueue queue = VK_NULL_HANDLE;
-
 	cdraw_assert(presentation_out && cdrawVkPresentationUnused(presentation_out) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice) && surface && cdrawVkSurfaceValid(surface) && commandPool && cdrawVkCommandPoolValid(commandPool));
 	printf("\n Creating Vulkan presentation \"%s\"...", name);
 
@@ -506,14 +318,18 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 	result = vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, queueFamilyIdx_graphics, surface->surface, &supportsSurface);
 	if (supportsSurface)
 	{
+		VkQueue queue_graphics = VK_NULL_HANDLE;
+
 		cdraw_assert(result == VK_SUCCESS);
 
 		// get device queue for presentation
-		vkGetDeviceQueue(logicalDevice->logicalDevice, queueFamilyIdx_graphics, presentQueueIdx, &queue);
+		vkGetDeviceQueue(logicalDevice->logicalDevice, queueFamilyIdx_graphics, presentQueueIdx, &queue_graphics);
+		cdraw_assert(queue_graphics);
+		cdrawVkQueueCtor(&presentation_out->queue_graphics, "cdrawVkPres.queue_graphics", queue_graphics);
 	}
 
 	// FINAL CREATE SWAPCHAIN
-	if (queue)
+	if (cdrawVkQueueValid(&presentation_out->queue_graphics))
 	{
 		// how can the images be used
 		VkImageUsageFlags const imageUsage =
@@ -544,16 +360,16 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 			VK_NULL_HANDLE);
 
 		// create swapchain
-		result = vkCreateSwapchainKHR(logicalDevice->logicalDevice, &swapchainCreateInfo, alloc_opt, &swapchain);
-		if (swapchain)
+		result = vkCreateSwapchainKHR(logicalDevice->logicalDevice, &swapchainCreateInfo, alloc_opt, &presentation_out->swapchain);
+		if (presentation_out->swapchain)
 			cdraw_assert(result == VK_SUCCESS);
 	}
 
 	// next, get images
-	if (swapchain)
+	if (presentation_out->swapchain)
 	{
 		// reusable image view descriptor
-		imageViewCreateInfo = cdrawVkImageViewCreateInfoCtor(
+		VkImageViewCreateInfo imageViewCreateInfo = cdrawVkImageViewCreateInfoCtor(
 			VK_NULL_HANDLE, // updated per image below
 			VK_IMAGE_VIEW_TYPE_2D,
 			surfaceFormat.format,
@@ -562,13 +378,13 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 		);
 
 		// get count and allocate for color images
-		result = vkGetSwapchainImagesKHR(logicalDevice->logicalDevice, swapchain, &nSwapchainImage, NULL);
+		result = vkGetSwapchainImagesKHR(logicalDevice->logicalDevice, presentation_out->swapchain, &nSwapchainImage, NULL);
 		if (result == VK_SUCCESS && nSwapchainImage)
 		{
 			pSwapchainImage = (VkImage*)malloc(sizeof(VkImage) * nSwapchainImage);
 			if (pSwapchainImage)
 			{
-				result = vkGetSwapchainImagesKHR(logicalDevice->logicalDevice, swapchain, &nSwapchainImage, pSwapchainImage);
+				result = vkGetSwapchainImagesKHR(logicalDevice->logicalDevice, presentation_out->swapchain, &nSwapchainImage, pSwapchainImage);
 				cdraw_assert(result == VK_SUCCESS);
 
 				// create image views
@@ -589,130 +405,25 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 				pSwapchainImage = NULL;
 			}
 		}
+	}
 
-		// depth image if requested
-		if (depthImage_out_opt)
-		{
-			VkImage image_depth = VK_NULL_HANDLE;
-			VkImageView imageView_depth = VK_NULL_HANDLE;
-			VkDeviceMemory imageMem_depth = VK_NULL_HANDLE;
-
-			bool const useDepthHiPrec = false, useStencil = false;
-			VkFormat const imageFormat_depth = cdrawVkFormatDepthStencil(useDepthHiPrec, useStencil);
-
-			VkExtent3D const imageExtent_depth = {
-				surfaceCapabilities.currentExtent.width,
-				surfaceCapabilities.currentExtent.height,
-				1 }; // depth extent for 2D
-			VkImageTiling imageTiling_depth = (VK_IMAGE_TILING_OPTIMAL);
-			VkImageUsageFlags const imageUsage_depth =
-				(VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-			VkImageCreateInfo imageCreateInfo_depth;
-			VkFormatProperties formatProperties;
-
-			// validate
-			cdraw_assert(cdrawVkImageUnused(depthImage_out_opt));
-
-			imageCreateInfo_depth = cdrawVkImageCreateInfoCtor(
-				VK_IMAGE_TYPE_2D,
-				imageFormat_depth,
-				imageExtent_depth,
-				1,
-				1,
-				VK_SAMPLE_COUNT_1_BIT,
-				imageTiling_depth, // validate below
-				imageUsage_depth,
-				VK_SHARING_MODE_EXCLUSIVE,
-				buffer_len(queueFamilyIndices), queueFamilyIndices, VK_IMAGE_LAYOUT_UNDEFINED);
-
-			// confirm support
-			vkGetPhysicalDeviceFormatProperties(physicalDevice, imageFormat_depth, &formatProperties);
-			cdraw_assert(VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
-				& (formatProperties.optimalTilingFeatures | formatProperties.linearTilingFeatures));
-			if (!(VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT & formatProperties.optimalTilingFeatures))
-				imageCreateInfo_depth.tiling = VK_IMAGE_TILING_LINEAR;
-
-			// create image
-			result = vkCreateImage(logicalDevice->logicalDevice, &imageCreateInfo_depth, alloc_opt, &image_depth);
-			if (image_depth)
-				cdraw_assert(result == VK_SUCCESS);
-
-			// allocate memory and create view for depth image
-			if (image_depth)
-			{
-				int8_t memTypeIndex;
-				VkMemoryRequirements memReq_depth;
-				VkMemoryAllocateInfo memAllocInfo;
-				vkGetImageMemoryRequirements(logicalDevice->logicalDevice, image_depth, &memReq_depth);
-				memTypeIndex = cdrawUtilityLowestBit32(memReq_depth.memoryTypeBits);
-				if (memTypeIndex >= 0)
-				{
-					memAllocInfo = cdrawVkMemoryAllocateInfoCtor(memReq_depth.size, memTypeIndex);
-					result = vkAllocateMemory(logicalDevice->logicalDevice, &memAllocInfo, alloc_opt, &imageMem_depth);
-					if (imageMem_depth)
-					{
-						cdraw_assert(result == VK_SUCCESS);
-						result = vkBindImageMemory(logicalDevice->logicalDevice, image_depth, imageMem_depth, 0);
-						cdraw_assert(result == VK_SUCCESS);
-					}
-				}
-				if (imageMem_depth)
-				{
-					VkPipelineStageFlags const stage = (VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
-					VkImageSubresourceRange imageSubResourceRange;
-					VkCommandBufferBeginInfo cmdBeginInfo;
-					VkSubmitInfo submitInfo;
-					cdrawVkCommandBuffer commandBuffer_depth = { 0 };
-					if (cdrawVkCommandBufferAlloc(&commandBuffer_depth, "commandBuffer_depth", 1, commandPool, logicalDevice, VK_COMMAND_BUFFER_LEVEL_PRIMARY))
-					{
-						VkCommandBuffer cmdBuf_depth = commandBuffer_depth.commandBuffer[0];
-						cmdBeginInfo = cdrawVkCommandBufferBeginInfoCtor(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, NULL);
-						result = vkBeginCommandBuffer(cmdBuf_depth, &cmdBeginInfo);
-						cdraw_assert(result == VK_SUCCESS);
-
-						imageSubResourceRange = useStencil
-							? cdrawVkImageSubresourceRangeCtorDefaultDepthStencil()
-							: cdrawVkImageSubresourceRangeCtorDefaultDepth();
-						cdrawRendererCmdImageSetLayout_vk(image_depth, cmdBuf_depth, queueFamilyIdx_graphics, 0, 0, stage, stage,
-							VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, imageSubResourceRange);
-						submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf_depth, 0, NULL);
-						result = vkEndCommandBuffer(cmdBuf_depth);
-						cdraw_assert(result == VK_SUCCESS);
-
-						result = vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-						cdraw_assert(result == VK_SUCCESS);
-						result = vkQueueWaitIdle(queue);
-						cdraw_assert(result == VK_SUCCESS);
-
-						if (cdrawVkCommandBufferFree(&commandBuffer_depth, commandPool, logicalDevice))
-						{
-							VkComponentMapping const imageComponent_depth = { VK_COMPONENT_SWIZZLE_IDENTITY };
-							imageViewCreateInfo = cdrawVkImageViewCreateInfoCtor(image_depth, VK_IMAGE_VIEW_TYPE_2D,
-								imageFormat_depth, imageComponent_depth, imageSubResourceRange);
-							result = vkCreateImageView(logicalDevice->logicalDevice, &imageViewCreateInfo, alloc_opt, &imageView_depth);
-							if (imageView_depth)
-								cdraw_assert(result == VK_SUCCESS);
-							depthImage_out_opt->image = image_depth;
-						}
-					}
-				}
-			}
-
-			// set handles
-			if (!cdrawVkImageCtor(depthImage_out_opt, "cdraw Present Depth", image_depth, imageMem_depth, imageView_depth))
-				cdrawVkImageDestroy(depthImage_out_opt, logicalDevice->logicalDevice, alloc_opt);
-		}
+	// depth image if requested
+	if (depthStencilImage_out_opt)
+	{
+		cdrawVkImageCreateDepthStencil2D(depthStencilImage_out_opt,
+			"cdraw Present Depth/Stencil", logicalDevice, commandPool, &presentation_out->queue_graphics,
+			surfaceCapabilities.currentExtent.width, surfaceCapabilities.currentExtent.height, false, true, alloc_opt);
 	}
 
 	// set final outputs or clean up
-	if (!swapchain || !queue || (result != VK_SUCCESS))
+	if (!cdrawVkPresentationValid(presentation_out) || (result != VK_SUCCESS))
 	{
 		cdrawVkPresentationDestroy(presentation_out, logicalDevice, alloc_opt);
 		printf("\n Vulkan presentation \"%s\" creation failed.", name);
 		return false;
 	}
-	cdrawVkPresentationCtor(presentation_out, name, swapchain, queue);
 	printf("\n Vulkan presentation \"%s\" created.", name);
+	label_copy_safe(presentation_out->name, name);
 	cdraw_assert(cdrawVkPresentationValid(presentation_out));
 	return true;
 }
@@ -728,8 +439,9 @@ bool cdrawVkPresentationDestroy(cdrawVkPresentation* const presentation_out,
 	cdraw_assert(logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice));
 	printf("\n Destroying Vulkan presentation \"%s\"...", presentation_out->name);
 
-	cdrawVkImageDestroy(&presentation_out->depthImage_present, logicalDevice->logicalDevice, alloc_opt);
-
+	cdrawVkFramebufferDestroy(&presentation_out->framebuffer_present, logicalDevice, alloc_opt);
+	cdrawVkRenderPassDestroy(&presentation_out->renderPass_present, logicalDevice, alloc_opt);
+	cdrawVkImageDestroy(&presentation_out->depthStencilImage_present, logicalDevice, alloc_opt);
 	for (idx = 0; idx < cdrawVkImagePresent_max; ++idx)
 	{
 		if (presentation_out->imageView_present[idx])
@@ -739,11 +451,11 @@ bool cdrawVkPresentationDestroy(cdrawVkPresentation* const presentation_out,
 		}
 	}
 
+	cdrawVkQueueDtor(&presentation_out->queue_graphics);
 	//if (presentation_out->swapchain)
 	{
 		vkDestroySwapchainKHR(logicalDevice->logicalDevice, presentation_out->swapchain, alloc_opt);
 		presentation_out->swapchain = VK_NULL_HANDLE;
-		presentation_out->queue_graphics = VK_NULL_HANDLE;
 	}
 
 	printf("\n Vulkan presentation \"%s\" destroyed.", presentation_out->name);
