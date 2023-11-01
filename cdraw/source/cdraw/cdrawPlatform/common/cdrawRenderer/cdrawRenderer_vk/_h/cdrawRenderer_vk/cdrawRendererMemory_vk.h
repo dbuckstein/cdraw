@@ -91,6 +91,46 @@ extern "C" {
 		VkDeviceSize const allocationSize,
 		uint32_t const memoryTypeIndex);
 
+	/// <summary>
+	/// Create Vulkan fence.
+	/// </summary>
+	/// <param name="fence_out">Vulkan fence handle.</param>
+	/// <param name="device">Vulkan logical device handle.</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if created.</returns>
+	bool cdrawRendererCreateFence_vk(VkFence* const fence_out,
+		VkDevice const device, VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Destroy Vulkan fence.
+	/// </summary>
+	/// <param name="fence_out">Vulkan fence handle.</param>
+	/// <param name="device">Vulkan logical device handle.</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if destroyed.</returns>
+	bool cdrawRendererDestroyFence_vk(VkFence* const fence_out,
+		VkDevice const device, VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Create Vulkan semaphore.
+	/// </summary>
+	/// <param name="semaphore_out">Vulkan semaphore handle.</param>
+	/// <param name="device">Vulkan logical device handle.</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if created.</returns>
+	bool cdrawRendererCreateSemaphore_vk(VkSemaphore* const semaphore_out,
+		VkDevice const device, VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Destroy Vulkan semaphore.
+	/// </summary>
+	/// <param name="semaphore_out">Vulkan semaphore handle.</param>
+	/// <param name="device">Vulkan logical device handle.</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if destroyed.</returns>
+	bool cdrawRendererDestroySemaphore_vk(VkSemaphore* const semaphore_out,
+		VkDevice const device, VkAllocationCallbacks const* const alloc_opt);
+
 
 #ifdef __cplusplus
 }

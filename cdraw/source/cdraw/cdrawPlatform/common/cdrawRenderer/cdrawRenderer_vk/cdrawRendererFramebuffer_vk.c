@@ -272,7 +272,7 @@ bool cdrawVkRenderPassDestroy(cdrawVkRenderPass* const renderPass_out,
 	return true;
 }
 
-static VkRenderPassBeginInfo cdrawVkRenderPassBeginInfoCtor(
+VkRenderPassBeginInfo cdrawVkRenderPassBeginInfoCtor(
 	VkRenderPass const renderPass,
 	VkFramebuffer const framebuffer,
 	VkRect2D const renderArea,
@@ -313,20 +313,29 @@ static VkFramebufferCreateInfo cdrawVkFramebufferCreateInfoCtor(
 bool cdrawVkFramebufferCreate(cdrawVkFramebuffer* const framebuffer_out,
 	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkRenderPass const* const renderPass,
 	uint32_t const attachmentCount, VkImageView const attachment[/*attachmentCount*/],
+	uint32_t const width, uint32_t const height, uint32_t const layers,
 	VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
 	failassertret(framebuffer_out && cdrawVkFramebufferUnused(framebuffer_out) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice), false);
 	printf("\n Creating Vulkan framebuffer \"%s\"...", name);
 
-	// ****TO-DO
+	// CREATE FRAMEBUFFER
 	{
-		VkFramebufferCreateInfo const framebufferCreateInfo = { 0 };// = cdrawVkFramebufferCreateInfoCtor();
+		VkFramebufferCreateInfo const framebufferCreateInfo = cdrawVkFramebufferCreateInfoCtor(
+			renderPass->renderPass, attachmentCount, attachment, width, height, layers);
 		result = vkCreateFramebuffer(logicalDevice->logicalDevice, &framebufferCreateInfo, alloc_opt, &framebuffer_out->framebuffer);
 		if (framebuffer_out->framebuffer)
+		{
 			cdraw_assert(result == VK_SUCCESS);
+			framebuffer_out->region.extent.width = width;
+			framebuffer_out->region.extent.height = height;
+			framebuffer_out->region.offset.x = 0;
+			framebuffer_out->region.offset.y = 0;
+		}
 	}
 
+	// set values or clean up
 	if (!cdrawVkFramebufferValid(framebuffer_out) || (result != VK_SUCCESS))
 	{
 		cdrawVkFramebufferDestroy(framebuffer_out, logicalDevice, alloc_opt);

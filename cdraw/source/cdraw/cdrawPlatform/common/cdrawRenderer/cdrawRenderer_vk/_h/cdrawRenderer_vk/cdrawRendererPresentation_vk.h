@@ -73,7 +73,12 @@ typedef struct cdrawVkPresentation
 	/// Color image view resources associated with swapchain images.
 	/// Images themselves are not needed as they are owned by the swapchain; can query later.
 	/// </summary>
-	VkImageView colorImage_present[cdrawVkImagePresent_max];
+	VkImageView colorImageView_present[cdrawVkImagePresent_max];
+
+	/// <summary>
+	/// Color image handles (managed by swapchain).
+	/// </summary>
+	VkImage colorImage_present[cdrawVkImagePresent_max];
 
 	/// <summary>
 	/// Description of presentation color images for use as framebuffer attachments.
@@ -104,7 +109,12 @@ typedef struct cdrawVkPresentation
 	/// Vulkan command buffers for presentation.
 	/// Should have one for each image to be processed.
 	/// </summary>
-	cdrawVkCommandBuffer commandBuffer_presentation[cdrawVkImagePresent_max];
+	cdrawVkCommandBuffer commandBuffer_present;
+
+	/// <summary>
+	/// Presentation fences.
+	/// </summary>
+	VkFence fence[cdrawVkImagePresent_max];
 } cdrawVkPresentation;
 
 
@@ -181,10 +191,11 @@ extern "C" {
 	/// </summary>
 	/// <param name="presentation_out">Target descriptor (non-null and valid).</param>
 	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
+	/// <param name="commandPool">Command pool descriptor (non-null and valid).</param>
 	/// <param name="alloc_opt">Optional allocation callbacks.</param>
 	/// <returns>True if destroyed.</returns>
 	bool cdrawVkPresentationDestroy(cdrawVkPresentation* const presentation_out,
-		cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt);
+		cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandPool const* const commandPool, VkAllocationCallbacks const* const alloc_opt);
 
 
 #ifdef __cplusplus

@@ -41,115 +41,6 @@ void cdrawVkDeviceRefresh(VkDevice const device,
 
 
 /******************************************************************************
-* SECTION: Synchronization utilities.
-******************************************************************************/
-
-static bool cdrawRendererDestroySemaphore_vk(VkSemaphore* const semaphore_out,
-	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
-{
-	cdraw_assert(semaphore_out);
-	if (!*semaphore_out)
-		return true;
-	printf("\n Destroying Vulkan semaphore...");
-
-	cdraw_assert(device);
-	vkDestroySemaphore(device, *semaphore_out, alloc_opt);
-
-	printf("\n Vulkan semaphore destroyed.");
-	*semaphore_out = VK_NULL_HANDLE;
-	return true;
-}
-
-static VkSemaphoreCreateInfo cdrawVkSemaphoreCreateInfoCtorDefault()
-{
-	VkSemaphoreCreateInfo semaphoreCreateInfo = { 0 };
-	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	return semaphoreCreateInfo;
-}
-
-static bool cdrawRendererCreateSemaphore_vk(VkSemaphore* const semaphore_out,
-	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
-{
-	VkResult result = VK_SUCCESS;
-	VkSemaphore semaphore = VK_NULL_HANDLE;
-	cdraw_assert(semaphore_out && !*semaphore_out && device);
-	printf("\n Creating Vulkan semaphore...");
-
-	// FINAL CREATE SEMAPHORE
-	{
-		VkSemaphoreCreateInfo const semaphoreCreateInfo = cdrawVkSemaphoreCreateInfoCtorDefault();
-		result = vkCreateSemaphore(device, &semaphoreCreateInfo, alloc_opt, &semaphore);
-		if (semaphore)
-			cdraw_assert(result == VK_SUCCESS);
-	}
-
-	// set final outputs or clean up
-	if (result != VK_SUCCESS)
-	{
-		cdrawRendererDestroySemaphore_vk(&semaphore, device, alloc_opt);
-		printf("\n Vulkan semaphore creation failed.");
-		return false;
-	}
-	*semaphore_out = semaphore;
-	cdraw_assert(*semaphore_out);
-	printf("\n Vulkan semaphore created.");
-	return true;
-}
-
-static bool cdrawRendererDestroyFence_vk(VkFence* const fence_out,
-	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
-{
-	cdraw_assert(fence_out);
-	if (!*fence_out)
-		return false;
-	printf("\n Destroying Vulkan fence...");
-
-	cdraw_assert(device);
-	vkDestroyFence(device, *fence_out, alloc_opt);
-
-	printf("\n Vulkan fence destroyed.");
-	*fence_out = VK_NULL_HANDLE;
-	return true;
-}
-
-static VkFenceCreateInfo cdrawVkFenceCreateInfoCtorDefault()
-{
-	VkFenceCreateInfo fenceCreateInfo = { 0 };
-	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	return fenceCreateInfo;
-}
-
-static bool cdrawRendererCreateFence_vk(VkFence* const fence_out,
-	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
-{
-	VkResult result = VK_SUCCESS;
-	VkFence fence = VK_NULL_HANDLE;
-	cdraw_assert(fence_out && !*fence_out && device);
-	printf("\n Creating Vulkan fence...");
-
-	// FINAL CREATE FENCE
-	{
-		VkFenceCreateInfo const fenceCreateInfo = cdrawVkFenceCreateInfoCtorDefault();
-		result = vkCreateFence(device, &fenceCreateInfo, alloc_opt, &fence);
-		if (fence)
-			cdraw_assert(result == VK_SUCCESS);
-	}
-
-	// set final outputs or clean up
-	if (result != VK_SUCCESS)
-	{
-		cdrawRendererDestroyFence_vk(&fence, device, alloc_opt);
-		printf("\n Vulkan fence creation failed.");
-		return false;
-	}
-	*fence_out = fence;
-	cdraw_assert(*fence_out);
-	printf("\n Vulkan fence created.");
-	return true;
-}
-
-
-/******************************************************************************
 * Private implementations.
 ******************************************************************************/
 
@@ -166,7 +57,7 @@ static result_t cdrawRendererPrint_vk(cdrawRenderer_vk const* const r)
 
 
 #if CDRAW_DEBUG
-static bool cdrawRendererDisplayTest_vk(cdrawRenderer_vk const* const r)
+static bool cdrawRendererDisplayTest_vk(cdrawRenderer_vk const* const r, uint32_t const index)
 {
 	/*
 	* ****TO-DO:
@@ -192,7 +83,71 @@ static bool cdrawRendererDisplayTest_vk(cdrawRenderer_vk const* const r)
 	*		attach color (and possibly depth/stencil) images from swapchain
 	*/
 
+	static VkClearColorValue const clearColor[] = {
+		{ 1.00f, 0.00f, 0.00f, 1.00f, },
+		{ 0.75f, 0.25f, 0.00f, 1.00f, },
+		{ 0.50f, 0.50f, 0.00f, 1.00f, },
+		{ 0.25f, 0.75f, 0.00f, 1.00f, },
+		{ 0.00f, 1.00f, 0.00f, 1.00f, },
+		{ 0.00f, 0.75f, 0.25f, 1.00f, },
+		{ 0.00f, 0.50f, 0.50f, 1.00f, },
+		{ 0.00f, 0.25f, 0.75f, 1.00f, },
+		{ 0.00f, 0.00f, 1.00f, 1.00f, },
+		{ 0.25f, 0.00f, 0.75f, 1.00f, },
+		{ 0.50f, 0.00f, 0.50f, 1.00f, },
+		{ 0.75f, 0.00f, 0.25f, 1.00f, },
+	};
+	static VkClearDepthStencilValue const clearDepthStencil = { 1.0f, 0 };
+	static uint32_t clearColorIdx;
+	VkClearValue clearValue[2];
 	VkResult result = VK_SUCCESS;
+	
+	
+	// BEGIN
+	VkQueue const queue = r->presentation->queue_graphics[index].queue;
+		
+	// PREPARATION
+	{
+		VkCommandBuffer const cmdBuf = r->presentation->commandBuffer_present.commandBuffer[0];
+		VkCommandBufferBeginInfo const cmdBufBegin = cdrawVkCommandBufferBeginInfoCtor(0, NULL);
+		cdrawVkRenderPass const* const renderPass = &r->presentation->renderPass_present;
+		cdrawVkFramebuffer const* const framebuffer = &r->presentation->framebuffer_present[index];
+		VkRenderPassBeginInfo const renderPassBegin = cdrawVkRenderPassBeginInfoCtor(
+			renderPass->renderPass, framebuffer->framebuffer,
+			framebuffer->region, buffer_len(clearValue), clearValue);
+	
+		clearValue[0].color = clearColor[((clearColorIdx++) / 5) % buffer_len(clearColor)];
+		clearValue[1].depthStencil = clearDepthStencil;
+		
+		result = vkBeginCommandBuffer(cmdBuf, &cmdBufBegin);
+		cdraw_assert(result == VK_SUCCESS);
+		
+		vkCmdBeginRenderPass(cmdBuf, &renderPassBegin, VK_SUBPASS_CONTENTS_INLINE);
+		// ...
+		vkCmdEndRenderPass(cmdBuf);
+
+		cdrawVkCmdImageSetLayout(r->presentation->colorImage_present[index], cmdBuf, r->logicalDevice.queueFamilyIdx_graphics, 0, 0,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+			cdrawVkImageSubresourceRangeCtorDefaultColor());
+	
+		result = vkEndCommandBuffer(cmdBuf);
+		cdraw_assert(result == VK_SUCCESS);
+
+
+		// SUBMISSION
+		{
+			VkSubmitInfo const submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf, 0, NULL);
+
+			result = vkQueueWaitIdle(queue);
+			cdraw_assert(result == VK_SUCCESS);
+			result = vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
+			cdraw_assert(result == VK_SUCCESS);
+			result = vkQueueWaitIdle(queue);
+			cdraw_assert(result == VK_SUCCESS);
+		}
+	}
+
 	//VkCommandBuffer const cmdBuf = r->cmdBuf[0];
 	//VkCommandBufferBeginInfo const cmdBufBeginInfo = cdrawVkCommandBufferBeginInfoCtor(0, NULL);
 	//VkRenderPassBeginInfo const renderPassBeginInfo = cdrawVkRenderPassBeginInfoCtor();
@@ -254,28 +209,39 @@ static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r, uint32_
 	uint32_t const nSwapchains = buffer_len(swapchains);
 	uint32_t imageIndices[buffer_len(swapchains)];
 	VkPresentInfoKHR const presentInfo = cdrawVkPresentInfoCtor(buffer_len(semaphores), semaphores, nSwapchains, swapchains, imageIndices, result_swapchain);
-
-#if CDRAW_DEBUG
-	cdrawRendererDisplayTest_vk(r);
-#endif // #if CDRAW_DEBUG
+	VkQueue queue = VK_NULL_HANDLE;
 
 	// wait until idle before drawing
 	vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
 	for (idx = 0; idx < nSwapchains; ++idx)
 	{
+		// grab next image in chain
 		result = vkAcquireNextImageKHR(r->logicalDevice.logicalDevice, swapchains[idx], UINT64_MAX, r->semaphore, VK_NULL_HANDLE, &imageIndices[idx]);
 		if (result != VK_SUCCESS)
 			break;
 	}
+
+	//vkWaitForFences(r->logicalDevice.logicalDevice, 1, &presentation->fence[imageIndices[0]], VK_TRUE, UINT64_MAX);
+	//vkResetFences(r->logicalDevice.logicalDevice, 1, &presentation->fence[imageIndices[0]]);
+
+	queue = presentation->queue_graphics[imageIndices[0]].queue;
+
+	// submission happens here
+#if CDRAW_DEBUG
+	cdrawRendererDisplayTest_vk(r, imageIndices[0]);
+#endif // #if CDRAW_DEBUG
+
+	// draw
 	if (result == VK_SUCCESS)
 	{
-		result = vkQueuePresentKHR(presentation->queue_graphics[imageIndices[0]].queue, &presentInfo);
+		result = vkQueuePresentKHR(queue, &presentInfo);
 		if (result != VK_SUCCESS)
 		{
 			// handle display error
 			// NOTE: https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/4422#issuecomment-1256257653 
 			//	-> getting validation error about image format being "undefined" - need actual commands from render pass to set it
 		}
+		result = vkQueueWaitIdle(queue);
 	}
 	return result;
 }
@@ -295,7 +261,7 @@ static result_t cdrawRendererResize_vk(cdrawRenderer_vk* const r, uint32_t const
 
 		// release old swapchain if the window size was valid
 		if (w_old && h_old)
-			result = cdrawVkPresentationDestroy(presentation, &r->logicalDevice, alloc_opt);
+			result = cdrawVkPresentationDestroy(presentation, &r->logicalDevice, &r->commandPool, alloc_opt);
 
 		// create new swapchain if the new window size is valid
 		if (w_new && h_new)
@@ -332,6 +298,10 @@ static result_t cdrawRendererAttachWindow_vk(cdrawRenderer_vk* const r, uint32_t
 		// CREATE PRESENTATION (may not be created due to surface size)
 		result = cdrawVkPresentationCreate(presentation, "cdrawVkPresentation", &r->logicalDevice, surface, &r->commandPool, alloc_opt);
 		failassertret(result, result_seterror(errcode_renderer_init));
+
+		// CREATE SEMAPHORES
+		result = cdrawRendererCreateSemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
+		failassertret(result, result_seterror(errcode_renderer_init));
 	}
 	result_return();
 }
@@ -353,8 +323,12 @@ static result_t cdrawRendererDetachWindow_vk(cdrawRenderer_vk* const r, uint32_t
 		cdrawVkSurface* const surface = &r->surface[windowIndex];
 		cdrawVkPresentation* const presentation = &r->presentation[windowIndex];
 
+		// semaphores
+		result = cdrawRendererDestroySemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
+		failassertret(result, result_seterror(errcode_renderer_init));
+
 		// presentation (requires device and surface; may not have been created due to surface size)
-		result = cdrawVkPresentationDestroy(presentation, &r->logicalDevice, alloc_opt);
+		result = cdrawVkPresentationDestroy(presentation, &r->logicalDevice, &r->commandPool, alloc_opt);
 		failassertret(result, result_seterror(errcode_renderer_init));
 
 		// presentation surface (requires instance)
@@ -437,10 +411,6 @@ result_t cdrawRendererCreate_vk(cdrawRenderer* const renderer, uint32_t const su
 	// CREATE COMMAND POOL
 	result = cdrawVkCommandPoolCreate(&r->commandPool, "cdrawVkCommandPool", &r->logicalDevice, alloc_opt);
 	failassertret(result, result_seterror(errcode_renderer_init));
-
-	// CREATE SEMAPHORES
-	result = cdrawRendererCreateSemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
-	failassertret(result, result_seterror(errcode_renderer_init));
 	
 	if (p_data_opt)
 	{
@@ -470,10 +440,6 @@ result_t cdrawRendererDestroy_vk(cdrawRenderer* const renderer)
 		result_t result_detach = cdrawRendererDetachWindow_vk(r, i);
 		failassertret(result_isclean(result_detach), result_seterror(errcode_renderer_init));
 	}
-
-	// semaphores
-	result = cdrawRendererDestroySemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
-	failassertret(result, result_seterror(errcode_renderer_init));
 
 	// command pool (requires device)
 	result = cdrawVkCommandPoolDestroy(&r->commandPool, &r->logicalDevice, alloc_opt);

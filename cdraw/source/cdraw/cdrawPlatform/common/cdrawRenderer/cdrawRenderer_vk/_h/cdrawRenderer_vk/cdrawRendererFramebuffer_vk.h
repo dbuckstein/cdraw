@@ -65,6 +65,11 @@ typedef struct cdrawVkFramebuffer
 	/// Vulkan framebuffer handle.
 	/// </summary>
 	VkFramebuffer framebuffer;
+
+	/// <summary>
+	/// Default framebuffer affected region.
+	/// </summary>
+	VkRect2D region;
 } cdrawVkFramebuffer;
 
 
@@ -138,11 +143,15 @@ extern "C" {
 	/// <param name="renderPass">Render pass descriptor (non-null and valid).</param>
 	/// <param name="attachmentCount">Number of attachments to describe.</param>
 	/// <param name="attachment">Image references representing attachments (image view component).</param>
+	/// <param name="width">Framebuffer area width (must be larger or same as targets).</param>
+	/// <param name="height">Framebuffer area height (must be larger or same as targets).</param>
+	/// <param name="layers">Framebuffer area layers (must be larger or same as targets).</param>
 	/// <param name="alloc_opt">Optional allocation callbacks.</param>
 	/// <returns>True if created.</returns>
 	bool cdrawVkFramebufferCreate(cdrawVkFramebuffer* const framebuffer_out,
 		label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkRenderPass const* const renderPass,
 		uint32_t const attachmentCount, VkImageView const attachment[/*attachmentCount*/],
+		uint32_t const width, uint32_t const height, uint32_t const layers,
 		VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
@@ -154,6 +163,23 @@ extern "C" {
 	/// <returns>True if destroyed.</returns>
 	bool cdrawVkFramebufferDestroy(cdrawVkFramebuffer* const framebuffer_out,
 		cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt);
+
+
+	/// <summary>
+	/// Construct begin render pass info structure.
+	/// </summary>
+	/// <param name="renderPass">Render pass to use.</param>
+	/// <param name="framebuffer">Framebuffer to use.</param>
+	/// <param name="renderArea">Affected draw region.</param>
+	/// <param name="clearValueCount">Number of clear values.</param>
+	/// <param name="clearValues">List of clear values.</param>
+	/// <returns>Vulkan begin render pass info.</returns>
+	VkRenderPassBeginInfo cdrawVkRenderPassBeginInfoCtor(
+		VkRenderPass const renderPass,
+		VkFramebuffer const framebuffer,
+		VkRect2D const renderArea,
+		uint32_t const clearValueCount,
+		VkClearValue const clearValues[/*clearValueCount*/]);
 
 	/// <summary>
 	/// Construct attachment reference.

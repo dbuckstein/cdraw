@@ -241,7 +241,7 @@ static VkImageMemoryBarrier cdrawVkImageMemoryBarrierCtor(
 	return imageMemoryBarrier;
 }
 
-static void cdrawRendererCmdImageSetLayout_vk(VkImage const image,
+void cdrawVkCmdImageSetLayout(VkImage const image,
 	VkCommandBuffer const cmdBuf,
 	uint32_t const queueFamilyIndex,
 	VkAccessFlags const srcAccessMask, VkAccessFlags const dstAccessMask,
@@ -411,6 +411,7 @@ bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
 	VkExtent3D const imageExtent_depth = { width, height, 1 }; // depth extent for 2D image must be 1
 	VkImageTiling imageTiling_depth = (VK_IMAGE_TILING_OPTIMAL);
 	VkImageUsageFlags const imageUsage_depth = (VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	VkImageLayout const imageLayout_depth_orig = (VK_IMAGE_LAYOUT_UNDEFINED);
 	VkImageLayout const imageLayout_depth = (VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 	VkSampleCountFlagBits const sampleCount_depth = (VK_SAMPLE_COUNT_1_BIT); // will not resolve if set to 1
 
@@ -468,29 +469,30 @@ bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
 	// memory allocated, set layout and create view
 	if (image_out->imageMem)
 	{
-		VkPipelineStageFlags const stage = (VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
-		VkImageSubresourceRange imageSubResourceRange;
-		VkCommandBufferBeginInfo cmdBeginInfo;
-		VkSubmitInfo submitInfo;
 		cdrawVkCommandBuffer commandBuffer_depth = { 0 };
+
 		result = vkBindImageMemory(logicalDevice->logicalDevice, image_out->image, image_out->imageMem, 0);
 		cdraw_assert(result == VK_SUCCESS);
 		if (cdrawVkCommandBufferAlloc(&commandBuffer_depth, "commandBuffer_depth", 1, commandPool, logicalDevice, VK_COMMAND_BUFFER_LEVEL_PRIMARY))
 		{
+			VkPipelineStageFlags const stage = (VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
+			VkImageSubresourceRange const imageSubResourceRange = useStencil
+				? cdrawVkImageSubresourceRangeCtorDefaultDepthStencil()
+				: cdrawVkImageSubresourceRangeCtorDefaultDepth();
+			VkCommandBufferBeginInfo cmdBeginInfo = cdrawVkCommandBufferBeginInfoCtor(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, NULL);;
+			VkSubmitInfo submitInfo;
 			VkCommandBuffer cmdBuf_depth = commandBuffer_depth.commandBuffer[0];
-			cmdBeginInfo = cdrawVkCommandBufferBeginInfoCtor(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, NULL);
+
 			result = vkBeginCommandBuffer(cmdBuf_depth, &cmdBeginInfo);
 			cdraw_assert(result == VK_SUCCESS);
 
-			imageSubResourceRange = useStencil
-				? cdrawVkImageSubresourceRangeCtorDefaultDepthStencil()
-				: cdrawVkImageSubresourceRangeCtorDefaultDepth();
-			cdrawRendererCmdImageSetLayout_vk(image_out->image, cmdBuf_depth, logicalDevice->queueFamilyIdx_graphics, 0, 0, stage, stage,
-				VK_IMAGE_LAYOUT_UNDEFINED, imageLayout_depth, imageSubResourceRange);
-			submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf_depth, 0, NULL);
+			cdrawVkCmdImageSetLayout(image_out->image, cmdBuf_depth, logicalDevice->queueFamilyIdx_graphics, 0, 0, stage, stage,
+				imageLayout_depth_orig, imageLayout_depth, imageSubResourceRange);
+	
 			result = vkEndCommandBuffer(cmdBuf_depth);
 			cdraw_assert(result == VK_SUCCESS);
 
+			submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf_depth, 0, NULL);
 			result = vkQueueSubmit(queue->queue, 1, &submitInfo, VK_NULL_HANDLE);
 			cdraw_assert(result == VK_SUCCESS);
 			result = vkQueueWaitIdle(queue->queue);

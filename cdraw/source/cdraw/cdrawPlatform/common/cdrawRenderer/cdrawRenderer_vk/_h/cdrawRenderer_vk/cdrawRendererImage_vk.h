@@ -167,6 +167,27 @@ extern "C" {
 		VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
+	/// Set image layout via memory barrier.
+	/// </summary>
+	/// <param name="image">Vulkan image handle.</param>
+	/// <param name="cmdBuf">Vulkan command buffer handle.</param>
+	/// <param name="queueFamilyIndex">Queue family index.</param>
+	/// <param name="srcAccessMask">Source access mask.</param>
+	/// <param name="dstAccessMask">Destination access mask.</param>
+	/// <param name="srcStageMask">Source stage mask.</param>
+	/// <param name="dstStageMask">Destination stage mask.</param>
+	/// <param name="oldLayout">Old layout.</param>
+	/// <param name="newLayout">New layout.</param>
+	/// <param name="imageSubResourceRange">Subresource range.</param>
+	void cdrawVkCmdImageSetLayout(VkImage const image,
+		VkCommandBuffer const cmdBuf,
+		uint32_t const queueFamilyIndex,
+		VkAccessFlags const srcAccessMask, VkAccessFlags const dstAccessMask,
+		VkPipelineStageFlags const srcStageMask, VkPipelineStageFlags const dstStageMask,
+		VkImageLayout const oldLayout, VkImageLayout const newLayout,
+		VkImageSubresourceRange const imageSubResourceRange);
+
+	/// <summary>
 	/// Construct image view create info.
 	/// </summary>
 	/// <param name="image">Vulkan image handle.</param>
