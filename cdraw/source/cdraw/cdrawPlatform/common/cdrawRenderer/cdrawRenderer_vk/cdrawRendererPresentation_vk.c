@@ -255,6 +255,9 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 	cdraw_assert(presentation_out && cdrawVkPresentationUnused(presentation_out) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice) && surface && cdrawVkSurfaceValid(surface) && commandPool && cdrawVkCommandPoolValid(commandPool));
 	printf("\n Creating Vulkan presentation \"%s\"...", name);
 
+	// wait
+	vkDeviceWaitIdle(logicalDevice->logicalDevice);
+
 	// query surface capabilities
 	result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice, surface->surface, &surfaceCapabilities);
 	if (result == VK_SUCCESS)
@@ -403,32 +406,28 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 
 				// create image views
 				cdraw_assert(nSwapchainImage <= buffer_len(presentation_out->colorImageView_present));
-				//if (cdrawVkCommandBufferAlloc(&commandBuffer_color, "commandBuffer_color", 1, commandPool, logicalDevice, VK_COMMAND_BUFFER_LEVEL_PRIMARY))
+				if (cdrawVkCommandBufferAlloc(&commandBuffer_color, "commandBuffer_color", 1, commandPool, logicalDevice, VK_COMMAND_BUFFER_LEVEL_PRIMARY))
 				{
-					//VkImageLayout const imageLayout_color_orig = (VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-					//VkImageLayout const imageLayout_color = (VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-					//VkPipelineStageFlags const stage_orig = (VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-					//VkPipelineStageFlags const stage = (VK_PIPELINE_STAGE_TRANSFER_BIT);
-					//VkImageSubresourceRange const imageSubResourceRange = cdrawVkImageSubresourceRangeCtorDefaultColor();
-					//VkCommandBufferBeginInfo const cmdBeginInfo = cdrawVkCommandBufferBeginInfoCtor(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, NULL);
-					//VkCommandBuffer cmdBuf_color = commandBuffer_color.commandBuffer[0];
-					//VkSubmitInfo submitInfo;
-					//result = vkBeginCommandBuffer(cmdBuf_color, &cmdBeginInfo);
-					//for (idx = 0; idx < nSwapchainImage; ++idx)
-					//	cdrawVkCmdImageSetLayout(pSwapchainImage[idx], cmdBuf_color, logicalDevice->queueFamilyIdx_graphics, 0, 0,
-					//		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-					//		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-					//		imageSubResourceRange);
-					//	//cdrawVkCmdImageSetLayout(pSwapchainImage[idx], cmdBuf_color, logicalDevice->queueFamilyIdx_graphics,
-					//	//	0, 0, stage_orig, stage, imageLayout_color_orig, imageLayout_color, imageSubResourceRange);
-					//submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf_color, 0, NULL);
-					//result = vkEndCommandBuffer(cmdBuf_color);
-					//cdraw_assert(result == VK_SUCCESS);
-					//result = vkQueueSubmit(presentation_out->queue_graphics[0].queue, 1, &submitInfo, VK_NULL_HANDLE);
-					//cdraw_assert(result == VK_SUCCESS);
-					//result = vkQueueWaitIdle(presentation_out->queue_graphics[0].queue);
-					//cdraw_assert(result == VK_SUCCESS);
-					//if (cdrawVkCommandBufferFree(&commandBuffer_color, commandPool, logicalDevice))
+					VkImageLayout const imageLayout_color_orig = (VK_IMAGE_LAYOUT_UNDEFINED);
+					VkImageLayout const imageLayout_color = (VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+					VkPipelineStageFlags const stage_orig = (VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+					VkPipelineStageFlags const stage = (VK_PIPELINE_STAGE_TRANSFER_BIT);
+					VkImageSubresourceRange const imageSubResourceRange = cdrawVkImageSubresourceRangeCtorDefaultColor();
+					VkCommandBufferBeginInfo const cmdBeginInfo = cdrawVkCommandBufferBeginInfoCtor(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, NULL);
+					VkCommandBuffer cmdBuf_color = commandBuffer_color.commandBuffer[0];
+					VkSubmitInfo submitInfo;
+					result = vkBeginCommandBuffer(cmdBuf_color, &cmdBeginInfo);
+					for (idx = 0; idx < nSwapchainImage; ++idx)
+						cdrawVkCmdImageSetLayout(pSwapchainImage[idx], cmdBuf_color, logicalDevice->queueFamilyIdx_graphics,
+							0, 0, stage_orig, stage, imageLayout_color_orig, imageLayout_color, imageSubResourceRange);
+					submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf_color, 0, NULL);
+					result = vkEndCommandBuffer(cmdBuf_color);
+					cdraw_assert(result == VK_SUCCESS);
+					result = vkQueueSubmit(presentation_out->queue_graphics[0].queue, 1, &submitInfo, VK_NULL_HANDLE);
+					cdraw_assert(result == VK_SUCCESS);
+					result = vkQueueWaitIdle(presentation_out->queue_graphics[0].queue);
+					cdraw_assert(result == VK_SUCCESS);
+					if (cdrawVkCommandBufferFree(&commandBuffer_color, commandPool, logicalDevice))
 					{
 						for (idx = 0; idx < nSwapchainImage; ++idx)
 						{
@@ -557,6 +556,7 @@ bool cdrawVkPresentationDestroy(cdrawVkPresentation* const presentation_out,
 	cdraw_assert(logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice));
 	printf("\n Destroying Vulkan presentation \"%s\"...", presentation_out->name);
 
+	vkDeviceWaitIdle(logicalDevice->logicalDevice);
 	cdrawVkCommandBufferFree(&presentation_out->commandBuffer_present, commandPool, logicalDevice);
 	for (idx = 0; idx < cdrawVkImagePresent_max; ++idx)
 	{

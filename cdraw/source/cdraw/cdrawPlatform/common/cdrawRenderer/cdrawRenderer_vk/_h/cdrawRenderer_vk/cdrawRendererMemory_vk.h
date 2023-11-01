@@ -131,6 +131,20 @@ extern "C" {
 	bool cdrawRendererDestroySemaphore_vk(VkSemaphore* const semaphore_out,
 		VkDevice const device, VkAllocationCallbacks const* const alloc_opt);
 
+	/// <summary>
+	/// Construct semaphore wait info structure.
+	/// </summary>
+	/// <param name="flags">Wait flags.</param>
+	/// <param name="semaphoreCount">Number of semaphores.</param>
+	/// <param name="semaphores">Array of semaphores.</param>
+	/// <param name="values">Array of wait values.</param>
+	/// <returns>Vulkan semaphore wait info structure.</returns>
+	VkSemaphoreWaitInfo cdrawVkSemaphoreWaitInfoCtor(
+		VkSemaphoreWaitFlags const flags,
+		uint32_t const semaphoreCount,
+		VkSemaphore const semaphores[/*semaphoreCount*/],
+		uint64_t const values[/*semaphoreCount*/]);
+
 
 #ifdef __cplusplus
 }

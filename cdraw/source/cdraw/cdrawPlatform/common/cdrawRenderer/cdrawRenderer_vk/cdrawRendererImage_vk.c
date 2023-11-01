@@ -497,7 +497,6 @@ bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
 			cdraw_assert(result == VK_SUCCESS);
 			result = vkQueueWaitIdle(queue->queue);
 			cdraw_assert(result == VK_SUCCESS);
-
 			if (cdrawVkCommandBufferFree(&commandBuffer_depth, commandPool, logicalDevice))
 			{
 				VkComponentMapping const imageComponent_depth = { VK_COMPONENT_SWIZZLE_IDENTITY };

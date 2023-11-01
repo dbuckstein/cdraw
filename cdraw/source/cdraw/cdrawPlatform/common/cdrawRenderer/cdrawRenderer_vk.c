@@ -125,7 +125,9 @@ static bool cdrawRendererDisplayTest_vk(cdrawRenderer_vk const* const r, uint32_
 		vkCmdBeginRenderPass(cmdBuf, &renderPassBegin, VK_SUBPASS_CONTENTS_INLINE);
 		// ...
 		vkCmdEndRenderPass(cmdBuf);
-
+		
+		// NOTE: https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/4422#issuecomment-1256257653 
+		//	-> getting validation error about image format being "undefined" - need actual commands from render pass to set it
 		cdrawVkCmdImageSetLayout(r->presentation->colorImage_present[index], cmdBuf, r->logicalDevice.queueFamilyIdx_graphics, 0, 0,
 			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
 			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
@@ -138,13 +140,12 @@ static bool cdrawRendererDisplayTest_vk(cdrawRenderer_vk const* const r, uint32_
 		// SUBMISSION
 		{
 			VkSubmitInfo const submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf, 0, NULL);
-
-			result = vkQueueWaitIdle(queue);
+			result = vkQueueSubmit(queue, 1, &submitInfo, r->presentation->fence[index]);
 			cdraw_assert(result == VK_SUCCESS);
-			result = vkQueueSubmit(queue, 1, &submitInfo, VK_NULL_HANDLE);
-			cdraw_assert(result == VK_SUCCESS);
-			result = vkQueueWaitIdle(queue);
-			cdraw_assert(result == VK_SUCCESS);
+			//result = vkWaitForFences(r->logicalDevice.logicalDevice, 1, &r->presentation->fence[index], VK_TRUE, UINT64_MAX);
+			//cdraw_assert(result == VK_SUCCESS);
+			//result = vkResetFences(r->logicalDevice.logicalDevice, 1, &r->presentation->fence[index]);
+			//cdraw_assert(result == VK_SUCCESS);
 		}
 	}
 
@@ -211,14 +212,11 @@ static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r, uint32_
 	VkPresentInfoKHR const presentInfo = cdrawVkPresentInfoCtor(buffer_len(semaphores), semaphores, nSwapchains, swapchains, imageIndices, result_swapchain);
 	VkQueue queue = VK_NULL_HANDLE;
 
-	// wait until idle before drawing
-	vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
 	for (idx = 0; idx < nSwapchains; ++idx)
 	{
 		// grab next image in chain
 		result = vkAcquireNextImageKHR(r->logicalDevice.logicalDevice, swapchains[idx], UINT64_MAX, r->semaphore, VK_NULL_HANDLE, &imageIndices[idx]);
-		if (result != VK_SUCCESS)
-			break;
+		cdraw_assert(result == VK_SUCCESS);
 	}
 
 	//vkWaitForFences(r->logicalDevice.logicalDevice, 1, &presentation->fence[imageIndices[0]], VK_TRUE, UINT64_MAX);
@@ -234,14 +232,13 @@ static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r, uint32_
 	// draw
 	if (result == VK_SUCCESS)
 	{
+		result = vkQueueWaitIdle(queue);
+		cdraw_assert(result == VK_SUCCESS);
 		result = vkQueuePresentKHR(queue, &presentInfo);
 		if (result != VK_SUCCESS)
 		{
 			// handle display error
-			// NOTE: https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/4422#issuecomment-1256257653 
-			//	-> getting validation error about image format being "undefined" - need actual commands from render pass to set it
 		}
-		result = vkQueueWaitIdle(queue);
 	}
 	return result;
 }
@@ -253,11 +250,10 @@ static result_t cdrawRendererResize_vk(cdrawRenderer_vk* const r, uint32_t const
 	cdrawVkPresentation* presentation;
 	VkAllocationCallbacks const* alloc_opt;
 	cdraw_assert(r);
-	if ((w_old != w_new) && (h_old != h_new))
+	if ((w_old != w_new) || (h_old != h_new))
 	{
 		alloc_opt = cdrawVkAllocatorUse(&r->allocator);
 		presentation = &r->presentation[windowIndex];
-		vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
 
 		// release old swapchain if the window size was valid
 		if (w_old && h_old)
@@ -283,9 +279,6 @@ static result_t cdrawRendererAttachWindow_vk(cdrawRenderer_vk* const r, uint32_t
 	cdraw_assert(windowIndex < cdrawVkSurfacePresent_max);
 	cdraw_assert(p_data);
 	alloc_opt = cdrawVkAllocatorUse(&r->allocator);
-
-	// safety
-	vkDeviceWaitIdle(r->logicalDevice.logicalDevice);
 
 	{
 		cdrawVkSurface* const surface = &r->surface[windowIndex];

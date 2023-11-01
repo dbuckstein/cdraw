@@ -134,6 +134,21 @@ bool cdrawRendererCreateFence_vk(VkFence* const fence_out,
 	return true;
 }
 
+VkSemaphoreWaitInfo cdrawVkSemaphoreWaitInfoCtor(
+	VkSemaphoreWaitFlags const flags,
+	uint32_t const semaphoreCount,
+	VkSemaphore const semaphores[/*semaphoreCount*/],
+	uint64_t const values[/*semaphoreCount*/])
+{
+	VkSemaphoreWaitInfo semaphoreWaitInfo = { 0 };
+	semaphoreWaitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO;
+	semaphoreWaitInfo.flags = flags;
+	semaphoreWaitInfo.semaphoreCount = semaphoreCount;
+	semaphoreWaitInfo.pSemaphores = semaphores;
+	semaphoreWaitInfo.pValues = values;
+	return semaphoreWaitInfo;
+}
+
 
 /******************************************************************************
 * Private implementations.
