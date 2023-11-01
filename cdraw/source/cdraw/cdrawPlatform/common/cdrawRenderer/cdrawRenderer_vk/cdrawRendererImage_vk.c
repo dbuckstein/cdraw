@@ -23,6 +23,7 @@
 #include "_h/cdrawRenderer_vk/cdrawRendererImage_vk.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #include "cdraw/cdrawCore/cdrawUtility.h"
 
@@ -36,6 +37,8 @@
 /// <param name="image_out">Target image descriptor (non-null).</param>
 /// <param name="name">Descriptor name.</param>
 /// <param name="image">Vulkan image handle.</param>
+/// <param name="imageMem">Vulkan image memory handle.</param>
+/// <param name="imageView">Vulkan image view handle.</param>
 /// <returns>Success: <paramref name="image_out"/>; Failure: <c>NULL</c>.</returns>
 static cdrawVkImage* cdrawVkImageCtor(cdrawVkImage* const image_out,
 	label_t const name, VkImage const image, VkDeviceMemory const imageMem, VkImageView const imageView);
@@ -88,6 +91,31 @@ bool cdrawVkImageUnused(cdrawVkImage const* const image)
 /******************************************************************************
 * SECTION: Image management.
 ******************************************************************************/
+
+VkAttachmentDescription cdrawVkAttachmentDescriptionCtor(
+	bool const mayAlias,
+	VkFormat const format,
+	VkSampleCountFlagBits const samples,
+	VkAttachmentLoadOp const loadOp, // color or depth/stencil attachments
+	VkAttachmentStoreOp const storeOp, // color or depth/stencil attachments
+	VkAttachmentLoadOp const stencilLoadOp, // depth/stencil attachments
+	VkAttachmentStoreOp const stencilStoreOp, // depth/stencil attachments
+	VkImageLayout const initialLayout,
+	VkImageLayout const finalLayout)
+{
+	VkAttachmentDescription attachmentDescription = { 0 };
+	if (mayAlias)
+		attachmentDescription.flags = VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT;
+	attachmentDescription.format = format;
+	attachmentDescription.samples = samples;
+	attachmentDescription.loadOp = loadOp;
+	attachmentDescription.storeOp = storeOp;
+	attachmentDescription.stencilLoadOp = stencilLoadOp;
+	attachmentDescription.stencilStoreOp = stencilStoreOp;
+	attachmentDescription.initialLayout = initialLayout;
+	attachmentDescription.finalLayout = finalLayout;
+	return attachmentDescription;
+}
 
 static VkComponentMapping cdrawVkComponentMappingCtor(
 	VkComponentSwizzle const r,
@@ -294,6 +322,7 @@ bool cdrawVkImageDestroy(cdrawVkImage* const image_out,
 		return true;
 
 	cdraw_assert(logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice));
+	printf("\n Destroying Vulkan image \"%s\"...", image_out->name);
 	if (image_out->imageView)
 	{
 		vkDestroyImageView(logicalDevice->logicalDevice, image_out->imageView, alloc_opt);
@@ -309,7 +338,53 @@ bool cdrawVkImageDestroy(cdrawVkImage* const image_out,
 		vkDestroyImage(logicalDevice->logicalDevice, image_out->image, alloc_opt);
 		image_out->image = VK_NULL_HANDLE;
 	}
+	memset(&image_out->imageAttach, 0, sizeof(image_out->imageAttach));
+	printf("\n Vulkan image \"%s\" destroyed.", image_out->name);
 	label_init(image_out->name);
+	return true;
+}
+
+
+static VkFormat cdrawVkFormatColor(bool const useHighPrecision)
+{
+	// of note: may consider blitting color target into swapchain image
+	// (instead of drawing swapchain images directly as framebuffer targets)
+	//	-> https://www.reddit.com/r/vulkan/comments/p3iy0o/why_use_bgra_instead_of_rgba/
+
+	VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+	if (useHighPrecision)
+		format = VK_FORMAT_R16G16B16A16_UNORM;
+	return format;
+}
+
+bool cdrawVkImageCreateColorAttachment(cdrawVkImage* const image_out,
+	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandPool const* const commandPool, cdrawVkQueue const* const queue,
+	uint32_t const width, uint32_t const height, bool const useHighPrecision,
+	VkAttachmentLoadOp const attachLoadOp, VkAttachmentStoreOp const attachStoreOp,
+	VkAllocationCallbacks const* const alloc_opt)
+{
+	VkFormat const imageFormat_color = cdrawVkFormatColor(useHighPrecision);
+	VkExtent3D const imageExtent_color = { width, height, 1 };
+	VkImageTiling imageTiling_color = (VK_IMAGE_TILING_OPTIMAL);
+	VkImageUsageFlags const imageUsage_color = (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+	VkImageLayout const imageLayout_color = (VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+	VkSampleCountFlagBits const sampleCount_color = (VK_SAMPLE_COUNT_1_BIT);
+
+	VkResult result = VK_SUCCESS;
+	failassertret(image_out && cdrawVkImageUnused(image_out) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice), false);
+	printf("\n Creating Vulkan image \"%s\"...", name);
+
+	// ****TO-DO
+
+	if (!cdrawVkImageValid(image_out) || (result != VK_SUCCESS))
+	{
+		cdrawVkImageDestroy(image_out, logicalDevice, alloc_opt);
+		printf("\n Vulkan image \"%s\" creation failed.", name);
+		return false;
+	}
+	printf("\n Vulkan image \"%s\" created.", name);
+	label_copy_safe(image_out->name, name);
+	cdraw_assert(cdrawVkImageValid(image_out));
 	return true;
 }
 
@@ -325,15 +400,19 @@ static VkFormat cdrawVkFormatDepthStencil(bool const useDepthFloat, bool const u
 	return format;
 }
 
-bool cdrawVkImageCreateDepthStencil2D(cdrawVkImage* const image_out,
+bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
 	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandPool const* const commandPool, cdrawVkQueue const* const queue,
 	uint32_t const width, uint32_t const height, bool const useDepthFloat, bool const useStencil,
+	VkAttachmentLoadOp const attachLoadOp, VkAttachmentStoreOp const attachStoreOp,
+	VkAttachmentLoadOp const attachStencilLoadOp, VkAttachmentStoreOp const attachStencilStoreOp,
 	VkAllocationCallbacks const* const alloc_opt)
 {
 	VkFormat const imageFormat_depth = cdrawVkFormatDepthStencil(useDepthFloat, useStencil);
 	VkExtent3D const imageExtent_depth = { width, height, 1 }; // depth extent for 2D image must be 1
 	VkImageTiling imageTiling_depth = (VK_IMAGE_TILING_OPTIMAL);
 	VkImageUsageFlags const imageUsage_depth = (VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	VkImageLayout const imageLayout_depth = (VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	VkSampleCountFlagBits const sampleCount_depth = (VK_SAMPLE_COUNT_1_BIT); // will not resolve if set to 1
 
 	VkResult result = VK_SUCCESS;
 	failassertret(image_out && cdrawVkImageUnused(image_out) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice) && commandPool && cdrawVkCommandPoolValid(commandPool) && queue && cdrawVkQueueValid(queue), false);
@@ -347,7 +426,7 @@ bool cdrawVkImageCreateDepthStencil2D(cdrawVkImage* const image_out,
 			imageExtent_depth,
 			1,
 			1,
-			VK_SAMPLE_COUNT_1_BIT,
+			sampleCount_depth,
 			imageTiling_depth, // validate below
 			imageUsage_depth,
 			VK_SHARING_MODE_EXCLUSIVE,
@@ -369,7 +448,7 @@ bool cdrawVkImageCreateDepthStencil2D(cdrawVkImage* const image_out,
 			cdraw_assert(result == VK_SUCCESS);
 	}
 
-	// allocate memory and create view for depth image
+	// image handle created, allocate memory and create view for depth image
 	if (image_out->image)
 	{
 		int8_t memTypeIndex;
@@ -386,6 +465,7 @@ bool cdrawVkImageCreateDepthStencil2D(cdrawVkImage* const image_out,
 		}
 	}
 
+	// memory allocated, set layout and create view
 	if (image_out->imageMem)
 	{
 		VkPipelineStageFlags const stage = (VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
@@ -406,7 +486,7 @@ bool cdrawVkImageCreateDepthStencil2D(cdrawVkImage* const image_out,
 				? cdrawVkImageSubresourceRangeCtorDefaultDepthStencil()
 				: cdrawVkImageSubresourceRangeCtorDefaultDepth();
 			cdrawRendererCmdImageSetLayout_vk(image_out->image, cmdBuf_depth, logicalDevice->queueFamilyIdx_graphics, 0, 0, stage, stage,
-				VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, imageSubResourceRange);
+				VK_IMAGE_LAYOUT_UNDEFINED, imageLayout_depth, imageSubResourceRange);
 			submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf_depth, 0, NULL);
 			result = vkEndCommandBuffer(cmdBuf_depth);
 			cdraw_assert(result == VK_SUCCESS);
@@ -428,6 +508,16 @@ bool cdrawVkImageCreateDepthStencil2D(cdrawVkImage* const image_out,
 		}
 	}
 
+	// image view created, set attachment properties
+	if (image_out->imageView)
+	{
+		image_out->imageAttach = cdrawVkAttachmentDescriptionCtor(
+			false, imageFormat_depth, sampleCount_depth,
+			attachLoadOp, attachStoreOp, attachStencilLoadOp, attachStencilStoreOp,
+			imageLayout_depth, imageLayout_depth);
+	}
+
+	// set final outputs or clean up
 	if (!cdrawVkImageValid(image_out) || (result != VK_SUCCESS))
 	{
 		cdrawVkImageDestroy(image_out, logicalDevice, alloc_opt);

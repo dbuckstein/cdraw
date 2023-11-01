@@ -132,33 +132,8 @@ bool cdrawVkFramebufferUnused(cdrawVkFramebuffer const* const framebuffer)
 * Substantial improvements: translated to C and organized.
 ******************************************************************************/
 
-static VkAttachmentDescription cdrawVkAttachmentDescriptionCtor(
-	bool const mayAlias,
-	VkFormat const format,
-	VkSampleCountFlagBits const samples,
-	VkAttachmentLoadOp const loadOp,
-	VkAttachmentStoreOp const storeOp,
-	VkAttachmentLoadOp const stencilLoadOp,
-	VkAttachmentStoreOp const stencilStoreOp,
-	VkImageLayout const initialLayout,
-	VkImageLayout const finalLayout)
-{
-	VkAttachmentDescription attachmentDescription = { 0 };
-	if (mayAlias)
-		attachmentDescription.flags = VK_ATTACHMENT_DESCRIPTION_MAY_ALIAS_BIT;
-	attachmentDescription.format = format;
-	attachmentDescription.samples = samples;
-	attachmentDescription.loadOp = loadOp;
-	attachmentDescription.storeOp = storeOp;
-	attachmentDescription.stencilLoadOp = stencilLoadOp;
-	attachmentDescription.stencilStoreOp = stencilStoreOp;
-	attachmentDescription.initialLayout = initialLayout;
-	attachmentDescription.finalLayout = finalLayout;
-	return attachmentDescription;
-}
-
-static VkAttachmentReference cdrawVkAttachmentReferenceCtor(
-	uint32_t const attachment,
+VkAttachmentReference cdrawVkAttachmentReferenceCtor(
+	uint32_t const attachment, // index in "VkRenderPassCreateInfo::pAttachments"
 	VkImageLayout const layout)
 {
 	VkAttachmentReference attachmentReference = { 0 };
@@ -167,15 +142,20 @@ static VkAttachmentReference cdrawVkAttachmentReferenceCtor(
 	return attachmentReference;
 }
 
+VkAttachmentReference cdrawVkAttachmentReferenceCtorDefault()
+{
+	return cdrawVkAttachmentReferenceCtor(VK_ATTACHMENT_UNUSED, VK_IMAGE_LAYOUT_UNDEFINED);
+}
+
 static VkSubpassDescription cdrawVkSubpassDescriptionCtor(
 	VkPipelineBindPoint const pipelineBindPoint,
 	uint32_t const inputAttachmentCount,
-	VkAttachmentReference const inputAttachments[/*inputAttachmentCount*/],
+	VkAttachmentReference const inputAttachments[cdrawVkFramebufferInputAttach_max /*inputAttachmentCount*/], // one-tap (current texel only) access for shaders
 	uint32_t const colorAttachmentCount,
-	VkAttachmentReference const colorAttachments[/*colorAttachmentCount*/],
-	VkAttachmentReference const resolveAttachments[/*colorAttachmentCount*/],
-	VkAttachmentReference const depthStencilAttachment[/*1*/],
-	uint32_t const preserveAttachmentCount, // unique to Vulkan
+	VkAttachmentReference const colorAttachments[cdrawVkFramebufferColorAttach_max /*colorAttachmentCount*/], // color drawing targets
+	VkAttachmentReference const resolveAttachments[cdrawVkFramebufferColorAttach_max /*colorAttachmentCount*/], // auto downsampled - must be UNUSED if corresponding color target has sample count of 1
+	VkAttachmentReference const depthStencilAttachment[1 /*1*/], // depth/stencil drawing target
+	uint32_t const preserveAttachmentCount, // unique to Vulkan: contents are kept but not touched during subpass
 	uint32_t const preserveAttachments[/*preserveAttachmentCount*/])
 {
 	VkSubpassDescription subpassDescription = { 0 };
@@ -189,6 +169,18 @@ static VkSubpassDescription cdrawVkSubpassDescriptionCtor(
 	subpassDescription.preserveAttachmentCount = preserveAttachmentCount;
 	subpassDescription.pPreserveAttachments = preserveAttachments;
 	return subpassDescription;
+}
+
+VkSubpassDescription cdrawVkSubpassDescriptionCtorDefaultColorDepth(
+	uint32_t const colorAttachmentCount,
+	VkAttachmentReference const colorAttachments[cdrawVkFramebufferColorAttach_max /*colorAttachmentCount*/], // color drawing targets
+	VkAttachmentReference const resolveAttachments[cdrawVkFramebufferColorAttach_max /*colorAttachmentCount*/], // auto downsampled
+	VkAttachmentReference const depthStencilAttachment[1 /*1*/]) // depth/stencil drawing target
+{
+	return cdrawVkSubpassDescriptionCtor(VK_PIPELINE_BIND_POINT_GRAPHICS,
+		0, NULL,
+		colorAttachmentCount, colorAttachments, resolveAttachments, depthStencilAttachment,
+		0, NULL);
 }
 
 static VkSubpassDependency cdrawVkSubpassDependencyCtor(
@@ -231,13 +223,23 @@ static VkRenderPassCreateInfo cdrawVkRenderPassCreateInfoCtor(
 }
 
 bool cdrawVkRenderPassCreate(cdrawVkRenderPass* const renderPass_out,
-	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt)
+	label_t const name, cdrawVkLogicalDevice const* const logicalDevice,
+	uint32_t const attachmentCount, VkAttachmentDescription const attachment[/*attachmentCount*/],
+	uint32_t const subpassCount, VkSubpassDescription const subpass[/*subpassCount*/],
+	VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
 	failassertret(renderPass_out && cdrawVkRenderPassUnused(renderPass_out) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice), false);
 	printf("\n Creating Vulkan render pass \"%s\"...", name);
 
-	// ****TO-DO
+	// CREATE RENDER PASS
+	{
+		VkRenderPassCreateInfo const renderPassCreateInfo = cdrawVkRenderPassCreateInfoCtor(
+			attachmentCount, attachment, subpassCount, subpass, 0, NULL);
+		result = vkCreateRenderPass(logicalDevice->logicalDevice, &renderPassCreateInfo, alloc_opt, &renderPass_out->renderPass);
+		if (renderPass_out->renderPass)
+			cdraw_assert(result == VK_SUCCESS);
+	}
 
 	if (!cdrawVkRenderPassValid(renderPass_out) || (result != VK_SUCCESS))
 	{
@@ -256,12 +258,16 @@ bool cdrawVkRenderPassDestroy(cdrawVkRenderPass* const renderPass_out,
 {
 	failassertret(renderPass_out, false);
 	if (cdrawVkRenderPassUnused(renderPass_out))
-		return false;
+		return true;
 
 	cdraw_assert(logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice));
-
-	// ****TO-DO
-
+	printf("\n Destroying Vulkan render pass \"%s\"...", renderPass_out->name);
+	//if (renderPass_out->renderPass)
+	{
+		vkDestroyRenderPass(logicalDevice->logicalDevice, renderPass_out->renderPass, alloc_opt);
+		renderPass_out->renderPass = VK_NULL_HANDLE;
+	}
+	printf("\n Vulkan render pass \"%s\" destroyed.", renderPass_out->name);
 	label_init(renderPass_out->name);
 	return true;
 }
@@ -284,14 +290,42 @@ static VkRenderPassBeginInfo cdrawVkRenderPassBeginInfoCtor(
 }
 
 
+static VkFramebufferCreateInfo cdrawVkFramebufferCreateInfoCtor(
+	VkRenderPass const renderPass,
+	uint32_t const attachmentCount,
+	VkImageView const attachments[/*attachmentCount*/],
+	uint32_t const width,
+	uint32_t const height,
+	uint32_t const layers)
+{
+	VkFramebufferCreateInfo framebufferCreateInfo = { 0 };
+	framebufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	//framebufferCreateInfo.flags = 0; // VK_FRAMEBUFFER_CREATE_IMAGELESS_BIT - can provide only details - ext "VK_KHR_imageless_framebuffer"
+	framebufferCreateInfo.renderPass = renderPass;
+	framebufferCreateInfo.attachmentCount = attachmentCount;
+	framebufferCreateInfo.pAttachments = attachments;
+	framebufferCreateInfo.width = width;
+	framebufferCreateInfo.height = height;
+	framebufferCreateInfo.layers = layers;
+	return framebufferCreateInfo;
+}
+
 bool cdrawVkFramebufferCreate(cdrawVkFramebuffer* const framebuffer_out,
-	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt)
+	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkRenderPass const* const renderPass,
+	uint32_t const attachmentCount, VkImageView const attachment[/*attachmentCount*/],
+	VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
 	failassertret(framebuffer_out && cdrawVkFramebufferUnused(framebuffer_out) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice), false);
 	printf("\n Creating Vulkan framebuffer \"%s\"...", name);
 
 	// ****TO-DO
+	{
+		VkFramebufferCreateInfo const framebufferCreateInfo = { 0 };// = cdrawVkFramebufferCreateInfoCtor();
+		result = vkCreateFramebuffer(logicalDevice->logicalDevice, &framebufferCreateInfo, alloc_opt, &framebuffer_out->framebuffer);
+		if (framebuffer_out->framebuffer)
+			cdraw_assert(result == VK_SUCCESS);
+	}
 
 	if (!cdrawVkFramebufferValid(framebuffer_out) || (result != VK_SUCCESS))
 	{
@@ -310,12 +344,16 @@ bool cdrawVkFramebufferDestroy(cdrawVkFramebuffer* const framebuffer_out,
 {
 	failassertret(framebuffer_out, false);
 	if (cdrawVkFramebufferUnused(framebuffer_out))
-		return false;
+		return true;
 
 	cdraw_assert(logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice));
-
-	// ****TO-DO
-
+	printf("\n Destroying Vulkan framebuffer \"%s\"...", framebuffer_out->name);
+	//if (framebuffer_out->framebuffer)
+	{
+		vkDestroyFramebuffer(logicalDevice->logicalDevice, framebuffer_out->framebuffer, alloc_opt);
+		framebuffer_out->framebuffer = VK_NULL_HANDLE;
+	}
+	printf("\n Vulkan framebuffer \"%s\" destroyed.", framebuffer_out->name);
 	label_init(framebuffer_out->name);
 	return true;
 }

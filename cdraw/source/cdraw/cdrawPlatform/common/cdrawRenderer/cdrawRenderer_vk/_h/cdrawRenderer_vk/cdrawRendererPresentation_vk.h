@@ -28,7 +28,6 @@
 enum
 {
 	cdrawVkImagePresent_max = 4,	// convenience: max number of presentation images
-	cdrawVkCmdBufPresent_max = 1,	// convenience: max number of presentation command buffers
 };
 
 
@@ -68,24 +67,28 @@ typedef struct cdrawVkPresentation
 	/// Vulkan graphics/presentation queue.
 	/// Should have one for each swapchain image to avoid locking.
 	/// </summary>
-	cdrawVkQueue queue_graphics;
+	cdrawVkQueue queue_graphics[cdrawVkImagePresent_max];
 
 	/// <summary>
 	/// Color image view resources associated with swapchain images.
 	/// Images themselves are not needed as they are owned by the swapchain; can query later.
 	/// </summary>
-	VkImageView imageView_present[cdrawVkImagePresent_max];
+	VkImageView colorImage_present[cdrawVkImagePresent_max];
+
+	/// <summary>
+	/// Description of presentation color images for use as framebuffer attachments.
+	/// </summary>
+	VkAttachmentDescription colorImage_attachment;
+
+	/// <summary>
+	/// Number of color images generated for swapchain.
+	/// </summary>
+	uint32_t colorImageCount;
 
 	/// <summary>
 	/// Depth/stencil image for presentation.
 	/// </summary>
 	cdrawVkImage depthStencilImage_present;
-
-	/// <summary>
-	/// Vulkan command buffers for presentation.
-	/// Should have one for each image to be processed.
-	/// </summary>
-	cdrawVkCommandBuffer commandBuffer_presentation[cdrawVkImagePresent_max];
 
 	/// <summary>
 	/// Vulkan render pass for presentation.
@@ -95,7 +98,13 @@ typedef struct cdrawVkPresentation
 	/// <summary>
 	/// Vulkan framebuffer for presentation.
 	/// </summary>
-	cdrawVkFramebuffer framebuffer_present;
+	cdrawVkFramebuffer framebuffer_present[cdrawVkImagePresent_max];
+
+	/// <summary>
+	/// Vulkan command buffers for presentation.
+	/// Should have one for each image to be processed.
+	/// </summary>
+	cdrawVkCommandBuffer commandBuffer_presentation[cdrawVkImagePresent_max];
 } cdrawVkPresentation;
 
 

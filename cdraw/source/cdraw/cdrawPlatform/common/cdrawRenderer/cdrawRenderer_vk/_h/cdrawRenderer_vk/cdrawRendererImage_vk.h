@@ -49,6 +49,11 @@ typedef struct cdrawVkImage
 	/// Vulkan image view handle (exposure to app).
 	/// </summary>
 	VkImageView imageView;
+
+	/// <summary>
+	/// Details for use as framebuffer attachment.
+	/// </summary>
+	VkAttachmentDescription imageAttach;
 } cdrawVkImage;
 
 
@@ -92,7 +97,52 @@ extern "C" {
 		cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
-	/// Create depth/stencil image and dependencies.
+	/// Create descriptor for using image as framebuffer attachment.
+	/// </summary>
+	/// <param name="mayAlias">Data may be aliased in memory.</param>
+	/// <param name="format">Image format.</param>
+	/// <param name="samples">Sample count (can resolve if multiple).</param>
+	/// <param name="loadOp">Load operation for color or depth/stencil attachment.</param>
+	/// <param name="storeOp">Store operation for color or depth/stencil attachment.</param>
+	/// <param name="stencilLoadOp">Load operation for stencil component of depth/stencil attachment.</param>
+	/// <param name="stencilStoreOp">Store operation for stencil component of depth/stencil attachment.</param>
+	/// <param name="initialLayout">Layout before render pass.</param>
+	/// <param name="finalLayout">Layout after render pass.</param>
+	/// <returns>Attachment description structure.</returns>
+	VkAttachmentDescription cdrawVkAttachmentDescriptionCtor(
+		bool const mayAlias,
+		VkFormat const format,
+		VkSampleCountFlagBits const samples,
+		VkAttachmentLoadOp const loadOp,
+		VkAttachmentStoreOp const storeOp,
+		VkAttachmentLoadOp const stencilLoadOp,
+		VkAttachmentStoreOp const stencilStoreOp,
+		VkImageLayout const initialLayout,
+		VkImageLayout const finalLayout);
+
+	/// <summary>
+	/// Create color attachment image and dependencies.
+	/// </summary>
+	/// <param name="image_out">Target image descriptor (non-null and unused).</param>
+	/// <param name="name">Descriptor name.</param>
+	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
+	/// <param name="commandPool">Command pool descriptor (non-null and valid).</param>
+	/// <param name="queue">Queue descriptor (non-null and valid).</param>
+	/// <param name="width">Image width.</param>
+	/// <param name="height">Image height.</param>
+	/// <param name="useHighPrecision">True to use higher precision storage; False to use lowest precision storage.</param>
+	/// <param name="attachLoadOp">Load operation if used as attachment.</param>
+	/// <param name="attachStoreOp">Store operation if used as attachment.</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if created.</returns>
+	bool cdrawVkImageCreateColorAttachment(cdrawVkImage* const image_out,
+		label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandPool const* const commandPool, cdrawVkQueue const* const queue,
+		uint32_t const width, uint32_t const height, bool const useHighPrecision,
+		VkAttachmentLoadOp const attachLoadOp, VkAttachmentStoreOp const attachStoreOp,
+		VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Create depth/stencil attachment image and dependencies.
 	/// </summary>
 	/// <param name="image_out">Target image descriptor (non-null and unused).</param>
 	/// <param name="name">Descriptor name.</param>
@@ -103,11 +153,17 @@ extern "C" {
 	/// <param name="height">Image height.</param>
 	/// <param name="useDepthFloat">True to use floating point storage for depth component; False to use medium-precision integer storage.</param>
 	/// <param name="useStencil">True to use stencil component; False to disable stencil.</param>
+	/// <param name="attachLoadOp">Load operation if used as attachment.</param>
+	/// <param name="attachStoreOp">Store operation if used as attachment.</param>
+	/// <param name="attachStencilLoadOp">Load operation for stencil component if used as attachment.</param>
+	/// <param name="attachStencilStoreOp">Store operation for stencil component if used as attachment.</param>
 	/// <param name="alloc_opt">Optional allocation callbacks.</param>
 	/// <returns>True if created.</returns>
-	bool cdrawVkImageCreateDepthStencil2D(cdrawVkImage* const image_out,
+	bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
 		label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandPool const* const commandPool, cdrawVkQueue const* const queue,
 		uint32_t const width, uint32_t const height, bool const useDepthFloat, bool const useStencil,
+		VkAttachmentLoadOp const attachLoadOp, VkAttachmentStoreOp const attachStoreOp,
+		VkAttachmentLoadOp const attachStencilLoadOp, VkAttachmentStoreOp const attachStencilStoreOp,
 		VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>

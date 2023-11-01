@@ -429,7 +429,7 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 		//| VK_QUEUE_COMPUTE_BIT // can be added later or make a new queue
 		VK_QUEUE_GRAPHICS_BIT);
 	uint32_t queueFamilySelectIdx_graphics = uint32_invalid;
-	uint32_t const queueCount_graphics = 1;
+	uint32_t const queueCount_graphics = cdrawVkImagePresent_max;//1;
 
 	// device layers (deprecated)
 	cstrk_t const deviceLayerName_request[] = {
@@ -712,7 +712,7 @@ bool cdrawVkLogicalDeviceDestroy(cdrawVkLogicalDevice* const logicalDevice_out,
 		return true;
 
 	printf("\n Destroying Vulkan logical device \"%s\"...", logicalDevice_out->name);
-	//if (logicalDevice_out->logicalDevice)
+	if (logicalDevice_out->logicalDevice)
 	{
 		if (vkDeviceWaitIdle(logicalDevice_out->logicalDevice) != VK_SUCCESS)
 			return false;
@@ -720,7 +720,7 @@ bool cdrawVkLogicalDeviceDestroy(cdrawVkLogicalDevice* const logicalDevice_out,
 		vkDestroyDevice(logicalDevice_out->logicalDevice, alloc_opt);
 		logicalDevice_out->logicalDevice = VK_NULL_HANDLE;
 	}
-	//if (logicalDevice_out->physicalDevice.physicalDevice)
+	if (logicalDevice_out->physicalDevice.physicalDevice)
 	{
 		logicalDevice_out->physicalDevice.physicalDevice = VK_NULL_HANDLE;
 		memset(&logicalDevice_out->physicalDevice, 0, sizeof(logicalDevice_out->physicalDevice));
@@ -860,7 +860,7 @@ bool cdrawVkCommandBufferFree(cdrawVkCommandBuffer* const commandBuffer_out,
 
 	cdraw_assert(commandPool && cdrawVkCommandPoolValid(commandPool) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice));
 	printf("\n Freeing Vulkan command buffers \"%s[%u]\"...", commandBuffer_out->name, commandBuffer_out->commandBufferCount);
-	//if (commandBuffer_out->commandBufferCount)
+	if (commandBuffer_out->commandBufferCount)
 	{
 		vkFreeCommandBuffers(logicalDevice->logicalDevice, commandPool->commandPool, commandBuffer_out->commandBufferCount, commandBuffer_out->commandBuffer);
 	}

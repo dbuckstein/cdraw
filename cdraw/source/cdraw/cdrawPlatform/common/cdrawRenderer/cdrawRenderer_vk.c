@@ -248,7 +248,7 @@ static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r, uint32_
 		r->semaphore,
 	};
 	VkSwapchainKHR const swapchains[] = {
-		presentation->swapchain,
+		presentation->swapchain, // first is main
 	};
 	VkResult result_swapchain[buffer_len(swapchains)] = { VK_INCOMPLETE };
 	uint32_t const nSwapchains = buffer_len(swapchains);
@@ -269,7 +269,7 @@ static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r, uint32_
 	}
 	if (result == VK_SUCCESS)
 	{
-		result = vkQueuePresentKHR(presentation->queue_graphics.queue, &presentInfo);
+		result = vkQueuePresentKHR(presentation->queue_graphics[imageIndices[0]].queue, &presentInfo);
 		if (result != VK_SUCCESS)
 		{
 			// handle display error
