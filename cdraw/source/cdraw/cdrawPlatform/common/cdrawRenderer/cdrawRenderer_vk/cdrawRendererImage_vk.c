@@ -51,6 +51,34 @@ static void cdrawVkImageDtor(cdrawVkImage* const image_out);
 
 
 /******************************************************************************
+* Private implementations.
+******************************************************************************/
+
+static VkFormat cdrawVkFormatColor(bool const useHighPrecision)
+{
+	// of note: may consider blitting color target into swapchain image
+	// (instead of drawing swapchain images directly as framebuffer targets)
+	//	-> https://www.reddit.com/r/vulkan/comments/p3iy0o/why_use_bgra_instead_of_rgba/
+
+	VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
+	if (useHighPrecision)
+		format = VK_FORMAT_R16G16B16A16_UNORM;
+	return format;
+}
+
+static VkFormat cdrawVkFormatDepthStencil(bool const useDepthFloat, bool const useStencil)
+{
+	// depth/stencil buffer: can change bit size of depth and add _S8_UINT for stencil
+	VkFormat format = VK_FORMAT_D16_UNORM;
+	if (useStencil)
+		format = useDepthFloat ? VK_FORMAT_D32_SFLOAT_S8_UINT : VK_FORMAT_D24_UNORM_S8_UINT;
+	else if (useDepthFloat)
+		format = VK_FORMAT_D32_SFLOAT;
+	return format;
+}
+
+
+/******************************************************************************
 * Public implementations.
 ******************************************************************************/
 
@@ -115,6 +143,40 @@ VkAttachmentDescription cdrawVkAttachmentDescriptionCtor(
 	attachmentDescription.initialLayout = initialLayout;
 	attachmentDescription.finalLayout = finalLayout;
 	return attachmentDescription;
+}
+
+VkAttachmentDescription cdrawVkAttachmentDescriptionCtorDefaultColor(
+	bool const mayAlias, bool const clear, bool const useHighPrecision, uint8_t const sampleBit_0to6)
+{
+	VkFormat const format = cdrawVkFormatColor(useHighPrecision);
+	VkSampleCountFlagBits const sampleBits[] = {
+		VK_SAMPLE_COUNT_1_BIT,
+		VK_SAMPLE_COUNT_2_BIT,
+		VK_SAMPLE_COUNT_4_BIT,
+		VK_SAMPLE_COUNT_8_BIT,
+		VK_SAMPLE_COUNT_16_BIT,
+		VK_SAMPLE_COUNT_32_BIT,
+		VK_SAMPLE_COUNT_64_BIT,
+	}, samples = sampleBits[sampleBit_0to6 % buffer_len(sampleBits)];
+	VkAttachmentLoadOp const loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+	VkAttachmentStoreOp const storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	VkAttachmentLoadOp const loadOpStencil = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	VkAttachmentStoreOp const storeOpStencil = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	VkImageLayout const layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	return cdrawVkAttachmentDescriptionCtor(mayAlias, format, samples, loadOp, storeOp, loadOpStencil, storeOpStencil, layout, layout);
+}
+
+VkAttachmentDescription cdrawVkAttachmentDescriptionCtorDefaultDepthStencil(
+	bool const clear, bool const useStencil, bool const useDepthFloat)
+{
+	VkFormat const format = cdrawVkFormatDepthStencil(useDepthFloat, useStencil);
+	VkSampleCountFlagBits const samples = VK_SAMPLE_COUNT_1_BIT;
+	VkAttachmentLoadOp const loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+	VkAttachmentStoreOp const storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	VkAttachmentLoadOp const loadOpStencil = useStencil ? loadOp : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	VkAttachmentStoreOp const storeOpStencil = useStencil ? storeOp : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	VkImageLayout const layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	return cdrawVkAttachmentDescriptionCtor(false, format, samples, loadOp, storeOp, loadOpStencil, storeOpStencil, layout, layout);
 }
 
 static VkComponentMapping cdrawVkComponentMappingCtor(
@@ -338,98 +400,38 @@ bool cdrawVkImageDestroy(cdrawVkImage* const image_out,
 		vkDestroyImage(logicalDevice->logicalDevice, image_out->image, alloc_opt);
 		image_out->image = VK_NULL_HANDLE;
 	}
-	memset(&image_out->imageAttach, 0, sizeof(image_out->imageAttach));
 	printf("\n Vulkan image \"%s\" destroyed.", image_out->name);
 	label_init(image_out->name);
+	cdraw_assert(cdrawVkImageUnused(image_out));
 	return true;
 }
 
 
-static VkFormat cdrawVkFormatColor(bool const useHighPrecision)
-{
-	// of note: may consider blitting color target into swapchain image
-	// (instead of drawing swapchain images directly as framebuffer targets)
-	//	-> https://www.reddit.com/r/vulkan/comments/p3iy0o/why_use_bgra_instead_of_rgba/
-
-	VkFormat format = VK_FORMAT_R8G8B8A8_UNORM;
-	if (useHighPrecision)
-		format = VK_FORMAT_R16G16B16A16_UNORM;
-	return format;
-}
-
-bool cdrawVkImageCreateColorAttachment(cdrawVkImage* const image_out,
+bool cdrawVkImageCreateColorAttachments(cdrawVkImage images_out[/*imageCount*/], uint32_t const imageCount,
 	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandPool const* const commandPool, cdrawVkQueue const* const queue,
-	uint32_t const width, uint32_t const height, bool const useHighPrecision,
-	VkAttachmentLoadOp const attachLoadOp, VkAttachmentStoreOp const attachStoreOp,
-	VkAllocationCallbacks const* const alloc_opt)
+	uint32_t const width, uint32_t const height,
+	VkAttachmentDescription const* const attachmentDescription, VkAllocationCallbacks const* const alloc_opt)
 {
-	VkFormat const imageFormat_color = cdrawVkFormatColor(useHighPrecision);
-	VkExtent3D const imageExtent_color = { width, height, 1 };
-	VkImageTiling imageTiling_color = (VK_IMAGE_TILING_OPTIMAL);
-	VkImageUsageFlags const imageUsage_color = (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-	VkImageLayout const imageLayout_color = (VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-	VkSampleCountFlagBits const sampleCount_color = (VK_SAMPLE_COUNT_1_BIT);
+	uint32_t idx, count;
+	VkExtent3D const imageExtent = { width, height, 1 };
+	VkImageUsageFlags const imageUsage = (VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+	VkImageTiling imageTiling = (VK_IMAGE_TILING_OPTIMAL);
 
 	VkResult result = VK_SUCCESS;
-	failassertret(image_out && cdrawVkImageUnused(image_out) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice), false);
-	printf("\n Creating Vulkan image \"%s\"...", name);
+	failassertret(images_out && imageCount && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice) && commandPool && cdrawVkCommandPoolValid(commandPool) && queue && cdrawVkQueueValid(queue), false);
+	printf("\n Creating Vulkan images \"%s\" (%u color attachments)...", name, imageCount);
 
-	// ****TO-DO
-
-	if (!cdrawVkImageValid(image_out) || (result != VK_SUCCESS))
-	{
-		cdrawVkImageDestroy(image_out, logicalDevice, alloc_opt);
-		printf("\n Vulkan image \"%s\" creation failed.", name);
-		return false;
-	}
-	printf("\n Vulkan image \"%s\" created.", name);
-	label_copy_safe(image_out->name, name);
-	cdraw_assert(cdrawVkImageValid(image_out));
-	return true;
-}
-
-
-static VkFormat cdrawVkFormatDepthStencil(bool const useDepthFloat, bool const useStencil)
-{
-	// depth/stencil buffer: can change bit size of depth and add _S8_UINT for stencil
-	VkFormat format = VK_FORMAT_D16_UNORM;
-	if (useStencil)
-		format = useDepthFloat ? VK_FORMAT_D32_SFLOAT_S8_UINT : VK_FORMAT_D24_UNORM_S8_UINT;
-	else if (useDepthFloat)
-		format = VK_FORMAT_D32_SFLOAT;
-	return format;
-}
-
-bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
-	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandPool const* const commandPool, cdrawVkQueue const* const queue,
-	uint32_t const width, uint32_t const height, bool const useDepthFloat, bool const useStencil,
-	VkAttachmentLoadOp const attachLoadOp, VkAttachmentStoreOp const attachStoreOp,
-	VkAttachmentLoadOp const attachStencilLoadOp, VkAttachmentStoreOp const attachStencilStoreOp,
-	VkAllocationCallbacks const* const alloc_opt)
-{
-	VkFormat const imageFormat_depth = cdrawVkFormatDepthStencil(useDepthFloat, useStencil);
-	VkExtent3D const imageExtent_depth = { width, height, 1 }; // depth extent for 2D image must be 1
-	VkImageTiling imageTiling_depth = (VK_IMAGE_TILING_OPTIMAL);
-	VkImageUsageFlags const imageUsage_depth = (VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-	VkImageLayout const imageLayout_depth_orig = (VK_IMAGE_LAYOUT_UNDEFINED);
-	VkImageLayout const imageLayout_depth = (VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-	VkSampleCountFlagBits const sampleCount_depth = (VK_SAMPLE_COUNT_1_BIT); // will not resolve if set to 1
-
-	VkResult result = VK_SUCCESS;
-	failassertret(image_out && cdrawVkImageUnused(image_out) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice) && commandPool && cdrawVkCommandPoolValid(commandPool) && queue && cdrawVkQueueValid(queue), false);
-	printf("\n Creating Vulkan image \"%s\"...", name);
-	
 	// CREATE IMAGE
 	{
-		VkImageCreateInfo imageCreateInfo_depth = cdrawVkImageCreateInfoCtor(
+		VkImageCreateInfo imageCreateInfo = cdrawVkImageCreateInfoCtor(
 			VK_IMAGE_TYPE_2D,
-			imageFormat_depth,
-			imageExtent_depth,
+			attachmentDescription->format,
+			imageExtent,
 			1,
 			1,
-			sampleCount_depth,
-			imageTiling_depth, // validate below
-			imageUsage_depth,
+			attachmentDescription->samples,
+			imageTiling, // validate below
+			imageUsage,
 			VK_SHARING_MODE_EXCLUSIVE,
 			1,
 			&logicalDevice->queueFamilyIdx_graphics,
@@ -437,14 +439,170 @@ bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
 
 		// confirm support
 		VkFormatProperties formatProperties;
-		vkGetPhysicalDeviceFormatProperties(logicalDevice->physicalDevice.physicalDevice, imageFormat_depth, &formatProperties);
+		vkGetPhysicalDeviceFormatProperties(logicalDevice->physicalDevice.physicalDevice, attachmentDescription->format, &formatProperties);
+		cdraw_assert(VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT & (formatProperties.optimalTilingFeatures | formatProperties.linearTilingFeatures));
+		if (!(VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT & formatProperties.optimalTilingFeatures))
+			imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
+
+		// create image
+		count = 0;
+		for (idx = 0; idx < imageCount; ++idx)
+		{
+			result = vkCreateImage(logicalDevice->logicalDevice, &imageCreateInfo, alloc_opt, &images_out[idx].image);
+			if (images_out[idx].image)
+			{
+				cdraw_assert(result == VK_SUCCESS);
+				++count;
+			}
+		}
+		cdraw_assert(count == imageCount);
+	}
+
+	// image handle created, allocate memory and create view for depth image
+	if (count == imageCount)
+	{
+		int8_t memTypeIndex;
+		VkMemoryRequirements memReq;
+		VkMemoryAllocateInfo memAllocInfo;
+		vkGetImageMemoryRequirements(logicalDevice->logicalDevice, images_out->image, &memReq);
+		count = 0;
+		memTypeIndex = cdrawUtilityLowestBit32(memReq.memoryTypeBits);
+		if (memTypeIndex >= 0)
+		{
+			memAllocInfo = cdrawVkMemoryAllocateInfoCtor(memReq.size, memTypeIndex);
+			for (idx = 0; idx < imageCount; ++idx)
+			{
+				result = vkAllocateMemory(logicalDevice->logicalDevice, &memAllocInfo, alloc_opt, &images_out[idx].imageMem);
+				if (images_out[idx].imageMem)
+				{
+					cdraw_assert(result == VK_SUCCESS);
+					result = vkBindImageMemory(logicalDevice->logicalDevice, images_out[idx].image, images_out[idx].imageMem, 0);
+					cdraw_assert(result == VK_SUCCESS);
+					++count;
+				}
+			}
+		}
+		cdraw_assert(count == imageCount);
+	}
+
+	// memory allocated, set layout and create view
+	if (count == imageCount)
+	{
+		cdrawVkCommandBuffer commandBuffer = { 0 };
+		if (cdrawVkCommandBufferAlloc(&commandBuffer, "commandBuffer_color", 1, commandPool, logicalDevice, VK_COMMAND_BUFFER_LEVEL_PRIMARY))
+		{
+			VkPipelineStageFlags const stage = (VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+			VkImageSubresourceRange const imageSubResourceRange = cdrawVkImageSubresourceRangeCtorDefaultColor();
+			VkCommandBufferBeginInfo cmdBeginInfo = cdrawVkCommandBufferBeginInfoCtor(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, NULL);;
+			VkSubmitInfo submitInfo;
+			VkCommandBuffer cmdBuf = commandBuffer.commandBuffer[0];
+
+			result = vkBeginCommandBuffer(cmdBuf, &cmdBeginInfo);
+			cdraw_assert(result == VK_SUCCESS);
+			for (idx = 0; idx < imageCount; ++idx)
+			{
+				cdrawVkCmdImageSetLayout(images_out[idx].image, cmdBuf, logicalDevice->queueFamilyIdx_graphics, 0, 0, stage, stage,
+					VK_IMAGE_LAYOUT_UNDEFINED, attachmentDescription->finalLayout, imageSubResourceRange);
+			}
+			result = vkEndCommandBuffer(cmdBuf);
+			cdraw_assert(result == VK_SUCCESS);
+
+			submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf, 0, NULL);
+			result = vkQueueSubmit(queue->queue, 1, &submitInfo, VK_NULL_HANDLE);
+			cdraw_assert(result == VK_SUCCESS);
+			result = vkQueueWaitIdle(queue->queue);
+			cdraw_assert(result == VK_SUCCESS);
+			if (cdrawVkCommandBufferFree(&commandBuffer, commandPool, logicalDevice))
+			{
+				VkComponentMapping const imageComponent = { VK_COMPONENT_SWIZZLE_IDENTITY };
+				VkImageViewCreateInfo imageViewCreateInfo = cdrawVkImageViewCreateInfoCtor(
+					VK_NULL_HANDLE, // update per-image below
+					VK_IMAGE_VIEW_TYPE_2D,
+					attachmentDescription->format,
+					imageComponent,
+					imageSubResourceRange);
+				count = 0;
+				for (idx = 0; idx < imageCount; ++idx)
+				{
+					imageViewCreateInfo.image = images_out[idx].image;
+					result = vkCreateImageView(logicalDevice->logicalDevice, &imageViewCreateInfo, alloc_opt, &images_out[idx].imageView);
+					if (images_out[idx].imageView)
+					{
+						cdraw_assert(result == VK_SUCCESS);
+						++count;
+					}
+				}
+				cdraw_assert(count == imageCount);
+			}
+		}
+	}
+
+	if ((count != imageCount) || (result != VK_SUCCESS))
+	{
+		for (idx = 0; idx < imageCount; ++idx)
+			cdrawVkImageDestroy(&images_out[idx], logicalDevice, alloc_opt);
+		printf("\n Vulkan images \"%s\" (%u color attachments) creation failed.", name, imageCount);
+		return false;
+	}
+	printf("\n Vulkan image \"%s\" (%u color attachments) created.", name, imageCount);
+	for (idx = 0; idx < imageCount; ++idx)
+	{
+		label_copy_safe(images_out[idx].name, name);
+		cdraw_assert(cdrawVkImageValid(&images_out[idx]));
+	}
+	return true;
+}
+
+bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
+	label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandPool const* const commandPool, cdrawVkQueue const* const queue,
+	uint32_t const width, uint32_t const height,
+	VkAttachmentDescription const* const attachmentDescription, VkAllocationCallbacks const* const alloc_opt)
+{
+	VkExtent3D const imageExtent = { width, height, 1 }; // depth extent for 2D image must be 1
+	VkImageUsageFlags const imageUsage = (VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	VkImageTiling imageTiling = (VK_IMAGE_TILING_OPTIMAL);
+	bool useStencil = false;
+
+	VkResult result = VK_SUCCESS;
+	failassertret(image_out && cdrawVkImageUnused(image_out) && logicalDevice && cdrawVkLogicalDeviceValid(logicalDevice) && commandPool && cdrawVkCommandPoolValid(commandPool) && queue && cdrawVkQueueValid(queue), false);
+	failassertret(width && height && attachmentDescription, false);
+	printf("\n Creating Vulkan image \"%s\" (depth/stencil attachment)...", name);
+
+	// settings
+	if (attachmentDescription->stencilLoadOp != VK_ATTACHMENT_LOAD_OP_DONT_CARE)
+	{
+		useStencil = true;
+		cdraw_assert(attachmentDescription->stencilStoreOp != VK_ATTACHMENT_STORE_OP_DONT_CARE);
+	}
+	cdraw_assert(attachmentDescription->samples == VK_SAMPLE_COUNT_1_BIT);
+	cdraw_assert(attachmentDescription->finalLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+	
+	// CREATE IMAGE
+	{
+		VkImageCreateInfo imageCreateInfo = cdrawVkImageCreateInfoCtor(
+			VK_IMAGE_TYPE_2D,
+			attachmentDescription->format,
+			imageExtent,
+			1,
+			1,
+			attachmentDescription->samples,
+			imageTiling, // validate below
+			imageUsage,
+			VK_SHARING_MODE_EXCLUSIVE,
+			1,
+			&logicalDevice->queueFamilyIdx_graphics,
+			VK_IMAGE_LAYOUT_UNDEFINED);
+
+		// confirm support
+		VkFormatProperties formatProperties;
+		vkGetPhysicalDeviceFormatProperties(logicalDevice->physicalDevice.physicalDevice, attachmentDescription->format, &formatProperties);
 		cdraw_assert(VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
 			& (formatProperties.optimalTilingFeatures | formatProperties.linearTilingFeatures));
 		if (!(VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT & formatProperties.optimalTilingFeatures))
-			imageCreateInfo_depth.tiling = VK_IMAGE_TILING_LINEAR;
+			imageCreateInfo.tiling = VK_IMAGE_TILING_LINEAR;
 
 		// create image
-		result = vkCreateImage(logicalDevice->logicalDevice, &imageCreateInfo_depth, alloc_opt, &image_out->image);
+		result = vkCreateImage(logicalDevice->logicalDevice, &imageCreateInfo, alloc_opt, &image_out->image);
 		if (image_out->image)
 			cdraw_assert(result == VK_SUCCESS);
 	}
@@ -453,13 +611,13 @@ bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
 	if (image_out->image)
 	{
 		int8_t memTypeIndex;
-		VkMemoryRequirements memReq_depth;
+		VkMemoryRequirements memReq;
 		VkMemoryAllocateInfo memAllocInfo;
-		vkGetImageMemoryRequirements(logicalDevice->logicalDevice, image_out->image, &memReq_depth);
-		memTypeIndex = cdrawUtilityLowestBit32(memReq_depth.memoryTypeBits);
+		vkGetImageMemoryRequirements(logicalDevice->logicalDevice, image_out->image, &memReq);
+		memTypeIndex = cdrawUtilityLowestBit32(memReq.memoryTypeBits);
 		if (memTypeIndex >= 0)
 		{
-			memAllocInfo = cdrawVkMemoryAllocateInfoCtor(memReq_depth.size, memTypeIndex);
+			memAllocInfo = cdrawVkMemoryAllocateInfoCtor(memReq.size, memTypeIndex);
 			result = vkAllocateMemory(logicalDevice->logicalDevice, &memAllocInfo, alloc_opt, &image_out->imageMem);
 			if (image_out->imageMem)
 				cdraw_assert(result == VK_SUCCESS);
@@ -469,11 +627,11 @@ bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
 	// memory allocated, set layout and create view
 	if (image_out->imageMem)
 	{
-		cdrawVkCommandBuffer commandBuffer_depth = { 0 };
+		cdrawVkCommandBuffer commandBuffer = { 0 };
 
 		result = vkBindImageMemory(logicalDevice->logicalDevice, image_out->image, image_out->imageMem, 0);
 		cdraw_assert(result == VK_SUCCESS);
-		if (cdrawVkCommandBufferAlloc(&commandBuffer_depth, "commandBuffer_depth", 1, commandPool, logicalDevice, VK_COMMAND_BUFFER_LEVEL_PRIMARY))
+		if (cdrawVkCommandBufferAlloc(&commandBuffer, "commandBuffer_depth_stencil", 1, commandPool, logicalDevice, VK_COMMAND_BUFFER_LEVEL_PRIMARY))
 		{
 			VkPipelineStageFlags const stage = (VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT);
 			VkImageSubresourceRange const imageSubResourceRange = useStencil
@@ -481,41 +639,36 @@ bool cdrawVkImageCreateDepthStencilAttachment(cdrawVkImage* const image_out,
 				: cdrawVkImageSubresourceRangeCtorDefaultDepth();
 			VkCommandBufferBeginInfo cmdBeginInfo = cdrawVkCommandBufferBeginInfoCtor(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT, NULL);;
 			VkSubmitInfo submitInfo;
-			VkCommandBuffer cmdBuf_depth = commandBuffer_depth.commandBuffer[0];
+			VkCommandBuffer cmdBuf = commandBuffer.commandBuffer[0];
 
-			result = vkBeginCommandBuffer(cmdBuf_depth, &cmdBeginInfo);
+			result = vkBeginCommandBuffer(cmdBuf, &cmdBeginInfo);
 			cdraw_assert(result == VK_SUCCESS);
 
-			cdrawVkCmdImageSetLayout(image_out->image, cmdBuf_depth, logicalDevice->queueFamilyIdx_graphics, 0, 0, stage, stage,
-				imageLayout_depth_orig, imageLayout_depth, imageSubResourceRange);
+			cdrawVkCmdImageSetLayout(image_out->image, cmdBuf, logicalDevice->queueFamilyIdx_graphics, 0, 0, stage, stage,
+				VK_IMAGE_LAYOUT_UNDEFINED, attachmentDescription->finalLayout, imageSubResourceRange);
 	
-			result = vkEndCommandBuffer(cmdBuf_depth);
+			result = vkEndCommandBuffer(cmdBuf);
 			cdraw_assert(result == VK_SUCCESS);
 
-			submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf_depth, 0, NULL);
+			submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf, 0, NULL);
 			result = vkQueueSubmit(queue->queue, 1, &submitInfo, VK_NULL_HANDLE);
 			cdraw_assert(result == VK_SUCCESS);
 			result = vkQueueWaitIdle(queue->queue);
 			cdraw_assert(result == VK_SUCCESS);
-			if (cdrawVkCommandBufferFree(&commandBuffer_depth, commandPool, logicalDevice))
+			if (cdrawVkCommandBufferFree(&commandBuffer, commandPool, logicalDevice))
 			{
-				VkComponentMapping const imageComponent_depth = { VK_COMPONENT_SWIZZLE_IDENTITY };
-				VkImageViewCreateInfo const imageViewCreateInfo = cdrawVkImageViewCreateInfoCtor(image_out->image, VK_IMAGE_VIEW_TYPE_2D,
-					imageFormat_depth, imageComponent_depth, imageSubResourceRange);
+				VkComponentMapping const imageComponent = { VK_COMPONENT_SWIZZLE_IDENTITY };
+				VkImageViewCreateInfo const imageViewCreateInfo = cdrawVkImageViewCreateInfoCtor(
+					image_out->image,
+					VK_IMAGE_VIEW_TYPE_2D,
+					attachmentDescription->format,
+					imageComponent,
+					imageSubResourceRange);
 				result = vkCreateImageView(logicalDevice->logicalDevice, &imageViewCreateInfo, alloc_opt, &image_out->imageView);
 				if (image_out->imageView)
 					cdraw_assert(result == VK_SUCCESS);
 			}
 		}
-	}
-
-	// image view created, set attachment properties
-	if (image_out->imageView)
-	{
-		image_out->imageAttach = cdrawVkAttachmentDescriptionCtor(
-			false, imageFormat_depth, sampleCount_depth,
-			attachLoadOp, attachStoreOp, attachStencilLoadOp, attachStencilStoreOp,
-			imageLayout_depth, imageLayout_depth);
 	}
 
 	// set final outputs or clean up

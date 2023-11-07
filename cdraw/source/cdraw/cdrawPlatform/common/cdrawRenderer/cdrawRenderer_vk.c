@@ -126,12 +126,12 @@ static bool cdrawRendererDisplayTest_vk(cdrawRenderer_vk const* const r, uint32_
 		// ...
 		vkCmdEndRenderPass(cmdBuf);
 		
-		// NOTE: https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/4422#issuecomment-1256257653 
-		//	-> getting validation error about image format being "undefined" - need actual commands from render pass to set it
-		cdrawVkCmdImageSetLayout(r->presentation->colorImage_present[index], cmdBuf, r->logicalDevice.queueFamilyIdx_graphics, 0, 0,
-			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-			cdrawVkImageSubresourceRangeCtorDefaultColor());
+		//// NOTE: https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/4422#issuecomment-1256257653 
+		////	-> getting validation error about image format being "undefined" - need actual commands from render pass to set it
+		//cdrawVkCmdImageSetLayout(r->presentation->colorImage_present[index], cmdBuf, r->logicalDevice.queueFamilyIdx_graphics, 0, 0,
+		//	VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+		//	VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+		//	cdrawVkImageSubresourceRangeCtorDefaultColor());
 	
 		result = vkEndCommandBuffer(cmdBuf);
 		cdraw_assert(result == VK_SUCCESS);
@@ -139,8 +139,9 @@ static bool cdrawRendererDisplayTest_vk(cdrawRenderer_vk const* const r, uint32_
 
 		// SUBMISSION
 		{
+			VkFence const fence = VK_NULL_HANDLE;// r->presentation->fence[index];
 			VkSubmitInfo const submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf, 0, NULL);
-			result = vkQueueSubmit(queue, 1, &submitInfo, r->presentation->fence[index]);
+			result = vkQueueSubmit(queue, 1, &submitInfo, fence);
 			cdraw_assert(result == VK_SUCCESS);
 			//result = vkWaitForFences(r->logicalDevice.logicalDevice, 1, &r->presentation->fence[index], VK_TRUE, UINT64_MAX);
 			//cdraw_assert(result == VK_SUCCESS);
@@ -204,7 +205,7 @@ static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r, uint32_
 		r->semaphore,
 	};
 	VkSwapchainKHR const swapchains[] = {
-		presentation->swapchain, // first is main
+		presentation->swapchain.swapchain, // first is main
 	};
 	VkResult result_swapchain[buffer_len(swapchains)] = { VK_INCOMPLETE };
 	uint32_t const nSwapchains = buffer_len(swapchains);
@@ -219,15 +220,17 @@ static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r, uint32_
 		cdraw_assert(result == VK_SUCCESS);
 	}
 
-	//vkWaitForFences(r->logicalDevice.logicalDevice, 1, &presentation->fence[imageIndices[0]], VK_TRUE, UINT64_MAX);
-	//vkResetFences(r->logicalDevice.logicalDevice, 1, &presentation->fence[imageIndices[0]]);
-
 	queue = presentation->queue_graphics[imageIndices[0]].queue;
+	//result = vkResetFences(r->logicalDevice.logicalDevice, 1, &r->presentation->fence[imageIndices[0]]);
+	//cdraw_assert(result == VK_SUCCESS);
 
 	// submission happens here
 #if CDRAW_DEBUG
 	cdrawRendererDisplayTest_vk(r, imageIndices[0]);
 #endif // #if CDRAW_DEBUG
+
+	// blit image - alternative to mandatory draw target support
+	//vkCmdBlitImage();
 
 	// draw
 	if (result == VK_SUCCESS)

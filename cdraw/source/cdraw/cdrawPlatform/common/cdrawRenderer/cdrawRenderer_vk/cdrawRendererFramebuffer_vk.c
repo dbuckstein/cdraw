@@ -269,6 +269,7 @@ bool cdrawVkRenderPassDestroy(cdrawVkRenderPass* const renderPass_out,
 	}
 	printf("\n Vulkan render pass \"%s\" destroyed.", renderPass_out->name);
 	label_init(renderPass_out->name);
+	cdraw_assert(cdrawVkRenderPassUnused(renderPass_out));
 	return true;
 }
 
@@ -364,5 +365,6 @@ bool cdrawVkFramebufferDestroy(cdrawVkFramebuffer* const framebuffer_out,
 	}
 	printf("\n Vulkan framebuffer \"%s\" destroyed.", framebuffer_out->name);
 	label_init(framebuffer_out->name);
+	cdraw_assert(cdrawVkFramebufferUnused(framebuffer_out));
 	return true;
 }

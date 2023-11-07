@@ -1145,6 +1145,10 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 				cdrawPluginCallOnWindowDetach(window->p_plugin, p_window, p_window);
 				if (result_isclean(cdrawPluginUnload(window->p_plugin, p_window)))
 				{
+					// clear window
+					RedrawWindow(hWnd, NULL, NULL, (RDW_ERASE | RDW_INVALIDATE | RDW_INTERNALPAINT));
+
+					// reset
 					window->p_plugin = NULL;
 					p_window->pluginOwner = NULL;
 				}

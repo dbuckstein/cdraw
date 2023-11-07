@@ -397,5 +397,6 @@ bool cdrawVkInstanceDestroy(cdrawVkInstance* const instance_out,
 	}
 	printf("\n Vulkan instance \"%s\" destroyed.", instance_out->name);
 	label_init(instance_out->name);
+	cdraw_assert(cdrawVkInstanceUnused(instance_out));
 	return true;
 }
