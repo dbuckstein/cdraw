@@ -96,10 +96,11 @@ extern "C" {
 	/// </summary>
 	/// <param name="fence_out">Vulkan fence handle.</param>
 	/// <param name="device">Vulkan logical device handle.</param>
+	/// <param name="signaled">True if fence should be created in signaled state.</param>
 	/// <param name="alloc_opt">Optional allocation callbacks.</param>
 	/// <returns>True if created.</returns>
 	bool cdrawRendererCreateFence_vk(VkFence* const fence_out,
-		VkDevice const device, VkAllocationCallbacks const* const alloc_opt);
+		VkDevice const device, bool const signaled, VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
 	/// Destroy Vulkan fence.

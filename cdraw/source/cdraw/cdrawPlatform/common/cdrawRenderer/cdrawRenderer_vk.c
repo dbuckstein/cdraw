@@ -57,14 +57,20 @@ static result_t cdrawRendererPrint_vk(cdrawRenderer_vk const* const r)
 
 
 #if CDRAW_DEBUG
-static bool cdrawRendererDisplayTest_vk(cdrawRenderer_vk const* const r, uint32_t const index)
+static bool cdrawRendererDisplayTest_vk(
+	VkCommandBuffer const commandBuffer,
+	VkQueryPool const queryPool,
+	VkRenderPass const renderPass,
+	VkFramebuffer const framebuffer,
+	VkRect2D const region,
+	uint32_t const queryBase)
 {
 	/*
 	* ****TO-DO:
 	*	-> DRAWING:
 	*		0) first time - use/make command buffer
 	*		1) begin recording
-	*		2) call draw commands to build buffer: 
+	*		2) call draw commands to build buffer:
 	*			begin render pass
 	*			bind pipeline
 	*			bind descriptors
@@ -77,7 +83,7 @@ static bool cdrawRendererDisplayTest_vk(cdrawRenderer_vk const* const r, uint32_
 	*		4) submit to queue
 	*		5) queue wait idle
 	*		6) reset to reuse
-	*	-> assumptions/predictions: 
+	*	-> assumptions/predictions:
 	*		create render pass
 	*		create set of "present" framebuffers that will manage how final presentation works
 	*		attach color (and possibly depth/stencil) images from swapchain
@@ -97,76 +103,43 @@ static bool cdrawRendererDisplayTest_vk(cdrawRenderer_vk const* const r, uint32_
 		{ 0.50f, 0.00f, 0.50f, 1.00f, },
 		{ 0.75f, 0.00f, 0.25f, 1.00f, },
 	};
+	static uint32_t const rateToCount = 60 / buffer_len(clearColor);
 	static VkClearDepthStencilValue const clearDepthStencil = { 1.0f, 0 };
 	static uint32_t clearColorIdx;
 	VkClearValue clearValue[2];
+
+	VkCommandBufferBeginInfo const commandBufferBegin = cdrawVkCommandBufferBeginInfoCtor(0, NULL);
+	VkRenderPassBeginInfo const renderPassBegin = cdrawVkRenderPassBeginInfoCtor(renderPass, framebuffer, region, buffer_len(clearValue), clearValue);
+
+	uint32_t const query_renderPassBegin = (queryBase + cdrawVkQuery_renderPassBegin);
+	uint32_t const query_renderPassEnd = (queryBase + cdrawVkQuery_renderPassEnd);
+
 	VkResult result = VK_SUCCESS;
-	
-	
-	// BEGIN
-	VkQueue const queue = r->presentation->queue_graphics[index].queue;
-		
-	// PREPARATION
-	{
-		VkCommandBuffer const cmdBuf = r->presentation->commandBuffer_present.commandBuffer[0];
-		VkCommandBufferBeginInfo const cmdBufBegin = cdrawVkCommandBufferBeginInfoCtor(0, NULL);
-		cdrawVkRenderPass const* const renderPass = &r->presentation->renderPass_present;
-		cdrawVkFramebuffer const* const framebuffer = &r->presentation->framebuffer_present[index];
-		VkRenderPassBeginInfo const renderPassBegin = cdrawVkRenderPassBeginInfoCtor(
-			renderPass->renderPass, framebuffer->framebuffer,
-			framebuffer->region, buffer_len(clearValue), clearValue);
-	
-		clearValue[0].color = clearColor[((clearColorIdx++) / 5) % buffer_len(clearColor)];
-		clearValue[1].depthStencil = clearDepthStencil;
-		
-		result = vkBeginCommandBuffer(cmdBuf, &cmdBufBegin);
-		cdraw_assert(result == VK_SUCCESS);
-		
-		vkCmdBeginRenderPass(cmdBuf, &renderPassBegin, VK_SUBPASS_CONTENTS_INLINE);
-		// ...
-		vkCmdEndRenderPass(cmdBuf);
-		
-		//// NOTE: https://github.com/KhronosGroup/Vulkan-ValidationLayers/issues/4422#issuecomment-1256257653 
-		////	-> getting validation error about image format being "undefined" - need actual commands from render pass to set it
-		//cdrawVkCmdImageSetLayout(r->presentation->colorImage_present[index], cmdBuf, r->logicalDevice.queueFamilyIdx_graphics, 0, 0,
-		//	VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-		//	VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-		//	cdrawVkImageSubresourceRangeCtorDefaultColor());
-	
-		result = vkEndCommandBuffer(cmdBuf);
-		cdraw_assert(result == VK_SUCCESS);
 
+	clearValue[0].color = clearColor[((clearColorIdx++) / rateToCount) % buffer_len(clearColor)];
+	clearValue[1].depthStencil = clearDepthStencil;
 
-		// SUBMISSION
-		{
-			VkFence const fence = VK_NULL_HANDLE;// r->presentation->fence[index];
-			VkSubmitInfo const submitInfo = cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf, 0, NULL);
-			result = vkQueueSubmit(queue, 1, &submitInfo, fence);
-			cdraw_assert(result == VK_SUCCESS);
-			//result = vkWaitForFences(r->logicalDevice.logicalDevice, 1, &r->presentation->fence[index], VK_TRUE, UINT64_MAX);
-			//cdraw_assert(result == VK_SUCCESS);
-			//result = vkResetFences(r->logicalDevice.logicalDevice, 1, &r->presentation->fence[index]);
-			//cdraw_assert(result == VK_SUCCESS);
-		}
-	}
+	result = vkResetCommandBuffer(commandBuffer, 0);
+	cdraw_assert(result == VK_SUCCESS);
 
-	//VkCommandBuffer const cmdBuf = r->cmdBuf[0];
-	//VkCommandBufferBeginInfo const cmdBufBeginInfo = cdrawVkCommandBufferBeginInfoCtor(0, NULL);
-	//VkRenderPassBeginInfo const renderPassBeginInfo = cdrawVkRenderPassBeginInfoCtor();
-	////VkSemaphore const semaphores_signal[] = {
-	////	r->semaphore,
-	////};
-	//VkSubmitInfo const submitInfo[] = {
-	//	cdrawVkSubmitInfoCtor(0, NULL, NULL, 1, &cmdBuf, 0, NULL),
-	//};
-	//result = vkBeginCommandBuffer(cmdBuf, &cmdBufBeginInfo);
-	//vkCmdBeginRenderPass(cmdBuf, &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-	//// ...
-	//vkCmdEndRenderPass(cmdBuf);
-	//result = vkEndCommandBuffer(cmdBuf);
-	//result = vkQueueSubmit(r->queue, buffer_len(submitInfo), submitInfo, VK_NULL_HANDLE);
-	//result = vkQueueWaitIdle(r->queue);
-	////vkResetCommandBuffer(cmdBuf, 0);
+	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBegin);
+	cdraw_assert(result == VK_SUCCESS);
+
+#if CDRAW_DEBUG
+	vkCmdResetQueryPool(commandBuffer, queryPool, queryBase, cdrawVkQuery_max);
+	vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, queryPool, query_renderPassBegin);
+#endif // #if CDRAW_DEBUG
+
+	vkCmdBeginRenderPass(commandBuffer, &renderPassBegin, VK_SUBPASS_CONTENTS_INLINE);
+	// ...
+	vkCmdEndRenderPass(commandBuffer);
+	
+#if CDRAW_DEBUG
+	vkCmdWriteTimestamp(commandBuffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, queryPool, query_renderPassEnd);
+#endif // #if CDRAW_DEBUG
+
+	result = vkEndCommandBuffer(commandBuffer);
+	cdraw_assert(result == VK_SUCCESS);
 
 	return (result == VK_SUCCESS);
 }
@@ -191,58 +164,215 @@ static VkPresentInfoKHR cdrawVkPresentInfoCtor(
 	return presentInfo;
 }
 
-static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk const* const r, uint32_t const windowIndex)
+static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk* const r, uint32_t const windowIndex)
 {
+	// steps: 
+	//	-> wait for current frame queue fence to be ready
+	//	-> acquire image from swapchain (get image index)
+	//	-> wait for next image queue fence to be ready
+	//	-> wait on current frame semaphore, passed to acquire image (e.g. color targets must have been output for there to be any point in continuing)
+	//	-> signal other semaphores for completed drawing on submit
+	//	-> reset current frame queue fence
+	//	-> submit queue with current frame queue fence
+	//	-> present after waiting from semaphores signalled from above submit
+	//	-> increment current frame
+
 	uint32_t idx;
 	VkResult result = VK_SUCCESS;
-	cdrawVkPresentation const* presentation;
+	cdrawVkPresentation* presentation;
 	cdraw_assert(r);
 	presentation = &r->presentation[windowIndex];
 	if (!cdrawVkPresentationValid(presentation))
 		return result;
 
-	VkSemaphore const semaphores[] = {
-		r->semaphore,
-	};
+	uint32_t const nTimestamp = buffer_len(presentation->timestamp);
+	fp32_t const timestamp_nanosPerCount = r->logicalDevice.physicalDevice.physicalDeviceProp.limits.timestampPeriod;
+
 	VkSwapchainKHR const swapchains[] = {
 		presentation->swapchain.swapchain, // first is main
 	};
-	VkResult result_swapchain[buffer_len(swapchains)] = { VK_INCOMPLETE };
 	uint32_t const nSwapchains = buffer_len(swapchains);
-	uint32_t imageIndices[buffer_len(swapchains)];
-	VkPresentInfoKHR const presentInfo = cdrawVkPresentInfoCtor(buffer_len(semaphores), semaphores, nSwapchains, swapchains, imageIndices, result_swapchain);
-	VkQueue queue = VK_NULL_HANDLE;
+	VkSemaphore semaphore_present_wait[buffer_len(swapchains)] = { VK_NULL_HANDLE },
+		* semaphore_present_wait_ptr = semaphore_present_wait;
+	VkResult result_swapchain[buffer_len(swapchains)] = { VK_INCOMPLETE };
+	uint32_t imageIndices[buffer_len(swapchains)] = { UINT64_MAX };
 
+	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+	VkFramebuffer framebuffer = VK_NULL_HANDLE;
+	VkQueue queue = VK_NULL_HANDLE;
+	VkRect2D region = { 0 };
+	uint32_t queryInFlight[cdrawFramesInFlight_max] = { 0 };
+	uint32_t frameInFlight[cdrawFramesInFlight_max] = { 0 };
+	uint32_t imageInFlight[cdrawFramesInFlight_max] = { 0 };
+
+	cdraw_assert(nSwapchains <= cdrawFramesInFlight_max);
+
+	// could have one submission loop per swapchain
+	// potentially facilitates multiple displays
+	//	-> acquire image for each
+	//	-> prepare queues for each
+	//	-> submit for each
+	//	-> present for all at once
 	for (idx = 0; idx < nSwapchains; ++idx)
 	{
-		// grab next image in chain
-		result = vkAcquireNextImageKHR(r->logicalDevice.logicalDevice, swapchains[idx], UINT64_MAX, r->semaphore, VK_NULL_HANDLE, &imageIndices[idx]);
-		cdraw_assert(result == VK_SUCCESS);
-	}
+		uint32_t image = UINT32_MAX;
+		uint32_t const frame = frameInFlight[idx] = presentation->frame;
+		VkSemaphore const semaphore_acquire = presentation->semaphore_acquire[presentation->frame];
+		VkSemaphore const semaphores_acquire_signal_submit_wait[] = {
+			semaphore_acquire,
+		};
+		uint32_t const nSemaphore_acquire = buffer_len(semaphores_acquire_signal_submit_wait);
+		VkPipelineStageFlags const semaphore_submit_wait_stage[buffer_len(semaphores_acquire_signal_submit_wait)] = {
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		};
+		VkSemaphore const semaphores_submit_signal_present_wait[] = {
+			presentation->semaphore_submit[presentation->frame],
+		};
+		uint32_t const nSemaphore_submit = buffer_len(semaphores_submit_signal_present_wait);
+		VkFence const fence_acquire = VK_NULL_HANDLE;//presentation->fence_acquire[frame];
+		VkFence const fence_submit = presentation->fence_submit[frame];
+		VkFence fence_image;
 
-	queue = presentation->queue_graphics[imageIndices[0]].queue;
-	//result = vkResetFences(r->logicalDevice.logicalDevice, 1, &r->presentation->fence[imageIndices[0]]);
-	//cdraw_assert(result == VK_SUCCESS);
-
-	// submission happens here
 #if CDRAW_DEBUG
-	cdrawRendererDisplayTest_vk(r, imageIndices[0]);
+		uint32_t const query = queryInFlight[idx] = (frame * cdrawVkQuery_max);
 #endif // #if CDRAW_DEBUG
 
-	// blit image - alternative to mandatory draw target support
-	//vkCmdBlitImage();
+		// copy present wait semaphores
+		cdraw_assert(nSemaphore_acquire == buffer_len(semaphore_submit_wait_stage));
+		memcpy(semaphore_present_wait_ptr, semaphores_submit_signal_present_wait, sizeof(semaphores_submit_signal_present_wait));
+		semaphore_present_wait_ptr += nSemaphore_submit;
 
-	// draw
-	if (result == VK_SUCCESS)
-	{
-		result = vkQueueWaitIdle(queue);
+		// wait on fence for this frame
+		result = vkWaitForFences(r->logicalDevice.logicalDevice, 1, &fence_submit, VK_TRUE, UINT64_MAX);
 		cdraw_assert(result == VK_SUCCESS);
+
+		// grab next image in chain
+		//result = vkResetFences(r->logicalDevice.logicalDevice, 1, &fence_acquire);
+		result = vkAcquireNextImageKHR(r->logicalDevice.logicalDevice, swapchains[idx], UINT64_MAX, semaphore_acquire, fence_acquire, &imageIndices[idx]);
+		cdraw_assert(result == VK_SUCCESS);
+
+		// wait on fence corresponding to image in use
+		image = imageInFlight[idx] = imageIndices[idx];
+		fence_image = presentation->fence_submit[image];
+		result = vkWaitForFences(r->logicalDevice.logicalDevice, 1, &fence_image, VK_TRUE, UINT64_MAX);
+		cdraw_assert(result == VK_SUCCESS);
+
+#if CDRAW_DEBUG
+		// get times previously in current slot
+		result = vkGetQueryPoolResults(r->logicalDevice.logicalDevice, presentation->queryPool_present,
+			query, cdrawVkQuery_max,
+			(cdrawVkQuery_max * sizeof(*presentation->timestamp)),
+			&presentation->timestamp[query],
+			sizeof(*presentation->timestamp),
+			VK_QUERY_RESULT_64_BIT);
+
+		// TEST DRAW PRIOR TO PRESENTATION
+		{
+			queue = presentation->queue_graphics[frame].queue;
+			commandBuffer = presentation->commandBuffer_present.commandBuffer[frame];
+			framebuffer = presentation->framebuffer_present[image].framebuffer; // match image because the targets are attached to it
+			region = presentation->framebuffer_present[image].region;
+			cdrawRendererDisplayTest_vk(commandBuffer, presentation->queryPool_present, presentation->renderPass_present.renderPass, framebuffer, region, query);
+		}
+#endif // #if CDRAW_DEBUG
+
+		// reset fence for this frame
+		result = vkResetFences(r->logicalDevice.logicalDevice, 1, &fence_submit);
+		cdraw_assert(result == VK_SUCCESS);
+
+		// SUBMISSION
+		{
+			VkSubmitInfo const submitInfo = cdrawVkSubmitInfoCtor(nSemaphore_acquire, semaphores_acquire_signal_submit_wait,
+				semaphore_submit_wait_stage, 1, &commandBuffer, nSemaphore_submit, semaphores_submit_signal_present_wait);
+			
+			result = vkQueueSubmit(queue, 1, &submitInfo, fence_submit);
+			cdraw_assert(result == VK_SUCCESS);
+		}
+
+		// next
+		presentation->frame = (frame + 1) % cdrawFramesInFlight_max;
+	}
+
+	// PRESENTATION: everything at once
+	{
+		VkPresentInfoKHR const presentInfo = cdrawVkPresentInfoCtor(buffer_len(semaphore_present_wait),
+			semaphore_present_wait, nSwapchains, swapchains, imageIndices, result_swapchain);
+
+		//result = vkWaitForFences(r->logicalDevice.logicalDevice, nSwapchains, presentation->fence_acquire, VK_TRUE, UINT64_MAX);
+		//cdraw_assert(result == VK_SUCCESS);
+		//result = vkResetFences(r->logicalDevice.logicalDevice, nSwapchains, presentation->fence_acquire);
+		//cdraw_assert(result == VK_SUCCESS);
+
+		queue = presentation->queue_present.queue;
 		result = vkQueuePresentKHR(queue, &presentInfo);
 		if (result != VK_SUCCESS)
 		{
-			// handle display error
+			// handle presentation error
+			for (idx = 0; idx < nSwapchains; ++idx)
+			{
+				result = result_swapchain[idx];
+				cdraw_assert(result == VK_SUCCESS);
+			}
 		}
 	}
+
+#if CDRAW_DEBUG
+	//// get timestamps from last frame in flight
+	//result = vkGetQueryPoolResults(r->logicalDevice.logicalDevice, presentation->queryPool_present,
+	//	0, nTimestamp, sizeof(presentation->timestamp), presentation->timestamp, sizeof(*presentation->timestamp),
+	//	VK_QUERY_RESULT_64_BIT);
+
+	// display rates
+	for (idx = 0; idx < nSwapchains; ++idx)
+	{
+		uint32_t const query = queryInFlight[idx];
+		uint32_t const query_renderPassBegin = (query + cdrawVkQuery_renderPassBegin);
+		uint32_t const query_renderPassEnd = (query + cdrawVkQuery_renderPassEnd);
+		uint32_t const query_renderPassBegin0 = ((query_renderPassBegin + nTimestamp) - (nSwapchains * cdrawVkQuery_max)) % nTimestamp;
+		uint64_t const t_renderPassBegin = presentation->timestamp[query_renderPassBegin];
+		uint64_t const t_renderPassEnd = presentation->timestamp[query_renderPassEnd];
+		uint64_t const t_renderPassBegin0 = presentation->timestamp[query_renderPassBegin0];
+		uint64_t const dt_renderPass = (t_renderPassEnd - t_renderPassBegin);
+		uint64_t const dt_present = (t_renderPassBegin - t_renderPassBegin0);
+		uint64_t const dt_cap = 33333333; // 2x 60Hz interval
+
+		if (gCount(dt_renderPass, dt_cap))
+		{
+			++presentation->frameCount;
+			presentation->dt_renderPass_total += dt_renderPass;
+		}
+		else if (presentation->frameCount && dt_renderPass)
+		{
+			printf("\n DROPPED RENDER PASS: %llu", dt_renderPass);
+		}
+
+		if (gCount(dt_present, dt_cap))
+		{
+			++presentation->presentCount;
+			presentation->dt_present_total += dt_present;
+		}
+		else if (presentation->presentCount && dt_present)
+		{
+			printf("\n DROPPED PRESENTATION: %llu", dt_present);
+		}
+
+		cdraw_assert(query == (frameInFlight[idx] * cdrawVkQuery_max));
+		printf("\n frame %u, image %u, dt_renderPass=%.6f, dt_present=%.6f",
+			frameInFlight[idx], imageInFlight[idx],
+			((fp32_t)dt_renderPass * timestamp_nanosPerCount * 1.0e-6f),
+			((fp32_t)dt_present * timestamp_nanosPerCount * 1.0e-6f));
+	}
+
+	// print averages
+	if (presentation->presentCount > (cdrawVkQuery_max + 1))
+	{
+		printf("\n frameCount %u, presentCount %u, dt_renderPass=%.6f, dt_present=%.6f",
+			presentation->frameCount, presentation->presentCount,
+			(((fp32_t)(presentation->dt_renderPass_total)* timestamp_nanosPerCount / (fp32_t)(presentation->frameCount)) * 1.0e-6f),
+			(((fp32_t)(presentation->dt_present_total)* timestamp_nanosPerCount / (fp32_t)(presentation->presentCount)) * 1.0e-6f));
+	}
+#endif // #if CDRAW_DEBUG
+
 	return result;
 }
 
@@ -294,10 +424,6 @@ static result_t cdrawRendererAttachWindow_vk(cdrawRenderer_vk* const r, uint32_t
 		// CREATE PRESENTATION (may not be created due to surface size)
 		result = cdrawVkPresentationCreate(presentation, "cdrawVkPresentation", &r->logicalDevice, surface, &r->commandPool, alloc_opt);
 		failassertret(result, result_seterror(errcode_renderer_init));
-
-		// CREATE SEMAPHORES
-		result = cdrawRendererCreateSemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
-		failassertret(result, result_seterror(errcode_renderer_init));
 	}
 	result_return();
 }
@@ -318,10 +444,6 @@ static result_t cdrawRendererDetachWindow_vk(cdrawRenderer_vk* const r, uint32_t
 	{
 		cdrawVkSurface* const surface = &r->surface[windowIndex];
 		cdrawVkPresentation* const presentation = &r->presentation[windowIndex];
-
-		// semaphores
-		result = cdrawRendererDestroySemaphore_vk(&r->semaphore, r->logicalDevice.logicalDevice, alloc_opt);
-		failassertret(result, result_seterror(errcode_renderer_init));
 
 		// presentation (requires device and surface; may not have been created due to surface size)
 		result = cdrawVkPresentationDestroy(presentation, &r->logicalDevice, &r->commandPool, alloc_opt);

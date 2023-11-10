@@ -92,11 +92,6 @@ typedef struct cdrawRenderer_vk
 		/// Presentation data.
 		/// </summary>
 		cdrawVkPresentation presentation[cdrawVkSurfacePresent_max];
-
-		/// <summary>
-		/// Presentation semaphore.
-		/// </summary>
-		VkSemaphore semaphore;
 	};
 } cdrawRenderer_vk;
 

@@ -125,7 +125,9 @@ typedef struct cdrawVkLogicalDevice
 
 enum
 {
-	cdrawVkCommandBuffer_max = 4,
+	cdrawFramesInFlight_max = 4,	// convenience: max number of frames in flight
+
+	cdrawVkCommandBuffer_max = cdrawFramesInFlight_max,	// convenience: maximum number of command buffers allocated at a time
 };
 
 

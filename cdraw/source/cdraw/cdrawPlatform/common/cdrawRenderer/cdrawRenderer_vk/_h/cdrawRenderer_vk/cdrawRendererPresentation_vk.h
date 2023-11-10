@@ -27,8 +27,21 @@
 
 enum
 {
-	cdrawVkSwapchainImage_max = 4,	// convenience: max number of swapchain images
+	cdrawVkSwapchainImage_max = cdrawFramesInFlight_max,	// convenience: max number of swapchain images
 };
+
+
+#if CDRAW_DEBUG
+enum
+{
+	cdrawVkQuery_renderPassBegin,
+	cdrawVkQuery_renderPassEnd,
+	cdrawVkQuery_presentBegin,
+	cdrawVkQuery_presentEnd,
+
+	cdrawVkQuery_max
+};
+#endif // #if CDRAW_DEBUG
 
 
 /// <summary>
@@ -102,41 +115,60 @@ typedef struct cdrawVkPresentation
 	cdrawVkSwapchain swapchain;
 
 	/// <summary>
-	/// Vulkan graphics/presentation queue.
-	/// Should have one for each swapchain image to avoid locking.
+	/// Vulkan graphics queues.
+	/// Should have one for each frame in flight.
 	/// </summary>
 	cdrawVkQueue queue_graphics[cdrawVkSwapchainImage_max];
 
 	/// <summary>
+	/// Presentation queue.
+	/// </summary>
+	cdrawVkQueue queue_present;
+
+	/// <summary>
 	/// Vulkan command buffers for presentation.
-	/// Should have one for each image to be processed.
+	/// Should have one for each swapchain image.
 	/// </summary>
 	cdrawVkCommandBuffer commandBuffer_present;
 
 	/// <summary>
-	/// Presentation fences.
+	/// Fences signaling acquisition of swapchain images.
 	/// </summary>
-	VkFence fence[cdrawVkSwapchainImage_max];
+	VkFence fence_acquire[cdrawFramesInFlight_max];
+
+	/// <summary>
+	/// Fences signaling submission and completion of command buffers.
+	/// </summary>
+	VkFence fence_submit[cdrawFramesInFlight_max];
+
+	/// <summary>
+	/// Semaphores signaling acquisition of swapchain images (submission ready).
+	/// </summary>
+	VkSemaphore semaphore_acquire[cdrawFramesInFlight_max];
+
+	/// <summary>
+	/// Semaphores signaling submission and completion of command buffers (presentation ready).
+	/// </summary>
+	VkSemaphore semaphore_submit[cdrawFramesInFlight_max];
+
+	/// <summary>
+	/// Current frame in flight index (used for drawing).
+	/// </summary>
+	uint32_t frame;
+
+	/// <summary>
+	/// Current image in flight index (used for presentation).
+	/// </summary>
+	uint32_t image;
 
 	/// <summary>
 	/// TEMPORARY STUFF - testing swapchain usage for now.
 	/// </summary>
-	struct
-	{
-		/// <summary>
-		/// Description of presentation color images for use as framebuffer attachments.
-		/// </summary>
-		VkAttachmentDescription colorImage_attachment;
-
+	struct {
 		/// <summary>
 		/// Description of presentation depth/stencil image for use as framebuffer attachment.
 		/// </summary>
 		VkAttachmentDescription depthStencilImage_attachment;
-
-		/// <summary>
-		/// Color images for presentation.
-		/// </summary>
-		cdrawVkImage colorImage_present[cdrawVkSwapchainImage_max];
 
 		/// <summary>
 		/// Depth/stencil image for presentation.
@@ -153,6 +185,43 @@ typedef struct cdrawVkPresentation
 		/// </summary>
 		cdrawVkFramebuffer framebuffer_present[cdrawVkSwapchainImage_max];
 	};
+
+#if CDRAW_DEBUG
+	/// <summary>
+	/// DEBUG STUFF
+	/// </summary>
+	struct {
+		/// <summary>
+		/// Vulkan query pool to track frame times.
+		/// </summary>
+		VkQueryPool queryPool_present;
+
+		/// <summary>
+		/// Current set of timestamps.
+		/// </summary>
+		uint64_t timestamp[cdrawFramesInFlight_max * cdrawVkQuery_max];
+
+		/// <summary>
+		/// Number of frames processed.
+		/// </summary>
+		uint32_t frameCount;
+
+		/// <summary>
+		/// Number of presentations processed.
+		/// </summary>
+		uint32_t presentCount;
+
+		/// <summary>
+		/// Accumulated presentation delta to calculate average.
+		/// </summary>
+		uint64_t dt_present_total;
+
+		/// <summary>
+		/// Accumulated render pass delta to calculate average.
+		/// </summary>
+		uint64_t dt_renderPass_total;
+	};
+#endif // #if CDRAW_DEBUG
 } cdrawVkPresentation;
 
 

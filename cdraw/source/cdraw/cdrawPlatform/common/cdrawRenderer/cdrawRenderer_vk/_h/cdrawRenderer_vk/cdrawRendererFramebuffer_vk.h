@@ -101,12 +101,15 @@ extern "C" {
 	/// <param name="attachment">Image references representing attachments (description component).</param>
 	/// <param name="subpassCount">Number of subpasses to describe.</param>
 	/// <param name="subpass">Subpass descriptions.</param>
+	/// <param name="dependencyCount">Number of subpass dependencies to describe.</param>
+	/// <param name="depencency">Subpass depencency descriptions.</param>
 	/// <param name="alloc_opt">Optional allocation callbacks.</param>
 	/// <returns>True if created.</returns>
 	bool cdrawVkRenderPassCreate(cdrawVkRenderPass* const renderPass_out,
 		label_t const name, cdrawVkLogicalDevice const* const logicalDevice,
 		uint32_t const attachmentCount, VkAttachmentDescription const attachment[/*attachmentCount*/],
 		uint32_t const subpassCount, VkSubpassDescription const subpass[/*subpassCount*/],
+		uint32_t const dependencyCount, VkSubpassDependency const dependency[/*dependencyCount*/],
 		VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
@@ -210,6 +213,27 @@ extern "C" {
 		VkAttachmentReference const colorAttachments[cdrawVkFramebufferColorAttach_max /*colorAttachmentCount*/], // color drawing targets
 		VkAttachmentReference const resolveAttachments[cdrawVkFramebufferColorAttach_max /*colorAttachmentCount*/], // auto downsampled
 		VkAttachmentReference const depthStencilAttachment[1 /*1*/]);
+
+	/// <summary>
+	/// Construct subpass dependency description.
+	/// </summary>
+	/// <param name="srcSubpass">Index of source (initial) subpass (or EXTERNAL) described by dependency.</param>
+	/// <param name="dstSubpass">Index of destination (terminal) subpass (or EXTERNAL) described by dependency.</param>
+	/// <param name="srcStageMask">Source pipeline stage.</param>
+	/// <param name="dstStageMask">Destination pipeline stage.</param>
+	/// <param name="srcAccessMask">Source access mask.</param>
+	/// <param name="dstAccessMask">Destination access mask.</param>
+	/// <param name="dependencyFlags">Flags.</param>
+	/// <returns>Vulkan subpass dependency structure.</returns>
+	VkSubpassDependency cdrawVkSubpassDependencyCtor(
+		uint32_t const srcSubpass,
+		uint32_t const dstSubpass,
+		VkPipelineStageFlags const srcStageMask,
+		VkPipelineStageFlags const dstStageMask,
+		VkAccessFlags const srcAccessMask,
+		VkAccessFlags const dstAccessMask,
+		VkDependencyFlags const dependencyFlags);
+
 
 #ifdef __cplusplus
 }

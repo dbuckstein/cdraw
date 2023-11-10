@@ -183,7 +183,7 @@ VkSubpassDescription cdrawVkSubpassDescriptionCtorDefaultColorDepth(
 		0, NULL);
 }
 
-static VkSubpassDependency cdrawVkSubpassDependencyCtor(
+VkSubpassDependency cdrawVkSubpassDependencyCtor(
 	uint32_t const srcSubpass,
 	uint32_t const dstSubpass,
 	VkPipelineStageFlags const srcStageMask,
@@ -226,6 +226,7 @@ bool cdrawVkRenderPassCreate(cdrawVkRenderPass* const renderPass_out,
 	label_t const name, cdrawVkLogicalDevice const* const logicalDevice,
 	uint32_t const attachmentCount, VkAttachmentDescription const attachment[/*attachmentCount*/],
 	uint32_t const subpassCount, VkSubpassDescription const subpass[/*subpassCount*/],
+	uint32_t const dependencyCount, VkSubpassDependency const dependency[/*dependencyCount*/],
 	VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
@@ -235,7 +236,7 @@ bool cdrawVkRenderPassCreate(cdrawVkRenderPass* const renderPass_out,
 	// CREATE RENDER PASS
 	{
 		VkRenderPassCreateInfo const renderPassCreateInfo = cdrawVkRenderPassCreateInfoCtor(
-			attachmentCount, attachment, subpassCount, subpass, 0, NULL);
+			attachmentCount, attachment, subpassCount, subpass, dependencyCount, dependency);
 		result = vkCreateRenderPass(logicalDevice->logicalDevice, &renderPassCreateInfo, alloc_opt, &renderPass_out->renderPass);
 		if (renderPass_out->renderPass)
 			cdraw_assert(result == VK_SUCCESS);

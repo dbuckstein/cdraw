@@ -382,7 +382,20 @@ static VkDeviceQueueCreateInfo cdrawVkDeviceQueueCreateInfoCtor(
 	return deviceQueueCreateInfo;
 }
 
+#if CDRAW_DEBUG
+static VkPhysicalDeviceHostQueryResetFeatures cdrawVkPhysicalDeviceHostQueryResetFeaturesCtorDefault()
+{
+	VkPhysicalDeviceHostQueryResetFeatures resetFeatures = { 0 };
+	resetFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_HOST_QUERY_RESET_FEATURES;
+	resetFeatures.hostQueryReset = VK_TRUE;
+	return resetFeatures;
+}
+#endif // #if CDRAW_DEBUG
+
 static VkDeviceCreateInfo cdrawVkDeviceCreateInfoCtor(
+#if CDRAW_DEBUG
+	VkPhysicalDeviceHostQueryResetFeatures const* const resetFeatures,
+#endif // #if CDRAW_DEBUG
 	uint32_t const queueCreateInfoCount,
 	VkDeviceQueueCreateInfo const queueCreateInfo[/*queueCreateInfoCount*/],
 	uint32_t const layerCount,
@@ -393,6 +406,7 @@ static VkDeviceCreateInfo cdrawVkDeviceCreateInfoCtor(
 {
 	VkDeviceCreateInfo deviceCreateInfo = { 0 };
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	deviceCreateInfo.pNext = resetFeatures;
 	deviceCreateInfo.queueCreateInfoCount = queueCreateInfoCount;
 	deviceCreateInfo.pQueueCreateInfos = queueCreateInfo;
 	deviceCreateInfo.enabledLayerCount = layerCount;
@@ -429,7 +443,7 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 		//| VK_QUEUE_COMPUTE_BIT // can be added later or make a new queue
 		VK_QUEUE_GRAPHICS_BIT);
 	uint32_t queueFamilySelectIdx_graphics = uint32_invalid;
-	uint32_t const queueCount_graphics = cdrawVkSwapchainImage_max;//1;
+	uint32_t const queueCount_graphics = cdrawFramesInFlight_max + 1; // enough for frames and present
 
 	// device layers (deprecated)
 	cstrk_t const deviceLayerName_request[] = {
@@ -609,6 +623,9 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 				{
 					// save best queue family supporting graphics and presentation
 					if (flagcheckexcl(pQueueFamilyProp[familyItr].queueFlags, queueFamilySelectType_graphics_require)
+#if CDRAW_DEBUG
+						&& (pQueueFamilyProp->timestampValidBits > 0)
+#endif // #if CDRAW_DEBUG
 						&& cdrawVkPhysicalDeviceGetPlatformPresentationSupport(logicalDevice_out->physicalDevice.physicalDevice, familyItr)
 						&& !uint32_valid(queueFamilySelectIdx_graphics))
 					{
@@ -674,8 +691,15 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 				queuePriority_graphics),
 		};
 
+#if CDRAW_DEBUG
+		VkPhysicalDeviceHostQueryResetFeatures const resetFeatures = cdrawVkPhysicalDeviceHostQueryResetFeaturesCtorDefault();
+#endif // #if CDRAW_DEBUG
+
 		// device info
 		VkDeviceCreateInfo const deviceCreateInfo = cdrawVkDeviceCreateInfoCtor(
+#if CDRAW_DEBUG
+			&resetFeatures,
+#endif // #if CDRAW_DEBUG
 			buffer_len(queueCreateInfo),
 			queueCreateInfo,
 			nDeviceLayerEnabled,

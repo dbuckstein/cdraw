@@ -98,15 +98,17 @@ bool cdrawRendererDestroyFence_vk(VkFence* const fence_out,
 	return true;
 }
 
-static VkFenceCreateInfo cdrawVkFenceCreateInfoCtorDefault()
+static VkFenceCreateInfo cdrawVkFenceCreateInfoCtorDefault(bool const signaled)
 {
 	VkFenceCreateInfo fenceCreateInfo = { 0 };
 	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	if (signaled)
+		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 	return fenceCreateInfo;
 }
 
 bool cdrawRendererCreateFence_vk(VkFence* const fence_out,
-	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
+	VkDevice const device, bool const signaled, VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
 	VkFence fence = VK_NULL_HANDLE;
@@ -115,7 +117,7 @@ bool cdrawRendererCreateFence_vk(VkFence* const fence_out,
 
 	// FINAL CREATE FENCE
 	{
-		VkFenceCreateInfo const fenceCreateInfo = cdrawVkFenceCreateInfoCtorDefault();
+		VkFenceCreateInfo const fenceCreateInfo = cdrawVkFenceCreateInfoCtorDefault(signaled);
 		result = vkCreateFence(device, &fenceCreateInfo, alloc_opt, &fence);
 		if (fence)
 			cdraw_assert(result == VK_SUCCESS);
