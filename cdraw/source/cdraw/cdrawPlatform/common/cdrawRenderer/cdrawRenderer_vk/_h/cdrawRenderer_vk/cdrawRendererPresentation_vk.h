@@ -27,7 +27,11 @@
 
 enum
 {
-	cdrawVkSwapchainImage_max = cdrawFramesInFlight_max,	// convenience: max number of swapchain images
+	cdrawVkSurfacePresent_max = 1,	// convenience: max number of presentation setups
+
+	cdrawSubmitCommandBuffer_max = 1,	// convenience: max number of command buffers for submission
+	cdrawSubmitWaitSemaphore_max = 1,	// convenience: max number of wait semaphores for submission
+	cdrawSubmitSignalSemaphore_max = 1,	// convenience: max number of semaphores to signal on submit
 };
 
 
@@ -115,54 +119,65 @@ typedef struct cdrawVkPresentation
 	cdrawVkSwapchain swapchain;
 
 	/// <summary>
-	/// Vulkan graphics queues.
-	/// Should have one for each frame in flight.
+	/// Stuff for display management.
 	/// </summary>
-	cdrawVkQueue queue_graphics[cdrawVkSwapchainImage_max];
+	struct {
+		/// <summary>
+		/// Vulkan command buffers for presentation.
+		/// Should have one for each frame in flight.
+		/// </summary>
+		cdrawVkCommandBuffer commandBuffer_present;
 
-	/// <summary>
-	/// Presentation queue.
-	/// </summary>
-	cdrawVkQueue queue_present;
+		/// <summary>
+		/// Vulkan graphics queues.
+		/// Should have one for each frame in flight.
+		/// </summary>
+		cdrawVkQueue queue_graphics[cdrawFramesInFlight_max];
 
-	/// <summary>
-	/// Vulkan command buffers for presentation.
-	/// Should have one for each swapchain image.
-	/// </summary>
-	cdrawVkCommandBuffer commandBuffer_present;
+		/// <summary>
+		/// Fences signaling acquisition of swapchain images.
+		/// </summary>
+		VkFence fence_acquire[cdrawFramesInFlight_max];
 
-	/// <summary>
-	/// Fences signaling acquisition of swapchain images.
-	/// </summary>
-	VkFence fence_acquire[cdrawFramesInFlight_max];
+		/// <summary>
+		/// Semaphores signaling acquisition of swapchain images (submission ready).
+		/// </summary>
+		VkSemaphore semaphore_acquire[cdrawFramesInFlight_max];
 
-	/// <summary>
-	/// Fences signaling submission and completion of command buffers.
-	/// </summary>
-	VkFence fence_submit[cdrawFramesInFlight_max];
+		/// <summary>
+		/// Fences signaling submission and completion of command buffers.
+		/// </summary>
+		VkFence fence_submit[cdrawFramesInFlight_max];
 
-	/// <summary>
-	/// Semaphores signaling acquisition of swapchain images (submission ready).
-	/// </summary>
-	VkSemaphore semaphore_acquire[cdrawFramesInFlight_max];
+		/// <summary>
+		/// Semaphores signaling submission and completion of command buffers (presentation ready).
+		/// </summary>
+		VkSemaphore semaphore_submit[cdrawFramesInFlight_max];
 
-	/// <summary>
-	/// Semaphores signaling submission and completion of command buffers (presentation ready).
-	/// </summary>
-	VkSemaphore semaphore_submit[cdrawFramesInFlight_max];
+		/// <summary>
+		/// Image index used by each frame.
+		/// </summary>
+		uint32_t imageIdx_frame[cdrawFramesInFlight_max];
 
-	/// <summary>
-	/// Current frame in flight index (used for drawing).
-	/// </summary>
-	uint32_t frame;
+		/// <summary>
+		/// Frame index using each image.
+		/// </summary>
+		uint32_t frameIdx_image[cdrawVkSwapchainImage_max];
 
-	/// <summary>
-	/// Current image in flight index (used for presentation).
-	/// </summary>
-	uint32_t image;
+		/// <summary>
+		/// Current frame in flight index (used for drawing).
+		/// </summary>
+		uint32_t frame;
+
+		/// <summary>
+		/// Current image in flight index (used for presentation).
+		/// </summary>
+		uint32_t image;
+	};
 
 	/// <summary>
 	/// TEMPORARY STUFF - testing swapchain usage for now.
+	/// Need to allow host to specify image to ultimately be presented.
 	/// </summary>
 	struct {
 		/// <summary>
@@ -188,18 +203,45 @@ typedef struct cdrawVkPresentation
 
 #if CDRAW_DEBUG
 	/// <summary>
+	/// Synchronization objects.
+	/// </summary>
+	struct {
+		/// <summary>
+		/// Fence signaling completed time query.
+		/// </summary>
+		VkFence fence_timer;
+
+		/// <summary>
+		/// Event signaling timer begin.
+		/// </summary>
+		VkEvent event_timer_start;
+
+		/// <summary>
+		/// Event signaling timer end.
+		/// </summary>
+		VkEvent event_timer_stop;
+
+		/// <summary>
+		/// Command buffer for timer.
+		/// </summary>
+		cdrawVkCommandBuffer commandBuffer_timer;
+	};
+#endif // #if CDRAW_DEBUG
+
+#if CDRAW_DEBUG
+	/// <summary>
 	/// DEBUG STUFF
 	/// </summary>
 	struct {
 		/// <summary>
 		/// Vulkan query pool to track frame times.
 		/// </summary>
-		VkQueryPool queryPool_present;
+		VkQueryPool queryPool_frame[cdrawFramesInFlight_max];
 
 		/// <summary>
 		/// Current set of timestamps.
 		/// </summary>
-		uint64_t timestamp[cdrawFramesInFlight_max * cdrawVkQuery_max];
+		uint64_t timestamp[cdrawFramesInFlight_max][cdrawVkQuery_max];
 
 		/// <summary>
 		/// Number of frames processed.
@@ -214,12 +256,12 @@ typedef struct cdrawVkPresentation
 		/// <summary>
 		/// Accumulated presentation delta to calculate average.
 		/// </summary>
-		uint64_t dt_present_total;
+		int64_t dt_present_total;
 
 		/// <summary>
 		/// Accumulated render pass delta to calculate average.
 		/// </summary>
-		uint64_t dt_renderPass_total;
+		int64_t dt_renderPass_total;
 	};
 #endif // #if CDRAW_DEBUG
 } cdrawVkPresentation;
@@ -324,12 +366,13 @@ extern "C" {
 	/// <param name="presentation_out">Target descriptor (non-null and unused).</param>
 	/// <param name="name">Descriptor name.</param>
 	/// <param name="logicalDevice">Logical device descriptor (non-null and valid).</param>
-	/// <param name="surface">Surface descriptor (non-null and valid).</param>
 	/// <param name="commandPool">Command pool descriptor (non-null and valid).</param>
+	/// <param name="surface">Surface descriptor (non-null and valid).</param>
+	/// <param name="surfaceIndex">Index of surface in renderer overall.</param>
 	/// <param name="alloc_opt">Optional allocation callbacks.</param>
 	/// <returns>True if created.</returns>
 	bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
-		label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkSurface const* const surface, cdrawVkCommandPool const* const commandPool, VkAllocationCallbacks const* const alloc_opt);
+		label_t const name, cdrawVkLogicalDevice const* const logicalDevice, cdrawVkCommandPool const* const commandPool, cdrawVkSurface const* const surface, uint32_t const surfaceIndex, VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
 	/// Destroy Vulkan presentation descriptor.

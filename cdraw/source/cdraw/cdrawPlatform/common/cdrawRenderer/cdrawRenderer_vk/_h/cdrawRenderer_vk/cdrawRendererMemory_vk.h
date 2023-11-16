@@ -113,6 +113,27 @@ extern "C" {
 		VkDevice const device, VkAllocationCallbacks const* const alloc_opt);
 
 	/// <summary>
+	/// Create Vulkan event.
+	/// </summary>
+	/// <param name="event_out">Vulkan event handle.</param>
+	/// <param name="device">Vulkan logical device handle.</param>
+	/// <param name="deviceOnly">True if host event commands will not be used for this event.</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if created.</returns>
+	bool cdrawRendererCreateEvent_vk(VkEvent* const event_out,
+		VkDevice const device, bool const deviceOnly, VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
+	/// Destroy Vulkan event.
+	/// </summary>
+	/// <param name="event_out">Vulkan event handle.</param>
+	/// <param name="device">Vulkan logical device handle.</param>
+	/// <param name="alloc_opt">Optional allocation callbacks.</param>
+	/// <returns>True if destroyed.</returns>
+	bool cdrawRendererDestroyEvent_vk(VkEvent* const event_out,
+		VkDevice const device, VkAllocationCallbacks const* const alloc_opt);
+
+	/// <summary>
 	/// Create Vulkan semaphore.
 	/// </summary>
 	/// <param name="semaphore_out">Vulkan semaphore handle.</param>

@@ -37,11 +37,6 @@
 #include "cdrawRenderer_vk/cdrawRendererPresentation_vk.h"
 
 
-enum
-{
-	cdrawVkSurfacePresent_max = 1,	// convenience: max number of presentation setups
-};
-
 /// <summary>
 /// Vulkan renderer data (platform-agnostic).
 /// </summary>
@@ -92,6 +87,63 @@ typedef struct cdrawRenderer_vk
 		/// Presentation data.
 		/// </summary>
 		cdrawVkPresentation presentation[cdrawVkSurfacePresent_max];
+
+		/// <summary>
+		/// Presentation queue.
+		/// </summary>
+		cdrawVkQueue queue_present;
+
+		/// <summary>
+		/// Number of swapchains for presentation.
+		/// </summary>
+		uint32_t swapchainCount_present;
+
+		/// <summary>
+		/// Number of semaphores on which to wait for presentation.
+		/// </summary>
+		uint32_t waitSemaphoreCount_present;
+
+		/// <summary>
+		/// Semaphores on which to wait for presentation.
+		/// </summary>
+		VkSemaphore waitSemaphore_present[cdrawVkSurfacePresent_max];
+
+		/// <summary>
+		/// Swapchains for presentation.
+		/// </summary>
+		VkSwapchainKHR swapchain_present[cdrawVkSurfacePresent_max];
+
+		/// <summary>
+		/// Swapchain image indices for presentation.
+		/// </summary>
+		uint32_t imageIndex_present[cdrawVkSurfacePresent_max];
+
+#if CDRAW_DEBUG
+		/// <summary>
+		/// Timer submission queue.
+		/// </summary>
+		cdrawVkQueue queue_timer;
+
+		/// <summary>
+		/// Counts-per-second of CPU.
+		/// </summary>
+		uint64_t cps_cpu;
+
+		/// <summary>
+		/// Counts-per-second of GPU.
+		/// </summary>
+		uint64_t cps_gpu;
+
+		/// <summary>
+		/// Ratio of GPU to CPU rates.
+		/// </summary>
+		uint64_t cps_gpu2cpu;
+
+		/// <summary>
+		/// Remainder of ratio.
+		/// </summary>
+		uint64_t cps_gpu2cpu_rem;
+#endif // #if CDRAW_DEBUG
 	};
 } cdrawRenderer_vk;
 

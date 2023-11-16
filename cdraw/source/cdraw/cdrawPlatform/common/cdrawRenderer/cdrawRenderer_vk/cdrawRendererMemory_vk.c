@@ -30,55 +30,57 @@
 * SECTION: Synchronization utilities.
 ******************************************************************************/
 
-bool cdrawRendererDestroySemaphore_vk(VkSemaphore* const semaphore_out,
+bool cdrawRendererDestroyEvent_vk(VkEvent* const event_out,
 	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
 {
-	cdraw_assert(semaphore_out);
-	if (!*semaphore_out)
-		return true;
-	printf("\n Destroying Vulkan semaphore...");
+	cdraw_assert(event_out);
+	if (!*event_out)
+		return false;
+	printf("\n Destroying Vulkan event...");
 
 	cdraw_assert(device);
-	vkDestroySemaphore(device, *semaphore_out, alloc_opt);
+	vkDestroyEvent(device, *event_out, alloc_opt);
 
-	printf("\n Vulkan semaphore destroyed.");
-	*semaphore_out = VK_NULL_HANDLE;
+	printf("\n Vulkan event destroyed.");
+	*event_out = VK_NULL_HANDLE;
 	return true;
 }
 
-static VkSemaphoreCreateInfo cdrawVkSemaphoreCreateInfoCtorDefault()
+static VkEventCreateInfo cdrawVkEventCreateInfoCtorDefault(bool const deviceOnly)
 {
-	VkSemaphoreCreateInfo semaphoreCreateInfo = { 0 };
-	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-	return semaphoreCreateInfo;
+	VkEventCreateInfo eventCreateInfo = { 0 };
+	eventCreateInfo.sType = VK_STRUCTURE_TYPE_EVENT_CREATE_INFO;
+	if (deviceOnly)
+		eventCreateInfo.flags = VK_EVENT_CREATE_DEVICE_ONLY_BIT_KHR;
+	return eventCreateInfo;
 }
 
-bool cdrawRendererCreateSemaphore_vk(VkSemaphore* const semaphore_out,
-	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
+bool cdrawRendererCreateEvent_vk(VkEvent* const event_out,
+	VkDevice const device, bool const deviceOnly, VkAllocationCallbacks const* const alloc_opt)
 {
 	VkResult result = VK_SUCCESS;
-	VkSemaphore semaphore = VK_NULL_HANDLE;
-	cdraw_assert(semaphore_out && !*semaphore_out && device);
-	printf("\n Creating Vulkan semaphore...");
+	VkEvent event = VK_NULL_HANDLE;
+	cdraw_assert(event_out && !*event_out && device);
+	printf("\n Creating Vulkan event...");
 
-	// FINAL CREATE SEMAPHORE
+	// FINAL CREATE FENCE
 	{
-		VkSemaphoreCreateInfo const semaphoreCreateInfo = cdrawVkSemaphoreCreateInfoCtorDefault();
-		result = vkCreateSemaphore(device, &semaphoreCreateInfo, alloc_opt, &semaphore);
-		if (semaphore)
+		VkEventCreateInfo const eventCreateInfo = cdrawVkEventCreateInfoCtorDefault(deviceOnly);
+		result = vkCreateEvent(device, &eventCreateInfo, alloc_opt, &event);
+		if (event)
 			cdraw_assert(result == VK_SUCCESS);
 	}
 
 	// set final outputs or clean up
 	if (result != VK_SUCCESS)
 	{
-		cdrawRendererDestroySemaphore_vk(&semaphore, device, alloc_opt);
-		printf("\n Vulkan semaphore creation failed.");
+		cdrawRendererDestroyEvent_vk(&event, device, alloc_opt);
+		printf("\n Vulkan event creation failed.");
 		return false;
 	}
-	*semaphore_out = semaphore;
-	cdraw_assert(*semaphore_out);
-	printf("\n Vulkan semaphore created.");
+	*event_out = event;
+	cdraw_assert(*event_out);
+	printf("\n Vulkan event created.");
 	return true;
 }
 
@@ -133,6 +135,58 @@ bool cdrawRendererCreateFence_vk(VkFence* const fence_out,
 	*fence_out = fence;
 	cdraw_assert(*fence_out);
 	printf("\n Vulkan fence created.");
+	return true;
+}
+
+bool cdrawRendererDestroySemaphore_vk(VkSemaphore* const semaphore_out,
+	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
+{
+	cdraw_assert(semaphore_out);
+	if (!*semaphore_out)
+		return true;
+	printf("\n Destroying Vulkan semaphore...");
+
+	cdraw_assert(device);
+	vkDestroySemaphore(device, *semaphore_out, alloc_opt);
+
+	printf("\n Vulkan semaphore destroyed.");
+	*semaphore_out = VK_NULL_HANDLE;
+	return true;
+}
+
+static VkSemaphoreCreateInfo cdrawVkSemaphoreCreateInfoCtorDefault()
+{
+	VkSemaphoreCreateInfo semaphoreCreateInfo = { 0 };
+	semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	return semaphoreCreateInfo;
+}
+
+bool cdrawRendererCreateSemaphore_vk(VkSemaphore* const semaphore_out,
+	VkDevice const device, VkAllocationCallbacks const* const alloc_opt)
+{
+	VkResult result = VK_SUCCESS;
+	VkSemaphore semaphore = VK_NULL_HANDLE;
+	cdraw_assert(semaphore_out && !*semaphore_out && device);
+	printf("\n Creating Vulkan semaphore...");
+
+	// FINAL CREATE SEMAPHORE
+	{
+		VkSemaphoreCreateInfo const semaphoreCreateInfo = cdrawVkSemaphoreCreateInfoCtorDefault();
+		result = vkCreateSemaphore(device, &semaphoreCreateInfo, alloc_opt, &semaphore);
+		if (semaphore)
+			cdraw_assert(result == VK_SUCCESS);
+	}
+
+	// set final outputs or clean up
+	if (result != VK_SUCCESS)
+	{
+		cdrawRendererDestroySemaphore_vk(&semaphore, device, alloc_opt);
+		printf("\n Vulkan semaphore creation failed.");
+		return false;
+	}
+	*semaphore_out = semaphore;
+	cdraw_assert(*semaphore_out);
+	printf("\n Vulkan semaphore created.");
 	return true;
 }
 

@@ -125,9 +125,26 @@ typedef struct cdrawVkLogicalDevice
 
 enum
 {
-	cdrawFramesInFlight_max = 4,	// convenience: max number of frames in flight
+	/// <summary>
+	/// Convenience: maximum number of frames that can be prepared and presented simultaneously.
+	/// </summary>
+	cdrawFramesInFlight_max = 2,
 
-	cdrawVkCommandBuffer_max = cdrawFramesInFlight_max,	// convenience: maximum number of command buffers allocated at a time
+	/// <summary>
+	/// Convenience: maximum number of images in swapchain (for final presentation).
+	/// </summary>
+	cdrawVkSwapchainImage_max = 3,
+
+	/// <summary>
+	/// Convenience: maximum number of command buffer allocations.
+	/// Match frames in flight because we only need these for drawing.
+	/// </summary>
+	cdrawVkCommandBuffer_max = cdrawFramesInFlight_max,
+
+	/// <summary>
+	/// Reserved graphics queues.
+	/// </summary>
+	cdrawGraphicsQueuesReserve = 2,
 };
 
 

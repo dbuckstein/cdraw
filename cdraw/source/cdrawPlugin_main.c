@@ -37,6 +37,7 @@ typedef struct cdrawTestPluginData
 
 	// window status
 	uint32_t w, h, x, y;
+	uint64_t frames;
 	bool activated;
 } cdrawTestPluginData;
 
@@ -92,11 +93,12 @@ result_t cb_load_post(cdrawTestPluginData** const data_inout)
 	cdraw_assert(data_inout && !*data_inout);
 	size_t const dataSz = sizeof(cdrawTestPluginData);
 	cdrawTestPluginData* const data = (cdrawTestPluginData*)malloc(dataSz);
+	uint16_t const rate = 60;
 	cdraw_assert(data);
 	memset(data, 0, dataSz);
 
 	cdrawTimerInitSystem(&data->timer_sys);
-	cdrawTimerSet(&data->timer, &data->timer_sys, 60);
+	cdrawTimerParentSet(&data->timer, &data->timer_sys, rate);
 
 	*data_inout = data;
 	return 0;// printf("\n" __FUNCTION__ "(%p) -> %p", data_inout, *data_inout);
@@ -143,12 +145,14 @@ result_t cb_win_attach(cdrawTestPluginData* const data, int32_t const w, int32_t
 	cdrawRenderer* const renderer = &data->renderer;
 	cdraw_assert(!renderer->r && !renderer->renderAPI);
 	result = cdrawRendererRefreshAPI(cdrawRenderAPI_Vulkan);
-	result = cdrawRendererCreate(renderer, cdrawRenderAPI_Vulkan, 1, windowPlatform_opt);
+	result = cdrawRendererCreate(renderer, cdrawRenderAPI_Vulkan, 1);
+	result = cdrawRendererAttachWindow(renderer, 0, windowPlatform_opt);
 	cdrawRendererPrint(renderer);
 	data->w = w;
 	data->h = h;
 	data->x = x;
 	data->y = y;
+	cdrawTimerStepSystem(&data->timer_sys);
 	return result;// printf("\n" __FUNCTION__ "(%p, %d, %d, %d, %d, %p)", data, w, h, x, y, windowPlatform_opt);
 }
 
@@ -158,6 +162,7 @@ result_t cb_win_detach(cdrawTestPluginData* const data, ptrk_t const windowPlatf
 	cdrawRenderer* const renderer = &data->renderer;
 	cdraw_assert(renderer->r && renderer->renderAPI);
 	result_t result = cdrawRendererDestroy(renderer);
+	cdrawTimerStepSystem(&data->timer_sys);
 	return result;// printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
 }
 
@@ -181,6 +186,7 @@ result_t cb_win_resize(cdrawTestPluginData* const data, int32_t const w, int32_t
 	cdrawRendererResize(&data->renderer, 0, data->w, data->h, w, h);
 	data->w = w;
 	data->h = h;
+	cdrawTimerStepSystem(&data->timer_sys);
 	return printf("\n" __FUNCTION__ "(%p, %d, %d)", data, w, h);
 }
 
@@ -202,14 +208,31 @@ result_t cb_idle(cdrawTestPluginData* const data)
 {
 	cdraw_assert(data);
 	cdrawTimerStepSystem(&data->timer_sys);
-	if (result_haswarns(cdrawTimerStepClip(&data->timer, data->timer_sys.state.dt)))
+	if (result_timer_ticked(cdrawTimerStepClip(&data->timer, data->timer_sys.state.dt)))
 	{
-		//stime_t t;
-		//cdrawTimerStateGetElapsedTime(&data->timer.state, &t);
-		//printf("\n" __FUNCTION__ ": t=%.3lf", t);
+		stime_t dt, t;
+		//stime_t dtr;
+
+		cdrawTimerStateGetDeltaTime(&data->timer.state, &dt);
+		cdrawTimerStateGetElapsedTime(&data->timer.state, &t);
+		printf("\n\n" __FUNCTION__ ": dt=%.6lf; t=%.6lf", (dt * 1000.0), (t * 1000.0));
+
+		//cdrawTimerStateGetDeltaTimeRatio(&data->timer.state, &dtr);
+		//if (data->frames++ > 0)
+		//{
+		//	if (dtr < 0.64)
+		//		printf(" | (DTR = %lf) < 0.64", dtr);
+		//	else if (dtr > 1.25)
+		//		printf(" | (DTR = %lf) > 1.25", dtr);
+		//}
 	
 		if (data->activated)
-			cdrawRendererDisplay(&data->renderer, 0);
+		{
+			cdrawRendererBeginDraw(&data->renderer, 0);
+			// common drawing happens here
+			cdrawRendererEndDraw(&data->renderer, 0);
+			cdrawRendererDisplay(&data->renderer);
+		}
 	}
 	return 0;// printf("\n" __FUNCTION__ "(%p)", data);
 }

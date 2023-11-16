@@ -67,6 +67,8 @@ typedef result_t(*cdrawRendererFunc)(cdrawRendererHandle r, ...);
 /// </summary>
 typedef struct cdrawRendererFuncTable {
 	cdrawRendererFunc cdrawRendererPrint;
+	cdrawRendererFunc cdrawRendererBeginDraw;
+	cdrawRendererFunc cdrawRendererEndDraw;
 	cdrawRendererFunc cdrawRendererDisplay;
 	cdrawRendererFunc cdrawRendererResize;
 	cdrawRendererFunc cdrawRendererAttachWindow;
@@ -110,9 +112,8 @@ extern "C" {
 	/// <param name="renderer">Target renderer.</param>
 	/// <param name="renderAPI">Desired rendering API (must be supported on local platform).</param>
 	/// <param name="windowsAllowed">Desired number of windows to be allowed (must be less than maximum).</param>
-	/// <param name="p_data_opt">Optional pointer to platform data (will set up for window in first slot if present).</param>
 	/// <returns>Zero if success; Error code otherwise.</returns>
-	result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, uint32_t const windowsAllowed, ptrk_t const p_data_opt);
+	result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, uint32_t const windowsAllowed);
 
 	/// <summary>
 	/// Release renderer by cleaning up and destroying all of its internal resources.
@@ -143,12 +144,27 @@ extern "C" {
 	result_t cdrawRendererPrint(cdrawRenderer const* const renderer);
 
 	/// <summary>
-	/// Invoke renderer display.
+	/// Begin drawing for target window.
 	/// </summary>
 	/// <param name="renderer">Target renderer.</param>
 	/// <param name="windowIndex">Index of managed window.</param>
 	/// <returns>Zero if success; Error code otherwise.</returns>
-	result_t cdrawRendererDisplay(cdrawRenderer const* const renderer, uint32_t const windowIndex);
+	result_t cdrawRendererBeginDraw(cdrawRenderer const* const renderer, uint32_t const windowIndex);
+
+	/// <summary>
+	/// End drawing for target window.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="windowIndex">Index of managed window.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererEndDraw(cdrawRenderer const* const renderer, uint32_t const windowIndex);
+
+	/// <summary>
+	/// Invoke renderer display.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererDisplay(cdrawRenderer const* const renderer);
 
 	/// <summary>
 	/// Invoke renderer resize; should destroy framebuffers before this and recreate them afterwards.

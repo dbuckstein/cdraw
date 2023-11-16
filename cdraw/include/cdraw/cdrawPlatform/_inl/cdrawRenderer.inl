@@ -29,10 +29,22 @@ CDRAW_INL result_t cdrawRendererPrint(cdrawRenderer const* const renderer)
 	return renderer->f->cdrawRendererPrint(renderer->r);
 }
 
-CDRAW_INL result_t cdrawRendererDisplay(cdrawRenderer const* const renderer, uint32_t const windowIndex)
+CDRAW_INL result_t cdrawRendererBeginDraw(cdrawRenderer const* const renderer, uint32_t const windowIndex)
+{
+	cdraw_assert(renderer && renderer->r && renderer->f && renderer->f->cdrawRendererBeginDraw);
+	return renderer->f->cdrawRendererBeginDraw(renderer->r, windowIndex);
+}
+
+CDRAW_INL result_t cdrawRendererEndDraw(cdrawRenderer const* const renderer, uint32_t const windowIndex)
+{
+	cdraw_assert(renderer && renderer->r && renderer->f && renderer->f->cdrawRendererEndDraw);
+	return renderer->f->cdrawRendererEndDraw(renderer->r, windowIndex);
+}
+
+CDRAW_INL result_t cdrawRendererDisplay(cdrawRenderer const* const renderer)
 {
 	cdraw_assert(renderer && renderer->r && renderer->f && renderer->f->cdrawRendererDisplay);
-	return renderer->f->cdrawRendererDisplay(renderer->r, windowIndex);
+	return renderer->f->cdrawRendererDisplay(renderer->r);
 }
 
 CDRAW_INL result_t cdrawRendererResize(cdrawRenderer const* const renderer, uint32_t const windowIndex, uint32_t const w_old, uint32_t const h_old, uint32_t const w_new, uint32_t const h_new)

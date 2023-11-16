@@ -443,7 +443,7 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 		//| VK_QUEUE_COMPUTE_BIT // can be added later or make a new queue
 		VK_QUEUE_GRAPHICS_BIT);
 	uint32_t queueFamilySelectIdx_graphics = uint32_invalid;
-	uint32_t const queueCount_graphics = cdrawFramesInFlight_max + 1; // enough for frames and present
+	uint32_t const queueCount_graphics = cdrawFramesInFlight_max * surfaceCountMax + cdrawGraphicsQueuesReserve; // enough for frames, presentation and timing
 
 	// device layers (deprecated)
 	cstrk_t const deviceLayerName_request[] = {
@@ -662,6 +662,8 @@ bool cdrawVkLogicalDeviceCreate(cdrawVkLogicalDevice* const logicalDevice_out,
 			deviceFeatUse->tessellationShader = VK_TRUE;
 			deviceFeatUse->multiDrawIndirect = deviceFeat->multiDrawIndirect;
 			//deviceFeatUse->multiViewport = deviceFeat->multiViewport;
+		
+			label_copy(logicalDevice_out->physicalDevice.name, logicalDevice_out->physicalDevice.physicalDeviceProp.deviceName);
 		}
 
 		// device memory
