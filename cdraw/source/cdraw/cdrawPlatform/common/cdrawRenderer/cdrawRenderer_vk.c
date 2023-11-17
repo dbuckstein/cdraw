@@ -266,34 +266,150 @@ static bool cdrawRendererPresent_vk(VkQueue const queue,
 	return true;
 }
 
+#if CDRAW_DEBUG
+extern fp64_t sqrt(fp64_t);
+static bool cdrawRendererPresentDebug_vk(cdrawRenderer_vk* const r, uint32_t const idx)
+{
+	VkResult result = VK_SUCCESS;
+	cdrawVkPresentation* presentation = NULL;
+	cdrawVkPresentationFrame* frame = NULL;
+	uint32_t const queryBase = cdrawVkQuery_renderPassBegin;
+	uint32_t const queryCount = (1 + cdrawVkQuery_renderPassEnd - cdrawVkQuery_renderPassBegin);
+
+	VkDevice logicalDevice = VK_NULL_HANDLE;
+	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+	fp64_t timestamp_nsPerCount = 0.0;
+	fp64_t timestamp_msPerCount = 0.0;
+	VkQueryPool queryPool;
+	uint64_t* timestamp;
+
+	uint64_t t_cpu = 0, t_gpu = 0, dt_error_cpu = 0, dt_error_gpu = 0;
+
+	cdraw_assert(r);
+	presentation = &r->presentation[idx];
+	if (!cdrawVkPresentationValid(presentation))
+		return false;
+
+	logicalDevice = r->logicalDevice.logicalDevice;
+	frame = &presentation->frame[presentation->frameIndex];
+
+	commandBuffer = presentation->commandBuffer_timer.commandBuffer[0];
+	timestamp_nsPerCount = (fp64_t)(r->logicalDevice.physicalDevice.physicalDeviceProp.limits.timestampPeriod);
+	timestamp_msPerCount = timestamp_nsPerCount * 1.0e-6;
+
+	// get times in current slot
+	queryPool = frame->queryPool;
+	timestamp = frame->timestamp;
+
+	// sync clocks
+	{
+		cdrawRendererSyncClocks_vk(logicalDevice, commandBuffer, frame->queueRef_graphics.queue,
+			presentation->fence_timer, presentation->event_timer_start, presentation->event_timer_stop,
+			queryPool, &t_cpu, &t_gpu, &dt_error_cpu, &dt_error_gpu);
+		t_cpu *= r->cps_gpu2cpu;
+		dt_error_cpu *= r->cps_gpu2cpu;
+		t_gpu *= (uint64_t)timestamp_nsPerCount;
+		dt_error_gpu *= (uint64_t)timestamp_nsPerCount;
+		timestamp[queryCount + 0] = t_cpu;
+		timestamp[queryCount + 1] = t_gpu;
+	}
+
+	// get timestamps previously held in frame
+	{
+		result = vkGetQueryPoolResults(logicalDevice, frame->queryPool, queryBase, queryCount,
+			(queryCount * sizeof(*timestamp)), &timestamp[queryBase], sizeof(*timestamp),
+			(VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT));
+		cdraw_assert(result == VK_SUCCESS);
+	}
+
+	// display queries
+	{
+		cdrawVkPresentationFrame const* const frame_prev = &presentation->frame[(presentation->frameIndex + cdrawFramesInFlight_max - 1) % cdrawFramesInFlight_max];
+		uint64_t const t_renderPassBegin = frame->timestamp[cdrawVkQuery_renderPassBegin];
+		uint64_t const t_renderPassEnd = frame->timestamp[cdrawVkQuery_renderPassEnd];
+		uint64_t const t_renderPassBegin_prev = frame_prev->timestamp[cdrawVkQuery_renderPassBegin];
+		uint64_t const t_renderPassEnd_prev = frame_prev->timestamp[cdrawVkQuery_renderPassEnd];
+		uint64_t const t_cpu_prev = frame_prev->timestamp[queryCount + 0];
+		uint64_t const t_gpu_prev = frame_prev->timestamp[queryCount + 1];
+		int64_t const dt_cpu = (t_cpu - t_cpu_prev);
+		int64_t const dt_gpu = (t_gpu - t_gpu_prev);
+		int64_t const dt_renderPass = (t_renderPassEnd - t_renderPassBegin);
+		int64_t const dt_framePresent_renderPassBegin = (t_renderPassBegin - t_renderPassBegin_prev);
+		int64_t const dt_framePresent_renderPassEnd = (t_renderPassEnd - t_renderPassEnd_prev);
+		int64_t const dt_cap = (1000000000llu * 2) / (60 * 1); // 2x 60Hz interval
+		fp64_t avg, var, stdev;
+
+		// print stats for current render pass
+		if (gCount(dt_renderPass, dt_cap))
+		{
+			++presentation->renderPassCount;
+			presentation->dt_renderPass_total += dt_renderPass;
+			presentation->dt_renderPass_sq_total += (dt_renderPass * dt_renderPass);
+			printf(" | dt_renderPass=%.6lf",
+				timestamp_msPerCount * (fp64_t)dt_renderPass);
+		}
+		else if (presentation->renderPassCount)
+			printf(" | DROPPED RENDERPASS TIME: %lld", dt_renderPass);
+
+		// print stats for current frame present
+		if (gCount(dt_framePresent_renderPassBegin, dt_cap))
+		{
+			++presentation->framePresentCount;
+			presentation->dt_framePresent_total += dt_framePresent_renderPassBegin;
+			presentation->dt_framePresent_sq_total += (dt_framePresent_renderPassBegin * dt_framePresent_renderPassBegin);
+			printf(" | dt_framePresent=%.6lf",
+				timestamp_msPerCount * (fp64_t)dt_framePresent_renderPassBegin);
+		}
+		else if (presentation->framePresentCount)
+			printf(" | DROPPED FRAMEPRESENT TIME: %lld", dt_framePresent_renderPassBegin);
+
+		// print stats for current sync
+		if (gCount(dt_cpu, dt_cap))
+		{
+			printf("\n\t dt_cpu=%.6lf | dt_error_cpu=%.6lf",
+				timestamp_msPerCount * (fp64_t)dt_cpu,
+				timestamp_msPerCount * (fp64_t)dt_error_cpu);
+		}
+		if (gCount(dt_gpu, dt_cap))
+		{
+			printf("\n\t dt_gpu=%.6lf | dt_error_gpu=%.6lf",
+				timestamp_msPerCount * (fp64_t)dt_gpu,
+				timestamp_msPerCount * (fp64_t)dt_error_gpu);
+		}
+
+		// print averages
+		if (presentation->renderPassCount)
+		{
+			avg = ((fp64_t)(presentation->dt_renderPass_total) / (fp64_t)(presentation->renderPassCount));
+			var = ((fp64_t)(presentation->dt_renderPass_sq_total) / (fp64_t)(presentation->renderPassCount)) - (avg * avg);
+			stdev = sqrt(var);
+			printf("\n renderPassCount %llu | dt_renderPass_avg=%.6lf | dt_renderPass_stdev=%.6lf", presentation->renderPassCount,
+				timestamp_msPerCount * avg, timestamp_msPerCount * stdev);
+		}
+		if (presentation->framePresentCount)
+		{
+			avg = ((fp64_t)(presentation->dt_framePresent_total) / (fp64_t)(presentation->framePresentCount));
+			var = ((fp64_t)(presentation->dt_framePresent_sq_total) / (fp64_t)(presentation->framePresentCount)) - (avg * avg);
+			stdev = sqrt(var);
+			printf("\n framePresentCount %llu | dt_framePresent_avg=%.6lf | dt_framePresent_stdev=%.6lf", presentation->framePresentCount,
+				timestamp_msPerCount * avg, timestamp_msPerCount * stdev);
+		}
+	}
+
+	return (result == VK_SUCCESS);
+}
+#endif // #if CDRAW_DEBUG
+
 static bool cdrawRendererPrepareNextPresent_vk(cdrawRenderer_vk* const r, uint32_t const windowIndex)
 {
 	VkResult result = VK_SUCCESS;
 	cdrawVkPresentation* presentation = NULL;
-	uint32_t frameUsingImage = UINT32_MAX;
-	uint32_t imageUsedByFrame = UINT32_MAX;
-	uint32_t imageExpect = UINT32_MAX;
-
+	cdrawVkPresentationFrame* frame = NULL;
+	cdrawVkPresentationImage* image = NULL;
+	uint32_t frameUsingImage = uint32_invalid;
+	uint32_t imageUsedByFrame = uint32_invalid;
+	uint32_t imageExpect = uint32_invalid;
 	VkDevice logicalDevice = VK_NULL_HANDLE;
-	VkFence fence_submit = VK_NULL_HANDLE;
-	VkFence fence_acquire = VK_NULL_HANDLE;
-	VkSemaphore semaphore_acquire = VK_NULL_HANDLE;
-
-#if CDRAW_DEBUG
-	uint64_t t_renderPassBegin_prev = 0;
-	uint64_t t_renderPassEnd_prev = 0;
-	uint64_t t_renderPassBegin_prevCycle = 0;
-	uint64_t t_renderPassEnd_prevCycle = 0;
-	int64_t dt_renderPassBegin_prev = 0;
-	int64_t dt_renderPassEnd_prev = 0;
-	uint64_t* timestamp_prev = NULL;
-	uint64_t* timestamp_prevCycle = NULL;
-	uint32_t queryBase = 0;
-	uint32_t queryCount = 0;
-	VkQueryPool queryPool = VK_NULL_HANDLE;
-	fp32_t timestamp_nsPerCount = 0.0f;
-	fp32_t timestamp_msPerCount = 0.0f;
-#endif // #if CDRAW_DEBUG
 
 	cdraw_assert(r);
 	presentation = &r->presentation[windowIndex];
@@ -303,20 +419,9 @@ static bool cdrawRendererPrepareNextPresent_vk(cdrawRenderer_vk* const r, uint32
 	// device
 	logicalDevice = r->logicalDevice.logicalDevice;
 
-#if CDRAW_DEBUG
-	// previous timestamps
-	timestamp_prev = presentation->timestamp[presentation->frame];
-	t_renderPassBegin_prev = timestamp_prev[cdrawVkQuery_renderPassBegin];
-	t_renderPassEnd_prev = timestamp_prev[cdrawVkQuery_renderPassEnd];
-#endif // #if CDRAW_DEBUG
-
 	// next
-	presentation->frame = (presentation->frame + 1) % cdrawFramesInFlight_max;
-
-#if CDRAW_DEBUG
-	// current frame
-	printf("\n frame %u", presentation->frame);
-#endif // #if CDRAW_DEBUG
+	presentation->frameIndex = (presentation->frameIndex + 1) % cdrawFramesInFlight_max;
+	frame = &presentation->frame[presentation->frameIndex];
 	
 	// (private - at end of public display and end of creation)
 	//	-> reset image acquire fence
@@ -326,70 +431,43 @@ static bool cdrawRendererPrepareNextPresent_vk(cdrawRenderer_vk* const r, uint32
 
 	// wait for submission of current frame to complete
 	// putting this here avoids "pending" state clash for submission
-	imageUsedByFrame = presentation->imageIdx_frame[presentation->frame];
+	imageUsedByFrame = frame->imageInUse;
 	if (uint32_valid(imageUsedByFrame))
 	{
-		fence_submit = presentation->fence_submit[presentation->frame];
-		result = vkWaitForFences(logicalDevice, 1, &fence_submit, VK_TRUE, UINT64_MAX);
+		result = vkWaitForFences(logicalDevice, 1, &frame->fence_submit, VK_TRUE, UINT64_MAX);
 		cdraw_assert(result == VK_SUCCESS);
 
 #if CDRAW_DEBUG
-		// if N is frames in flight, timestamps 2N frames ago
-		timestamp_prevCycle = presentation->timestamp[presentation->frame];
-		t_renderPassBegin_prevCycle = timestamp_prevCycle[cdrawVkQuery_renderPassBegin];
-		t_renderPassEnd_prevCycle = timestamp_prevCycle[cdrawVkQuery_renderPassEnd];
-
-		// timestamps previously in this slot, or N frames ago
-		queryPool = presentation->queryPool_frame[presentation->frame];
-		queryBase = cdrawVkQuery_renderPassBegin;
-		queryCount = (1 + cdrawVkQuery_renderPassEnd - cdrawVkQuery_renderPassBegin);
-		result = vkGetQueryPoolResults(logicalDevice, queryPool, queryBase, queryCount,
-			(queryCount * sizeof(*timestamp_prevCycle)), &timestamp_prevCycle[queryBase], sizeof(*timestamp_prevCycle),
-			(VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT));
-		cdraw_assert(result == VK_SUCCESS);
-
-		timestamp_prevCycle = presentation->timestamp[(presentation->frame + cdrawFramesInFlight_max - 2) % cdrawFramesInFlight_max];
-		t_renderPassBegin_prevCycle = timestamp_prevCycle[cdrawVkQuery_renderPassBegin];
-		t_renderPassEnd_prevCycle = timestamp_prevCycle[cdrawVkQuery_renderPassEnd];
-		dt_renderPassBegin_prev = (t_renderPassBegin_prev - t_renderPassBegin_prevCycle);
-		dt_renderPassEnd_prev = (t_renderPassEnd_prev - t_renderPassEnd_prevCycle);
-		timestamp_nsPerCount = r->logicalDevice.physicalDevice.physicalDeviceProp.limits.timestampPeriod;
-		timestamp_msPerCount = timestamp_nsPerCount * 1.0e-6f;
-
-		if (dt_renderPassBegin_prev >= 0)
-		{
-			++presentation->presentCount;
-			presentation->dt_present_total += dt_renderPassBegin_prev;
-			printf(" | dt_renderPassBegin_prev=%.6f",
-				timestamp_msPerCount * (fp32_t)dt_renderPassBegin_prev);
-		}
+		cdrawRendererPresentDebug_vk(r, windowIndex);
 #endif // #if CDRAW_DEBUG
 	}
 
-	fence_acquire = presentation->fence_acquire[presentation->frame];
-	semaphore_acquire = presentation->semaphore_acquire[presentation->frame];
-	imageExpect = (presentation->image + 1) % presentation->swapchain.imageCount;
-	result = vkAcquireNextImageKHR(logicalDevice, presentation->swapchain.swapchain, UINT64_MAX, semaphore_acquire, fence_acquire, &presentation->image);
+	imageExpect = (presentation->imageIndex + 1) % presentation->swapchain.imageCount;
+	result = vkAcquireNextImageKHR(logicalDevice, presentation->swapchain.swapchain, UINT64_MAX, frame->semaphore_acquire, frame->fence_acquire, &presentation->imageIndex);
 	cdraw_assert(result == VK_SUCCESS);
-	cdraw_assert(presentation->image == imageExpect);
+	cdraw_assert(presentation->imageIndex == imageExpect);
 
-	frameUsingImage = presentation->frameIdx_image[presentation->image];
+	image = &presentation->image[presentation->imageIndex];
+	frameUsingImage = image->frameUsing;
 	if (uint32_valid(frameUsingImage))
 	{
-		fence_submit = presentation->fence_submit[frameUsingImage];
-		result = vkWaitForFences(logicalDevice, 1, &fence_submit, VK_TRUE, UINT64_MAX);
+		result = vkWaitForFences(logicalDevice, 1, &presentation->frame[frameUsingImage].fence_submit, VK_TRUE, UINT64_MAX);
 		cdraw_assert(result == VK_SUCCESS);
 	}
 
 	// ensure image has been acquired
-	result = vkWaitForFences(logicalDevice, 1, &fence_acquire, VK_TRUE, UINT64_MAX);
+	result = vkWaitForFences(logicalDevice, 1, &frame->fence_acquire, VK_TRUE, UINT64_MAX);
 	cdraw_assert(result == VK_SUCCESS);
-	result = vkResetFences(logicalDevice, 1, &fence_acquire);
+	result = vkResetFences(logicalDevice, 1, &frame->fence_acquire);
 	cdraw_assert(result == VK_SUCCESS);
 
 	// set frame-image pairs
-	presentation->frameIdx_image[presentation->image] = presentation->frame;
-	presentation->imageIdx_frame[presentation->frame] = presentation->image;
+	image->frameUsing = presentation->frameIndex;
+	frame->imageInUse = presentation->imageIndex;
+
+#if CDRAW_DEBUG
+	printf("\n frameIndex %u | imageIndex %u", presentation->frameIndex, presentation->imageIndex);
+#endif // #if CDRAW_DEBUG
 
 	// reset
 	r->swapchainCount_present = 0;
@@ -402,9 +480,7 @@ static result_t cdrawRendererBeginDraw_vk(cdrawRenderer_vk* const r, uint32_t co
 {
 	VkResult result = VK_SUCCESS;
 	cdrawVkPresentation* presentation = NULL;
-
-	uint32_t frame = UINT32_MAX;
-	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+	cdrawVkPresentationFrame* frame = NULL;
 	VkCommandBufferBeginInfo const commandBufferBegin = cdrawVkCommandBufferBeginInfoCtor(0, NULL);
 
 	cdraw_assert(r);
@@ -416,23 +492,20 @@ static result_t cdrawRendererBeginDraw_vk(cdrawRenderer_vk* const r, uint32_t co
 	result = cdrawRendererPrepareNextPresent_vk(r, windowIndex);
 
 	// reset and begin command recording
-	frame = presentation->frame;
-	commandBuffer = presentation->commandBuffer_present.commandBuffer[frame];
-	result = vkResetCommandBuffer(commandBuffer, 0);
+	frame = &presentation->frame[presentation->frameIndex];
+	result = vkResetCommandBuffer(frame->commandBufferRef, 0);
 	cdraw_assert(result == VK_SUCCESS);
-	result = vkBeginCommandBuffer(commandBuffer, &commandBufferBegin);
+	result = vkBeginCommandBuffer(frame->commandBufferRef, &commandBufferBegin);
 	cdraw_assert(result == VK_SUCCESS);
 
 #if CDRAW_DEBUG
 	// TEST DRAW PRIOR TO PRESENTATION
 	{
-		uint32_t const image = presentation->image;
-		VkQueryPool const queryPool = presentation->queryPool_frame[frame];
-		VkQueue const queue = presentation->queue_graphics[frame].queue;
+		cdrawVkPresentationImage* const image = &presentation->image[presentation->imageIndex];
+		VkFramebuffer const framebuffer = image->framebuffer.framebuffer; // match image because the targets are attached to it
+		VkRect2D const region = image->framebuffer.region;
 		VkRenderPass const renderPass = presentation->renderPass_present.renderPass;
-		VkFramebuffer const framebuffer = presentation->framebuffer_present[image].framebuffer; // match image because the targets are attached to it
-		VkRect2D const region = presentation->framebuffer_present[image].region;
-		cdrawRendererDisplayTest_vk(commandBuffer, queryPool, renderPass, framebuffer, region);
+		cdrawRendererDisplayTest_vk(frame->commandBufferRef, frame->queryPool, renderPass, framebuffer, region);
 	}
 #endif // #if CDRAW_DEBUG
 
@@ -443,12 +516,10 @@ static result_t cdrawRendererEndDraw_vk(cdrawRenderer_vk* const r, uint32_t cons
 {
 	VkResult result = VK_SUCCESS;
 	cdrawVkPresentation* presentation = NULL;
+	cdrawVkPresentationFrame* frame = NULL;
 
 	uint32_t idx;
-	uint32_t frame = UINT32_MAX;
 	VkDevice logicalDevice = VK_NULL_HANDLE;
-	VkQueue queue_submit = VK_NULL_HANDLE;
-	VkFence fence_submit = VK_NULL_HANDLE;
 	VkPipelineStageFlags semaphoreStage_wait[cdrawSubmitWaitSemaphore_max] = { VK_PIPELINE_STAGE_NONE_KHR };
 	VkSemaphore semaphore_wait[cdrawSubmitWaitSemaphore_max] = { VK_NULL_HANDLE };
 	VkSemaphore semaphore_signal[cdrawSubmitSignalSemaphore_max] = { VK_NULL_HANDLE };
@@ -464,136 +535,34 @@ static result_t cdrawRendererEndDraw_vk(cdrawRenderer_vk* const r, uint32_t cons
 		return result;
 
 	logicalDevice = r->logicalDevice.logicalDevice;
-	frame = presentation->frame;
+	frame = &presentation->frame[presentation->frameIndex];
 
 	// end command buffer recording
-	commandBuffer[commandBufferCount] = presentation->commandBuffer_present.commandBuffer[frame];
+	commandBuffer[commandBufferCount] = frame->commandBufferRef;
 	result = vkEndCommandBuffer(commandBuffer[commandBufferCount++]);
 	cdraw_assert(result == VK_SUCCESS);
 
 	// reset fence for this frame
-	fence_submit = presentation->fence_submit[frame];
-	result = vkResetFences(logicalDevice, 1, &fence_submit);
+	result = vkResetFences(logicalDevice, 1, &frame->fence_submit);
 	cdraw_assert(result == VK_SUCCESS);
 	
 	// SUBMISSION
-	queue_submit = presentation->queue_graphics[frame].queue;
 	semaphoreStage_wait[semaphoreCount_wait] = (VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-	semaphore_wait[semaphoreCount_wait++] = presentation->semaphore_acquire[frame];
-	semaphore_signal[semaphoreCount_signal++] = presentation->semaphore_submit[frame];
+	semaphore_wait[semaphoreCount_wait++] = frame->semaphore_acquire;
+	semaphore_signal[semaphoreCount_signal++] = frame->semaphore_submit;
 	submitInfo = cdrawVkSubmitInfoCtor(semaphoreCount_wait, semaphore_wait, semaphoreStage_wait,
 		commandBufferCount, commandBuffer, semaphoreCount_signal, semaphore_signal);
-	result = vkQueueSubmit(queue_submit, 1, &submitInfo, fence_submit);
+	result = vkQueueSubmit(frame->queueRef_graphics.queue, 1, &submitInfo, frame->fence_submit);
 	cdraw_assert(result == VK_SUCCESS);
 
 	// copy data for display
-	r->imageIndex_present[r->swapchainCount_present] = presentation->image;
+	r->imageIndex_present[r->swapchainCount_present] = presentation->imageIndex;
 	r->swapchain_present[r->swapchainCount_present++] = presentation->swapchain.swapchain;
 	for (idx = 0; idx < semaphoreCount_signal; ++idx)
 		r->waitSemaphore_present[r->waitSemaphoreCount_present++] = semaphore_signal[idx];
 
 	return result;
 }
-
-#if CDRAW_DEBUG
-static bool cdrawRendererPresentDebug_vk(cdrawRenderer_vk* const r, uint32_t const idx)
-{
-	VkResult result = VK_SUCCESS;
-	uint32_t frame;
-	cdrawVkPresentation* presentation;
-	uint32_t const queryBase = cdrawVkQuery_renderPassBegin;
-	uint32_t const queryCount = (1 + cdrawVkQuery_renderPassEnd - cdrawVkQuery_renderPassBegin);
-
-	VkDevice logicalDevice = VK_NULL_HANDLE;
-	VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
-	fp32_t timestamp_nsPerCount = 0.0f;
-	fp32_t timestamp_msPerCount = 0.0f;
-	VkQueryPool queryPool;
-	uint64_t* timestamp;
-	//size_t timestampSize;
-
-	uint64_t t_cpu = 0, t_gpu = 0, dt_error_cpu = 0, dt_error_gpu = 0;
-
-	cdraw_assert(r);
-	presentation = &r->presentation[idx];
-	if (!cdrawVkPresentationValid(presentation))
-		return false;
-
-	logicalDevice = r->logicalDevice.logicalDevice;
-	commandBuffer = presentation->commandBuffer_timer.commandBuffer[0];
-	timestamp_nsPerCount = r->logicalDevice.physicalDevice.physicalDeviceProp.limits.timestampPeriod;
-	timestamp_msPerCount = timestamp_nsPerCount * 1.0e-6f;
-
-	// get times in current slot
-	presentation = &r->presentation[idx];
-	frame = presentation->frame;
-	queryPool = presentation->queryPool_frame[frame];
-	timestamp = presentation->timestamp[frame];
-	//timestampSize = sizeof(*timestamp);
-	//result = vkGetQueryPoolResults(logicalDevice, queryPool, queryBase, queryCount,
-	//	(timestampSize * queryCount), timestamp, timestampSize, (VK_QUERY_RESULT_64_BIT | VK_QUERY_RESULT_WAIT_BIT));
-	//cdraw_assert(result == VK_SUCCESS);
-
-	// sync
-	{
-		cdrawRendererSyncClocks_vk(logicalDevice, commandBuffer, presentation->queue_graphics[frame].queue,
-			presentation->fence_timer, presentation->event_timer_start, presentation->event_timer_stop,
-			queryPool, &t_cpu, &t_gpu, &dt_error_cpu, &dt_error_gpu);
-		t_cpu *= r->cps_gpu2cpu;
-		dt_error_cpu *= r->cps_gpu2cpu;
-		t_gpu *= (uint64_t)timestamp_nsPerCount;
-		dt_error_gpu *= (uint64_t)timestamp_nsPerCount;
-		timestamp[queryCount + 0] = t_cpu;
-		timestamp[queryCount + 1] = t_gpu;
-	}
-
-	// display queries
-	{
-		uint32_t const frame_prev = (frame + cdrawFramesInFlight_max - 1) % cdrawFramesInFlight_max;
-		uint64_t const t_renderPassBegin = presentation->timestamp[frame][cdrawVkQuery_renderPassBegin];
-		uint64_t const t_renderPassEnd = presentation->timestamp[frame][cdrawVkQuery_renderPassEnd];
-		uint64_t const t_renderPassBegin_prev = presentation->timestamp[frame_prev][cdrawVkQuery_renderPassBegin];
-		uint64_t const t_renderPassEnd_prev = presentation->timestamp[frame_prev][cdrawVkQuery_renderPassEnd];
-		uint64_t const t_cpu_prev = presentation->timestamp[frame_prev][queryCount + 0];
-		uint64_t const t_gpu_prev = presentation->timestamp[frame_prev][queryCount + 1];
-		int64_t const dt_cpu = (t_cpu - t_cpu_prev);
-		int64_t const dt_gpu = (t_gpu - t_gpu_prev);
-		int64_t const dt_renderPass = (t_renderPassEnd - t_renderPassBegin);
-		int64_t const dt_renderPassBegin = (t_renderPassBegin - t_renderPassBegin_prev);
-		int64_t const dt_renderPassEnd = (t_renderPassEnd - t_renderPassEnd_prev);
-
-		//// check if sync is correct
-		//// looks like the key is waiting for the fence before querying times
-		////	...but doing it here will prevent multiple frames in flight
-		//// this should be used conservatively for debugging only
-		//cdraw_assert(dt_renderPass >= 0 && dt_renderPassBegin >= 0 && dt_renderPassEnd >= 0);
-
-		//// print stats for current present
-		//{
-		//	printf("\n image %u", presentation->image);
-		//	++presentation->frameCount;
-		//	presentation->dt_renderPass_total += dt_renderPass;
-		//	printf(" | dt_renderPass=%.6f",
-		//		timestamp_msPerCount * (fp32_t)dt_renderPass);
-		//	printf("\n\t dt_cpu=%.6f | dt_error_cpu=%.6f",
-		//		timestamp_msPerCount * (fp32_t)dt_cpu,
-		//		timestamp_msPerCount * (fp32_t)dt_error_cpu);
-		//	printf("\n\t dt_gpu=%.6f | dt_error_gpu=%.6f",
-		//		timestamp_msPerCount * (fp32_t)dt_gpu,
-		//		timestamp_msPerCount * (fp32_t)dt_error_gpu);
-		//}
-
-		// print averages
-		printf("\n frameCount %u, presentCount %u", presentation->frameCount, presentation->presentCount);
-		if (presentation->frameCount)
-			printf(" | dt_renderPass_avg=%.6f", timestamp_msPerCount * ((fp32_t)(presentation->dt_renderPass_total) / (fp32_t)(presentation->frameCount)));
-		if (presentation->presentCount)
-			printf(" | dt_present_avg=%.6f", timestamp_msPerCount * ((fp32_t)(presentation->dt_present_total) / (fp32_t)(presentation->presentCount)));
-	}
-
-	return (result == VK_SUCCESS);
-}
-#endif // #if CDRAW_DEBUG
 
 static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk* const r)
 {
@@ -614,21 +583,16 @@ static result_t cdrawRendererDisplay_vk(cdrawRenderer_vk* const r)
 	//	-> submit for each
 
 	VkResult result = VK_SUCCESS;
-	uint32_t idx;
+	//uint32_t idx;
 
 	// all at once:
 	//	-> execute current display: queue present (begin display)
 	cdrawRendererPresent_vk(r->queue_present.queue, r->waitSemaphoreCount_present, r->waitSemaphore_present, r->swapchainCount_present, r->swapchain_present, r->imageIndex_present);
 
-	// per swapchain/display: either after present and after init, or in begin draw
-	//	-> prepare next display
-	for (idx = 0; idx < cdrawVkSurfacePresent_max; ++idx)
-	{
-#if CDRAW_DEBUG
-		cdrawRendererPresentDebug_vk(r, idx);
-#endif // #if CDRAW_DEBUG
-		//cdrawRendererPrepareNextPresent_vk(r, idx);
-	}
+	//// per swapchain/display: either after present and after init, or in begin draw
+	////	-> prepare next display
+	//for (idx = 0; idx < cdrawVkSurfacePresent_max; ++idx)
+	//	cdrawRendererPrepareNextPresent_vk(r, idx);
 
 	return result;
 }

@@ -104,6 +104,85 @@ typedef struct cdrawVkSwapchain
 
 
 /// <summary>
+/// Container for frame in flight data.
+/// </summary>
+typedef struct cdrawVkPresentationFrame
+{
+	/// <summary>
+	/// Fence for syncing image acquisition.
+	/// </summary>
+	VkFence fence_acquire;
+
+	/// <summary>
+	/// Fence for syncing queue submission.
+	/// </summary>
+	VkFence fence_submit;
+
+	/// <summary>
+	/// Semaphore for signaling image acquisition.
+	/// </summary>
+	VkSemaphore semaphore_acquire;
+
+	/// <summary>
+	/// Semaphore for signaling queue submission.
+	/// </summary>
+	VkSemaphore semaphore_submit;
+
+#if CDRAW_DEBUG
+	/// <summary>
+	/// Query pool for collecting timestamps.
+	/// </summary>
+	VkQueryPool queryPool;
+
+	/// <summary>
+	/// Timestamps for this frame.
+	/// </summary>
+	uint64_t timestamp[cdrawVkQuery_max];
+#endif // #if CDRAW_DEBUG
+
+	/// <summary>
+	/// Reference to command buffer used for frame.
+	/// </summary>
+	VkCommandBuffer commandBufferRef;
+
+	/// <summary>
+	/// Reference to graphics queue used for frame.
+	/// </summary>
+	cdrawVkQueue queueRef_graphics;
+
+	/// <summary>
+	/// Image index in use by this frame.
+	/// </summary>
+	uint32_t imageInUse;
+
+	/// <summary>
+	/// Index of this frame.
+	/// </summary>
+	uint32_t index;
+} cdrawVkPresentationFrame;
+
+/// <summary>
+/// Container for data associated with presentable swapchain image.
+/// </summary>
+typedef struct cdrawVkPresentationImage
+{
+	/// <summary>
+	/// Framebuffer with swapchain color images as attachments.
+	/// </summary>
+	cdrawVkFramebuffer framebuffer;
+
+	/// <summary>
+	/// Frame in flight using this image.
+	/// </summary>
+	uint32_t frameUsing;
+
+	/// <summary>
+	/// Index of this image.
+	/// </summary>
+	uint32_t index;
+} cdrawVkPresentationImage;
+
+/// <summary>
 /// Collection of Vulkan handles and data related to presentation.
 /// </summary>
 typedef struct cdrawVkPresentation
@@ -119,60 +198,39 @@ typedef struct cdrawVkPresentation
 	cdrawVkSwapchain swapchain;
 
 	/// <summary>
+	/// Vulkan command buffers for presentation.
+	/// Should have one for each frame in flight.
+	/// </summary>
+	cdrawVkCommandBuffer commandBuffer_present;
+
+	/// <summary>
 	/// Stuff for display management.
 	/// </summary>
 	struct {
 		/// <summary>
-		/// Vulkan command buffers for presentation.
-		/// Should have one for each frame in flight.
+		/// Collection of frames in flight.
 		/// </summary>
-		cdrawVkCommandBuffer commandBuffer_present;
+		cdrawVkPresentationFrame frame[cdrawFramesInFlight_max];
 
 		/// <summary>
-		/// Vulkan graphics queues.
-		/// Should have one for each frame in flight.
+		/// Collection of images for frames.
 		/// </summary>
-		cdrawVkQueue queue_graphics[cdrawFramesInFlight_max];
+		cdrawVkPresentationImage image[cdrawVkSwapchainImage_max];
 
 		/// <summary>
-		/// Fences signaling acquisition of swapchain images.
+		/// Vulkan render pass for presentation.
 		/// </summary>
-		VkFence fence_acquire[cdrawFramesInFlight_max];
-
-		/// <summary>
-		/// Semaphores signaling acquisition of swapchain images (submission ready).
-		/// </summary>
-		VkSemaphore semaphore_acquire[cdrawFramesInFlight_max];
-
-		/// <summary>
-		/// Fences signaling submission and completion of command buffers.
-		/// </summary>
-		VkFence fence_submit[cdrawFramesInFlight_max];
-
-		/// <summary>
-		/// Semaphores signaling submission and completion of command buffers (presentation ready).
-		/// </summary>
-		VkSemaphore semaphore_submit[cdrawFramesInFlight_max];
-
-		/// <summary>
-		/// Image index used by each frame.
-		/// </summary>
-		uint32_t imageIdx_frame[cdrawFramesInFlight_max];
-
-		/// <summary>
-		/// Frame index using each image.
-		/// </summary>
-		uint32_t frameIdx_image[cdrawVkSwapchainImage_max];
+		cdrawVkRenderPass renderPass_present;
 
 		/// <summary>
 		/// Current frame in flight index (used for drawing).
 		/// </summary>
-		uint32_t frame;
+		uint32_t frameIndex;
 
 		/// <summary>
-		/// Current image in flight index (used for presentation).
+		/// Current image index for frame (used for presentation).
 		/// </summary>
-		uint32_t image;
+		uint32_t imageIndex;
 	};
 
 	/// <summary>
@@ -189,16 +247,6 @@ typedef struct cdrawVkPresentation
 		/// Depth/stencil image for presentation.
 		/// </summary>
 		cdrawVkImage depthStencilImage_present;
-
-		/// <summary>
-		/// Vulkan render pass for presentation.
-		/// </summary>
-		cdrawVkRenderPass renderPass_present;
-
-		/// <summary>
-		/// Vulkan framebuffer for presentation.
-		/// </summary>
-		cdrawVkFramebuffer framebuffer_present[cdrawVkSwapchainImage_max];
 	};
 
 #if CDRAW_DEBUG
@@ -225,43 +273,36 @@ typedef struct cdrawVkPresentation
 		/// Command buffer for timer.
 		/// </summary>
 		cdrawVkCommandBuffer commandBuffer_timer;
-	};
-#endif // #if CDRAW_DEBUG
-
-#if CDRAW_DEBUG
-	/// <summary>
-	/// DEBUG STUFF
-	/// </summary>
-	struct {
-		/// <summary>
-		/// Vulkan query pool to track frame times.
-		/// </summary>
-		VkQueryPool queryPool_frame[cdrawFramesInFlight_max];
 
 		/// <summary>
-		/// Current set of timestamps.
+		/// Number of render passes processed.
 		/// </summary>
-		uint64_t timestamp[cdrawFramesInFlight_max][cdrawVkQuery_max];
+		uint64_t renderPassCount;
 
 		/// <summary>
-		/// Number of frames processed.
+		/// Number of frame presentations processed.
 		/// </summary>
-		uint32_t frameCount;
-
-		/// <summary>
-		/// Number of presentations processed.
-		/// </summary>
-		uint32_t presentCount;
-
-		/// <summary>
-		/// Accumulated presentation delta to calculate average.
-		/// </summary>
-		int64_t dt_present_total;
+		uint64_t framePresentCount;
 
 		/// <summary>
 		/// Accumulated render pass delta to calculate average.
 		/// </summary>
 		int64_t dt_renderPass_total;
+
+		/// <summary>
+		/// Accumulated frame present delta to calculate average.
+		/// </summary>
+		int64_t dt_framePresent_total;
+
+		/// <summary>
+		/// Accumulated render pass delta squared to calculate variance.
+		/// </summary>
+		int64_t dt_renderPass_sq_total;
+
+		/// <summary>
+		/// Accumulated frame present delta squared to calculate variance.
+		/// </summary>
+		int64_t dt_framePresent_sq_total;
 	};
 #endif // #if CDRAW_DEBUG
 } cdrawVkPresentation;

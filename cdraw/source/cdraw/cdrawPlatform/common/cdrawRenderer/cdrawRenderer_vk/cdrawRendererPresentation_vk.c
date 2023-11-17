@@ -168,6 +168,119 @@ bool cdrawVkSwapchainUnused(cdrawVkSwapchain const* const swapchain)
 }
 
 
+static bool cdrawVkPresentationFrameValid(cdrawVkPresentationFrame const* const presentationFrame)
+{
+	cdraw_assert(presentationFrame);
+	if (!presentationFrame->commandBufferRef)
+		return false;
+	if (!cdrawVkQueueValid(&presentationFrame->queueRef_graphics))
+		return false;
+	return true;
+}
+
+static bool cdrawVkPresentationFrameUnused(cdrawVkPresentationFrame const* const presentationFrame)
+{
+	cdraw_assert(presentationFrame);
+	if (presentationFrame->commandBufferRef)
+		return false;
+	if (!cdrawVkQueueUnused(&presentationFrame->queueRef_graphics))
+		return false;
+	return true;
+}
+
+static cdrawVkPresentationFrame* cdrawVkPresentationFrameCtor(cdrawVkPresentationFrame* const presentationFrame_out,
+	cdrawVkLogicalDevice const* const logicalDevice,
+#if CDRAW_DEBUG
+	VkQueryPoolCreateInfo const* const queryPoolCreateInfo,
+#endif // #if CDRAW_DEBUG
+	VkAllocationCallbacks const* const alloc_opt,
+	VkQueue const queue_graphics, VkCommandBuffer const commandBuffer,
+	uint32_t const imageInUse, uint32_t const index)
+{
+	failassertret(presentationFrame_out && cdrawVkPresentationFrameUnused(presentationFrame_out), NULL);
+	cdrawRendererCreateFence_vk(&presentationFrame_out->fence_acquire, logicalDevice->logicalDevice, false, alloc_opt);
+	cdrawRendererCreateFence_vk(&presentationFrame_out->fence_submit, logicalDevice->logicalDevice, true, alloc_opt);
+	cdrawRendererCreateSemaphore_vk(&presentationFrame_out->semaphore_acquire, logicalDevice->logicalDevice, alloc_opt);
+	cdrawRendererCreateSemaphore_vk(&presentationFrame_out->semaphore_submit, logicalDevice->logicalDevice, alloc_opt);
+#if CDRAW_DEBUG
+	{
+		VkResult result = vkCreateQueryPool(logicalDevice->logicalDevice, queryPoolCreateInfo, alloc_opt, &presentationFrame_out->queryPool);
+		if (presentationFrame_out->queryPool)
+			cdraw_assert(result == VK_SUCCESS);
+		cdraw_assert(queryPoolCreateInfo->queryCount == cdrawVkQuery_max);
+		vkResetQueryPool(logicalDevice->logicalDevice, presentationFrame_out->queryPool, 0, queryPoolCreateInfo->queryCount);
+		memset(presentationFrame_out->timestamp, 0, sizeof(presentationFrame_out->timestamp));
+	}
+#endif // #if CDRAW_DEBUG
+	cdrawVkQueueCtor(&presentationFrame_out->queueRef_graphics, "cdrawVkPres.queueRef_graphics", queue_graphics);
+	presentationFrame_out->commandBufferRef = commandBuffer;
+	presentationFrame_out->imageInUse = imageInUse;
+	presentationFrame_out->index = index;
+	return presentationFrame_out;
+}
+
+static void cdrawVkPresentationFrameDtor(cdrawVkPresentationFrame* const presentationFrame_out,
+	cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt)
+{
+	failassertret(presentationFrame_out);
+	cdrawRendererDestroyFence_vk(&presentationFrame_out->fence_acquire, logicalDevice->logicalDevice, alloc_opt);
+	cdrawRendererDestroyFence_vk(&presentationFrame_out->fence_submit, logicalDevice->logicalDevice, alloc_opt);
+	cdrawRendererDestroySemaphore_vk(&presentationFrame_out->semaphore_acquire, logicalDevice->logicalDevice, alloc_opt);
+	cdrawRendererDestroySemaphore_vk(&presentationFrame_out->semaphore_submit, logicalDevice->logicalDevice, alloc_opt);
+#if CDRAW_DEBUG
+	if (presentationFrame_out->queryPool)
+	{
+		vkDestroyQueryPool(logicalDevice->logicalDevice, presentationFrame_out->queryPool, alloc_opt);
+		presentationFrame_out->queryPool = VK_NULL_HANDLE;
+	}
+#endif // #if CDRAW_DEBUG
+	cdrawVkQueueDtor(&presentationFrame_out->queueRef_graphics);
+	presentationFrame_out->commandBufferRef = VK_NULL_HANDLE;
+	presentationFrame_out->imageInUse = uint32_invalid;
+	presentationFrame_out->index = uint32_invalid;
+}
+
+
+static bool cdrawVkPresentationImageValid(cdrawVkPresentationImage const* const presentationImage)
+{
+	cdraw_assert(presentationImage);
+	if (!cdrawVkFramebufferValid(&presentationImage->framebuffer))
+		return false;
+	return true;
+}
+
+static bool cdrawVkPresentationImageUnused(cdrawVkPresentationImage const* const presentationImage)
+{
+	cdraw_assert(presentationImage);
+	if (!cdrawVkFramebufferUnused(&presentationImage->framebuffer))
+		return false;
+	return true;
+}
+
+static cdrawVkPresentationImage* cdrawVkPresentationImageCtor(cdrawVkPresentationImage* const presentationImage_out,
+	cdrawVkLogicalDevice const* const logicalDevice, cdrawVkRenderPass const* const renderPass,
+	uint32_t const attachmentCount, VkImageView const attachment[/*attachmentCount*/],
+	uint32_t const width, uint32_t const height, uint32_t const layers, VkAllocationCallbacks const* const alloc_opt,
+	uint32_t const frameUsing, uint32_t const index)
+{
+	failassertret(presentationImage_out && cdrawVkPresentationImageUnused(presentationImage_out), NULL);
+	cdrawVkFramebufferCreate(&presentationImage_out->framebuffer, "cdrawVkPres.framebuffer",
+		logicalDevice, renderPass, attachmentCount, attachment, width, height, layers, alloc_opt);
+	presentationImage_out->frameUsing = frameUsing;
+	presentationImage_out->index = index;
+	return presentationImage_out;
+}
+
+static void cdrawVkPresentationImageDtor(cdrawVkPresentationImage* const presentationImage_out,
+	cdrawVkLogicalDevice const* const logicalDevice, VkAllocationCallbacks const* const alloc_opt)
+{
+	failassertret(presentationImage_out);
+	cdrawVkFramebufferDestroy(&presentationImage_out->framebuffer, logicalDevice, alloc_opt);
+	presentationImage_out->frameUsing = uint32_invalid;
+	presentationImage_out->index = uint32_invalid;
+}
+
+
 cdrawVkPresentation* cdrawVkPresentationCtor(cdrawVkPresentation* const presentation_out,
 	label_t const name, cdrawVkSwapchain const* const swapchain)
 {
@@ -191,9 +304,11 @@ bool cdrawVkPresentationValid(cdrawVkPresentation const* const presentation)
 	if (!cdrawVkSwapchainValid(&presentation->swapchain)
 		|| !cdrawVkRenderPassValid(&presentation->renderPass_present))
 		return false;
+	for (idx = 0; idx < cdrawFramesInFlight_max; ++idx)
+		if (!cdrawVkPresentationFrameValid(&presentation->frame[idx]))
+			return false;
 	for (idx = 0; idx < presentation->swapchain.imageCount; ++idx)
-		if (!cdrawVkQueueValid(&presentation->queue_graphics[idx])
-			|| !cdrawVkFramebufferValid(&presentation->framebuffer_present[idx]))
+		if (!cdrawVkPresentationImageValid(&presentation->image[idx]))
 			return false;
 	return true;
 }
@@ -205,9 +320,11 @@ bool cdrawVkPresentationUnused(cdrawVkPresentation const* const presentation)
 	if (!cdrawVkSwapchainUnused(&presentation->swapchain)
 		|| !cdrawVkRenderPassUnused(&presentation->renderPass_present))
 		return false;
+	for (idx = 0; idx < cdrawFramesInFlight_max; ++idx)
+		if (!cdrawVkPresentationFrameUnused(&presentation->frame[idx]))
+			return false;
 	for (idx = 0; idx < presentation->swapchain.imageCount; ++idx)
-		if (!cdrawVkQueueUnused(&presentation->queue_graphics[idx])
-			|| !cdrawVkFramebufferUnused(&presentation->framebuffer_present[idx]))
+		if (!cdrawVkPresentationImageUnused(&presentation->image[idx]))
 			return false;
 	return true;
 }
@@ -613,54 +730,43 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 	cdrawVkSwapchainCreate(&presentation_out->swapchain, "cdrawVkPres.swapchain",
 		logicalDevice, surface, alloc_opt);
 
-	// get queues and command buffer
-	if (cdrawVkSwapchainValid(&presentation_out->swapchain))
+	// allocate command buffers
+	cdrawVkCommandBufferAlloc(&presentation_out->commandBuffer_present, "cdrawVkPres.cmdBuf",
+		cdrawFramesInFlight_max,
+		commandPool, logicalDevice, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+	// setup frames
+	if (cdrawVkCommandBufferValid(&presentation_out->commandBuffer_present))
 	{
-		uint32_t const nQueues = buffer_len(presentation_out->queue_graphics);
+		uint32_t const nFrames = buffer_len(presentation_out->frame);
 		uint32_t queueIdx;
 		VkQueue queue_graphics = VK_NULL_HANDLE;
 		VkBool32 surfaceSupportsPresent = VK_FALSE;
-
-		// allocate command buffers
-		cdrawVkCommandBufferAlloc(&presentation_out->commandBuffer_present, "cdrawVkPres.cmdBuf",
-			cdrawFramesInFlight_max,
-			commandPool, logicalDevice, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+#if CDRAW_DEBUG
+		VkQueryPoolCreateInfo const queryPoolCreateInfo = cdrawVkQueryPoolCreateInfoCtor(VK_QUERY_TYPE_TIMESTAMP, cdrawVkQuery_max);
+#endif // #if CDRAW_DEBUG
 
 		result = vkGetPhysicalDeviceSurfaceSupportKHR(logicalDevice->physicalDevice.physicalDevice, logicalDevice->queueFamilyIdx_graphics, surface->surface, &surfaceSupportsPresent);
 		cdraw_assert(result == VK_SUCCESS);
 		cdraw_assert(surfaceSupportsPresent);
-		cdraw_assert(gCount(nQueues, cdrawFramesInFlight_max));
 
-		// get device queues for graphics
-		for (idx = 0; idx < nQueues; ++idx)
+		// get device queues for graphics, init frames
+		cdraw_assert(nFrames == cdrawFramesInFlight_max);
+		for (idx = 0; idx < nFrames; ++idx)
 		{
 			// queue base is this surface times frames in flight, offset by reserved
 			queueIdx = (surfaceIndex * cdrawFramesInFlight_max + cdrawGraphicsQueuesReserve + idx);
 			vkGetDeviceQueue(logicalDevice->logicalDevice, queueFamilyIdx_graphics, queueIdx, &queue_graphics);
 			cdraw_assert(queue_graphics);
-			cdrawVkQueueCtor(&presentation_out->queue_graphics[idx], "cdrawVkPres.queue_graphics", queue_graphics);
+			cdrawVkPresentationFrameCtor(&presentation_out->frame[idx], logicalDevice,
+#if CDRAW_DEBUG
+				& queryPoolCreateInfo,
+#endif // #if CDRAW_DEBUG
+				alloc_opt, queue_graphics, presentation_out->commandBuffer_present.commandBuffer[idx], uint32_invalid, idx);
 		}
 	}
 
-	// create fences and semaphores for presentation
-	if (cdrawVkCommandBufferValid(&presentation_out->commandBuffer_present))
-	{
-		for (idx = 0; idx < cdrawFramesInFlight_max; ++idx)
-		{
-			// submission sync objects
-			cdrawRendererCreateFence_vk(&presentation_out->fence_submit[idx], logicalDevice->logicalDevice, true, alloc_opt);
-			cdrawRendererCreateSemaphore_vk(&presentation_out->semaphore_submit[idx], logicalDevice->logicalDevice, alloc_opt);
-			
-			// image acquisition sync objects
-			cdrawRendererCreateFence_vk(&presentation_out->fence_acquire[idx], logicalDevice->logicalDevice, false, alloc_opt);
-			cdrawRendererCreateSemaphore_vk(&presentation_out->semaphore_acquire[idx], logicalDevice->logicalDevice, alloc_opt);
-
-			// reset image indices used by frames
-			presentation_out->imageIdx_frame[idx] = uint32_invalid;
-		}
-	}
-
-	// next, get images
+	// get queues and command buffer
 	if (cdrawVkSwapchainValid(&presentation_out->swapchain))
 	{
 		// default depth image (if requested) and attachment info, render pass and framebuffer
@@ -673,6 +779,9 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 		VkAttachmentReference depthAttachmentRef[1] = { 0 };
 		VkSubpassDescription subpassDesc[1] = { 0 };
 		uint32_t const subpassCount = buffer_len(subpassDesc);
+		uint32_t const width = presentation_out->swapchain.imageDimensions.width;
+		uint32_t const height = presentation_out->swapchain.imageDimensions.height;
+		uint32_t const layers = 1;
 
 		if (presentation_out->swapchain.imageCount)
 		{
@@ -707,7 +816,7 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 			presentation_out->depthStencilImage_attachment = cdrawVkAttachmentDescriptionCtorDefaultDepthStencil(
 				true, false, false);
 			if (cdrawVkImageCreateDepthStencilAttachment(&presentation_out->depthStencilImage_present,
-				"cdraw Present Depth/Stencil", logicalDevice, commandPool, presentation_out->queue_graphics,
+				"cdraw Present Depth/Stencil", logicalDevice, commandPool, &presentation_out->frame->queueRef_graphics,
 				presentation_out->swapchain.imageDimensions.width, presentation_out->swapchain.imageDimensions.height,
 				&presentation_out->depthStencilImage_attachment, alloc_opt))
 			{
@@ -733,40 +842,20 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 			if (cdrawVkRenderPassCreate(&presentation_out->renderPass_present, "cdrawVkPres.renderPass",
 				logicalDevice, attachmentCount, attachmentDesc, subpassCount, subpassDesc, 1, &dependency, alloc_opt))
 			{
+				// create image descriptors
 				for (idx = 0; idx < presentation_out->swapchain.imageCount; ++idx)
 				{
-					// create framebuffer
-					cdrawVkFramebufferCreate(&presentation_out->framebuffer_present[idx], "cdrawVkPres.framebuffer",
-						logicalDevice, &presentation_out->renderPass_present, attachmentCount, attachmentView[idx],
-						presentation_out->swapchain.imageDimensions.width, presentation_out->swapchain.imageDimensions.height, 1, alloc_opt);
-					
-					// reset frame indices using images
-					presentation_out->frameIdx_image[idx] = uint32_invalid;
+					cdrawVkPresentationImageCtor(&presentation_out->image[idx],
+						logicalDevice, &presentation_out->renderPass_present,
+						attachmentCount, attachmentView[idx], width, height, layers, alloc_opt, uint32_invalid, idx);
 				}
 			}
 		}
 	}
 
 #if CDRAW_DEBUG
-	// query pool for performance
+	// performance
 	{
-		VkQueryType const queryType = (VK_QUERY_TYPE_TIMESTAMP);
-		uint32_t const queryPoolCount = buffer_len(presentation_out->timestamp);
-		uint32_t const queryCountPerPool = buffer_len(*presentation_out->timestamp);
-		VkQueryPoolCreateInfo const queryPoolCreateInfo = cdrawVkQueryPoolCreateInfoCtor(queryType, queryCountPerPool);
-		VkQueryPool queryPool;
-
-		for (idx = 0; idx < queryPoolCount; ++idx)
-		{
-			queryPool = VK_NULL_HANDLE;
-			result = vkCreateQueryPool(logicalDevice->logicalDevice, &queryPoolCreateInfo, alloc_opt, &queryPool);
-			if (queryPool)
-				cdraw_assert(result == VK_SUCCESS);
-			vkResetQueryPool(logicalDevice->logicalDevice, queryPool, 0, queryCountPerPool);
-			presentation_out->queryPool_frame[idx] = queryPool;
-		}
-		memset(presentation_out->timestamp, 0, sizeof(presentation_out->timestamp));
-		
 		// sync objects
 		cdrawRendererCreateFence_vk(&presentation_out->fence_timer, logicalDevice->logicalDevice, true, alloc_opt);
 		cdrawRendererCreateEvent_vk(&presentation_out->event_timer_start, logicalDevice->logicalDevice, false, alloc_opt);
@@ -774,16 +863,16 @@ bool cdrawVkPresentationCreate(cdrawVkPresentation* const presentation_out,
 		cdrawVkCommandBufferAlloc(&presentation_out->commandBuffer_timer, "commandBuffer_timer", 1, commandPool, logicalDevice, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 		// counters
-		presentation_out->frameCount = 0;
-		presentation_out->presentCount = 0;
-		presentation_out->dt_present_total = 0;
+		presentation_out->renderPassCount = 0;
+		presentation_out->framePresentCount = 0;
 		presentation_out->dt_renderPass_total = 0;
+		presentation_out->dt_framePresent_total = 0;
 	}
 #endif // #if CDRAW_DEBUG
 
 	// set final outputs or clean up
-	presentation_out->frame = (cdrawFramesInFlight_max - 1);
-	presentation_out->image = (presentation_out->swapchain.imageCount - 1);
+	presentation_out->frameIndex = (cdrawFramesInFlight_max - 1);
+	presentation_out->imageIndex = (presentation_out->swapchain.imageCount - 1);
 	if (!cdrawVkPresentationValid(presentation_out) || (result != VK_SUCCESS))
 	{
 		cdrawVkPresentationDestroy(presentation_out, logicalDevice, commandPool, alloc_opt);
@@ -814,27 +903,15 @@ bool cdrawVkPresentationDestroy(cdrawVkPresentation* const presentation_out,
 		cdrawRendererDestroyEvent_vk(&presentation_out->event_timer_stop, logicalDevice->logicalDevice, alloc_opt);
 		cdrawRendererDestroyEvent_vk(&presentation_out->event_timer_start, logicalDevice->logicalDevice, alloc_opt);
 		cdrawRendererDestroyFence_vk(&presentation_out->fence_timer, logicalDevice->logicalDevice, alloc_opt);
-		for (idx = 0; idx < cdrawFramesInFlight_max; ++idx)
-		{
-			if (presentation_out->queryPool_frame[idx])
-			{
-				vkDestroyQueryPool(logicalDevice->logicalDevice, presentation_out->queryPool_frame[idx], alloc_opt);
-				presentation_out->queryPool_frame[idx] = VK_NULL_HANDLE;
-			}
-		}
 	}
 #endif // #if CDRAW_DEBUG
-	for (idx = 0; idx < cdrawVkSwapchainImage_max; ++idx)
-	{
-		cdrawVkFramebufferDestroy(&presentation_out->framebuffer_present[idx], logicalDevice, alloc_opt);
-	}
 	for (idx = 0; idx < cdrawFramesInFlight_max; ++idx)
 	{
-		cdrawRendererDestroySemaphore_vk(&presentation_out->semaphore_acquire[idx], logicalDevice->logicalDevice, alloc_opt);
-		cdrawRendererDestroyFence_vk(&presentation_out->fence_acquire[idx], logicalDevice->logicalDevice, alloc_opt);
-		cdrawRendererDestroySemaphore_vk(&presentation_out->semaphore_submit[idx], logicalDevice->logicalDevice, alloc_opt);
-		cdrawRendererDestroyFence_vk(&presentation_out->fence_submit[idx], logicalDevice->logicalDevice, alloc_opt);
-		cdrawVkQueueDtor(&presentation_out->queue_graphics[idx]);
+		cdrawVkPresentationFrameDtor(&presentation_out->frame[idx], logicalDevice, alloc_opt);
+	}
+	for (idx = 0; idx < cdrawVkSwapchainImage_max; ++idx)
+	{
+		cdrawVkPresentationImageDtor(&presentation_out->image[idx], logicalDevice, alloc_opt);
 	}
 	cdrawVkRenderPassDestroy(&presentation_out->renderPass_present, logicalDevice, alloc_opt);
 	cdrawVkImageDestroy(&presentation_out->depthStencilImage_present, logicalDevice, alloc_opt);
