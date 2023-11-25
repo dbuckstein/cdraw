@@ -5,23 +5,27 @@
     <LocalDebuggerWorkingDirectory>$(cdraw)bin\$(PlatformTarget)\$(PlatformToolset)\$(Configuration)\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>-plugin $(TargetName)</LocalDebuggerCommandArguments>
+    <LocalDebuggerEnvironment>PATH=%PATH%;$(glew_path)\bin\Release\$(PlatformName)\</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LocalDebuggerCommand>$(cdraw)bin\$(PlatformTarget)\$(PlatformToolset)\$(Configuration)\cdrawPlayer.exe</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(cdraw)bin\$(PlatformTarget)\$(PlatformToolset)\$(Configuration)\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>-plugin $(TargetName)</LocalDebuggerCommandArguments>
+    <LocalDebuggerEnvironment>PATH=%PATH%;$(glew_path)\bin\Release\$(PlatformName)\</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>$(cdraw)bin\$(PlatformTarget)\$(PlatformToolset)\$(Configuration)\cdrawPlayer.exe</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(cdraw)bin\$(PlatformTarget)\$(PlatformToolset)\$(Configuration)\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>-plugin $(TargetName)</LocalDebuggerCommandArguments>
+    <LocalDebuggerEnvironment>PATH=%PATH%;$(glew_path)\bin\Release\$(PlatformName)\</LocalDebuggerEnvironment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LocalDebuggerCommand>$(cdraw)bin\$(PlatformTarget)\$(PlatformToolset)\$(Configuration)\cdrawPlayer.exe</LocalDebuggerCommand>
     <LocalDebuggerWorkingDirectory>$(cdraw)bin\$(PlatformTarget)\$(PlatformToolset)\$(Configuration)\</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
     <LocalDebuggerCommandArguments>-plugin $(TargetName)</LocalDebuggerCommandArguments>
+    <LocalDebuggerEnvironment>PATH=%PATH%;$(glew_path)\bin\Release\$(PlatformName)\</LocalDebuggerEnvironment>
   </PropertyGroup>
 </Project>

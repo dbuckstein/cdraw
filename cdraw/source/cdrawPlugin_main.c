@@ -143,9 +143,10 @@ result_t cb_win_attach(cdrawTestPluginData* const data, int32_t const w, int32_t
 	result_t result;
 	cdraw_assert(data && windowPlatform_opt);
 	cdrawRenderer* const renderer = &data->renderer;
+	cdrawRenderAPI const renderAPI = cdrawRenderAPI_OpenGL;
 	cdraw_assert(!renderer->r && !renderer->renderAPI);
-	result = cdrawRendererRefreshAPI(cdrawRenderAPI_Vulkan);
-	result = cdrawRendererCreate(renderer, cdrawRenderAPI_Vulkan, 1);
+	result = cdrawRendererRefreshAPI(renderAPI);
+	result = cdrawRendererCreate(renderer, renderAPI, 1);
 	result = cdrawRendererAttachWindow(renderer, 0, windowPlatform_opt);
 	cdrawRendererPrint(renderer);
 	data->w = w;
@@ -158,10 +159,12 @@ result_t cb_win_attach(cdrawTestPluginData* const data, int32_t const w, int32_t
 
 result_t cb_win_detach(cdrawTestPluginData* const data, ptrk_t const windowPlatform_opt)
 {
+	result_t result;
 	cdraw_assert(data && windowPlatform_opt);
 	cdrawRenderer* const renderer = &data->renderer;
 	cdraw_assert(renderer->r && renderer->renderAPI);
-	result_t result = cdrawRendererDestroy(renderer);
+	result = cdrawRendererDetachWindow(renderer, 0);
+	result = cdrawRendererDestroy(renderer);
 	cdrawTimerStepSystem(&data->timer_sys);
 	return result;// printf("\n" __FUNCTION__ "(%p, %p)", data, windowPlatform_opt);
 }

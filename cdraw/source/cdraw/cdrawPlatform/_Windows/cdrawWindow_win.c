@@ -753,28 +753,29 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 			p_window->mouseTrack.dwFlags = (TME_LEAVE);
 			cdraw_assert(p_window->hInst && p_window->hWnd && p_window->hDC);
 
-			TrackMouseEvent(&p_window->mouseTrack);
 			SetWindowLongPtrA(hWnd, GWLP_USERDATA, (LONG_PTR)window);
 			++gWindowPlatform.windowCount;
 		}
 	}	break;
 	
-		// FINISH WINDOW CREATION
+		// FINISH WINDOW CREATION - would set up rendering here if the window owned a context
 	case WM_CREATE: {
-		// NOTHING ELSE TO DO - would set up rendering here if the window owned a context
-	}	break;
-
-		// WINDOW CLOSED
-	case WM_CLOSE: {
-		// recursively take down windows
-		DestroyWindow(hWnd);
+		// any leftover tasks from creation, e.g track mouse
+		cdraw_window_valid();
+		TrackMouseEvent(&p_window->mouseTrack);
 	}	break;
 	
-		// WINDOW DESTROYED - would clean up rendering here
+		// WINDOW DESTROYED - would clean up rendering/plugin here
 	case WM_DESTROY: {
-		cdraw_window_valid();
+		// unload plugin
 		SendMessageA(hWnd, cdrawWinCtrlMsg_unload, wParam, lParam);
-		
+	}	break;
+
+		// INTERNAL WINDOW DESTRUCTION - opposite of NCCREATE
+	case WM_NCDESTROY: {
+		cdraw_window_valid();
+
+		// release handles
 		ReleaseDC(hWnd, p_window->hDC);
 		free(p_window);
 		p_window = NULL;
@@ -783,6 +784,12 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		--gWindowPlatform.windowCount;
 		if (gWindowPlatform.windowCount <= 0)
 			PostQuitMessage(0);
+	}	break;
+
+		// WINDOW CLOSED
+	case WM_CLOSE: {
+		// recursively take down windows
+		DestroyWindow(hWnd);
 	}	break;
 
 		// DISPLAY REFRESH
