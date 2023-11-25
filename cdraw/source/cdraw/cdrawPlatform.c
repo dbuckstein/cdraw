@@ -14,6 +14,10 @@
 *   limitations under the License.
 */
 
+/*
+* cdrawPlatform.c
+* Main source for platform library.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +32,7 @@ result_t cdrawConsoleTest()
 	result_init();
 	cdrawConsoleCreate();
 	cdrawConsoleDebugPatch();
-	cdrawConsoleRelease();
+	cdrawConsoleDestroy();
 	result_return();
 }
 
@@ -86,7 +90,7 @@ void cdrawTimerTest()
 	// system: step
 	// timer: big step
 	printf("\n //// SYS: step //// TIMER: step ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "step+step";
@@ -99,7 +103,7 @@ void cdrawTimerTest()
 	// system: step
 	// timer: clip step
 	printf("\n //// SYS: step //// TIMER: clip ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "step+clip";
@@ -112,7 +116,7 @@ void cdrawTimerTest()
 	// system: step
 	// timer: multi step
 	printf("\n //// SYS: step //// TIMER: mult ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "step+mult";
@@ -125,7 +129,7 @@ void cdrawTimerTest()
 	// system: clip
 	// timer: big step
 	printf("\n //// SYS: clip //// TIMER: step ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "clip+step";
@@ -138,7 +142,7 @@ void cdrawTimerTest()
 	// system: clip
 	// timer: clip step
 	printf("\n //// SYS: clip //// TIMER: clip ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "clip+clip";
@@ -151,7 +155,7 @@ void cdrawTimerTest()
 	// system: clip
 	// timer: multi step
 	printf("\n //// SYS: clip //// TIMER: mult ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "clip+mult";
@@ -167,7 +171,7 @@ void cdrawTimerTest()
 	// system: step
 	// timer: big step
 	printf("\n //// SYS: step //// TIMER: step ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = -dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "step-step";
@@ -180,7 +184,7 @@ void cdrawTimerTest()
 	// system: step
 	// timer: clip step
 	printf("\n //// SYS: step //// TIMER: clip ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = -dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "step-clip";
@@ -193,7 +197,7 @@ void cdrawTimerTest()
 	// system: step
 	// timer: multi step
 	printf("\n //// SYS: step //// TIMER: mult ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = -dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "step-mult";
@@ -206,7 +210,7 @@ void cdrawTimerTest()
 	// system: clip
 	// timer: big step
 	printf("\n //// SYS: clip //// TIMER: step ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = -dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "clip-step";
@@ -219,7 +223,7 @@ void cdrawTimerTest()
 	// system: clip
 	// timer: clip step
 	printf("\n //// SYS: clip //// TIMER: clip ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = -dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "clip-clip";
@@ -232,7 +236,7 @@ void cdrawTimerTest()
 	// system: clip
 	// timer: multi step
 	printf("\n //// SYS: clip //// TIMER: mult ////");
-	cdrawTimerSet(timer, timerSys, rate);
+	cdrawTimerParentSet(timer, timerSys, rate);
 	dur = -dur_s * timer->state.cps;
 	test.count = 0;
 	test.label = "clip-mult";
@@ -246,8 +250,8 @@ void cdrawTimerTest()
 	printf("\n\n //////// LAYERED //////// \n");
 	{
 		cdrawTimer other[1];
-		cdrawTimerSet(timer, timerSys, rate);
-		cdrawTimerSet(other, timer, 24);
+		cdrawTimerParentSet(timer, timerSys, rate);
+		cdrawTimerParentSet(other, timer, 24);
 		dur = 5 * timer->state.cps;
 		while (timer->t_track < dur)
 		{

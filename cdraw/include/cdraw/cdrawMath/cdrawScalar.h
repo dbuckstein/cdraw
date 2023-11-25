@@ -175,9 +175,6 @@ cdraw_scalar_const(sc360, 360.0);
 #endif // #if CDRAW_USING_SCALAR_PREF
 
 
-#define gSq(x)								((x) * (x))																					// Compute general square of input.
-#define gMad(x0,dx,u)						((x0) + (dx) * (u))																			// Compute general multiply-add.
-#define gLerp(x0,x1,u)						((x0) + ((x1) - (x0)) * u)																	// Compute general linear interpolation.
 #define gDiv(x_num,x_den)					((x_num) / (x_den))																			// Compute general quotient.
 #define gMod(x_num,x_den)					((x_num) % (x_den))																			// Compute general modulo.
 #define gModF(x_num,x_den)					((x_num) - (x_den) * floorf(gDiv(x_num, x_den)))											// Compute general modulo for single-precision float.

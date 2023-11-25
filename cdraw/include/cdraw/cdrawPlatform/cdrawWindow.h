@@ -23,6 +23,7 @@
 #define _CDRAW_WINDOW_H_
 
 #include "cdrawPlugin.h"
+#include "cdrawRenderer.h"
 
 /******************************************************************************
 * Public interfaces.
@@ -102,7 +103,7 @@ extern "C" {
 	/// <param name="p_handle_out">Pointer to unused handle.</param>
 	/// <param name="instanceName">Name of application instance to track.</param>
 	/// <param name="index_out_opt">Optional pointer to store index of this instance.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawApplicationStartSingleInstance(ptr_t* const p_handle_out, label_t const instanceName, int32_t* const index_out_opt);
 
 	/// <summary>
@@ -110,7 +111,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="p_handle">Pointer to handle initialized with start function.</param>
 	/// <param name="available_out_opt">Optional pointer to store remaining available instances.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawApplicationStopSingleInstance(ptr_t* const p_handle, uint32_t* const available_out_opt);
 
 	/// <summary>
@@ -120,7 +121,7 @@ extern "C" {
 	/// <param name="instanceName">Name of application instance to track.</param>
 	/// <param name="limit">Maximum instance count.</param>
 	/// <param name="index_out_opt">Optional pointer to store index of this instance.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawApplicationStartMultipleInstance(ptr_t* const p_handle_out, label_t const instanceName, uint32_t const limit, int32_t* const index_out_opt);
 
 	/// <summary>
@@ -128,7 +129,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="p_handle">Pointer to handle initialized with start function.</param>
 	/// <param name="available_out_opt">Optional pointer to store remaining available instances.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawApplicationStopMultipleInstance(ptr_t* const p_handle, uint32_t* const available_out_opt);
 
 	/// <summary>
@@ -143,37 +144,47 @@ extern "C" {
 	/// <param name="fullScreen">Option to start in full-screen.</param>
 	/// <param name="control">Set of window control options.</param>
 	/// <param name="data_opt">Optional platform data.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawWindowCreate(cdrawWindow* const window, label_t const windowName, int16_t const windowPosX, int16_t const windowPosY, int16_t const windowSzW, int16_t const windowSzH, bool const fullScreen, cdrawWindowControl const control, ptr_t const data_opt);
 
 	/// <summary>
 	/// Destroy and release a window.
 	/// </summary>
 	/// <param name="window">Target window.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
-	result_t cdrawWindowRelease(cdrawWindow* const window);
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawWindowDestroy(cdrawWindow* const window);
 
 	/// <summary>
 	/// Enter a window's main loop to handle events.
 	/// </summary>
+	/// <param name="window_opt">Optional target window to track; if not included, tracks all windows.</param>
 	/// <param name="data_opt">Optional platform data.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
-	result_t cdrawWindowLoop(ptr_t const data_opt);
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawWindowLoop(cdrawWindow* const window_opt, ptr_t const data_opt);
 
 	/// <summary>
 	/// Attach plugin to window for automated event processing.
 	/// </summary>
 	/// <param name="window">Target window.</param>
-	/// <param name="plugin">Plugin to attach.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
+	/// <param name="plugin">Plugin to attach to window.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawWindowPluginAttach(cdrawWindow* const window, cdrawPlugin* const plugin);
 
 	/// <summary>
 	/// Detach current (if any) plugin from window.
 	/// </summary>
 	/// <param name="window">Target window.</param>
-	/// <returns>Zero if success; error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawWindowPluginDetach(cdrawWindow* const window);
+
+	/// <summary>
+	/// Attach window to renderer.
+	/// </summary>
+	/// <param name="window">Target window.</param>
+	/// <param name="renderer">Renderer to which window is attached.</param>
+	/// <param name="windowIndex">Index of window in renderer's management.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawWindowAttachToRenderer(cdrawWindow const* const window, cdrawRenderer const* const renderer, uint32_t const windowIndex);
 
 
 #ifdef __cplusplus

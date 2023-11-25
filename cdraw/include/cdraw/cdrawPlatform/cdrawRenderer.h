@@ -22,11 +22,18 @@
 #ifndef _CDRAW_RENDERER_H_
 #define _CDRAW_RENDERER_H_
 
-#include "cdrawWindow.h"
+#include "cdraw/cdraw/cdrawConfig.h"
 
 /******************************************************************************
 * Public interfaces.
 ******************************************************************************/
+
+enum
+{
+	errcode_renderer_init = errcode_CUSTOM_BEGIN,	// Failure with initialization.
+	errcode_renderer_api,							// Failure with API call.
+};
+
 
 /// <summary>
 /// Rendering API choices.
@@ -41,20 +48,49 @@ typedef enum cdrawRenderAPI
 	cdrawRenderAPI_Metal,		// Modern Metal renderer (Apple native).
 } cdrawRenderAPI;
 
+/// <summary>
+/// API-specific renderer handle.
+/// </summary>
+typedef ptr_t cdrawRendererHandle;
 
 /// <summary>
-/// Portable renderer handle.
+/// Generic renderer function.
+/// </summary>
+typedef result_t(*cdrawRendererFunc)(cdrawRendererHandle r, ...);
+
+/// <summary>
+/// Renderer-specific functions, set on initialization.
+/// The purpose of this "object-oriented" approach is to avoid having a switch wrapper for every single real-time method.
+/// The only methods that should be publicly fixed are those around creation or destruction, or non-real-time events.
+/// Anything that operates on overall renderer should pass its 'r' handle as the first argument.
+/// Individual renderer components will work similarly, taking the component's respective handle as the second argument.
+/// </summary>
+typedef struct cdrawRendererFuncTable {
+	cdrawRendererFunc cdrawRendererPrint;
+	cdrawRendererFunc cdrawRendererBeginDraw;
+	cdrawRendererFunc cdrawRendererEndDraw;
+	cdrawRendererFunc cdrawRendererDisplay;
+	cdrawRendererFunc cdrawRendererResize;
+	cdrawRendererFunc cdrawRendererAttachWindow;
+	cdrawRendererFunc cdrawRendererDetachWindow;
+	cdrawRendererFunc cdrawRendererWindowsSupported;
+} cdrawRendererFuncTable;
+
+/// <summary>
+/// Portable renderer object.
 /// </summary>
 typedef struct cdrawRenderer
 {
 	/// <summary>
-	/// Selected API renderer data.
+	/// Selected API internal renderer data for specific platform.
 	/// </summary>
-	ptr_t p_renderer;
+	cdrawRendererHandle r;
+
 	/// <summary>
-	/// Selected API renderer data for specific platform.
+	/// Function table.
 	/// </summary>
-	ptr_t p_renderer_platform;
+	cdrawRendererFuncTable const* f;
+	
 	/// <summary>
 	/// Selected rendering API.
 	/// </summary>
@@ -70,11 +106,110 @@ typedef struct cdrawRenderer
 extern "C" {
 #endif // #ifdef __cplusplus
 
+	/// <summary>
+	/// Create and initialize internal resources for renderer of selected API.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="renderAPI">Desired rendering API (must be supported on local platform).</param>
+	/// <param name="windowsAllowed">Desired number of windows to be allowed (must be less than maximum).</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, uint32_t const windowsAllowed);
+
+	/// <summary>
+	/// Release renderer by cleaning up and destroying all of its internal resources.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererDestroy(cdrawRenderer* const renderer);
+
+	/// <summary>
+	/// Refresh global renderer settings, namely function pointers.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererRefresh(cdrawRenderer const* const renderer);
+
+	/// <summary>
+	/// Refresh global renderer settings for API, namely function pointers.
+	/// </summary>
+	/// <param name="renderAPI">Target render API.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererRefreshAPI(cdrawRenderAPI const renderAPI);
+
+	/// <summary>
+	/// Print high-level information about renderer.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererPrint(cdrawRenderer const* const renderer);
+
+	/// <summary>
+	/// Begin drawing for target window.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="windowIndex">Index of managed window.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererBeginDraw(cdrawRenderer const* const renderer, uint32_t const windowIndex);
+
+	/// <summary>
+	/// End drawing for target window.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="windowIndex">Index of managed window.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererEndDraw(cdrawRenderer const* const renderer, uint32_t const windowIndex);
+
+	/// <summary>
+	/// Invoke renderer display.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererDisplay(cdrawRenderer const* const renderer);
+
+	/// <summary>
+	/// Invoke renderer resize; should destroy framebuffers before this and recreate them afterwards.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="windowIndex">Index of window managed window.</param>
+	/// <param name="w_old">Old display width.</param>
+	/// <param name="h_old">Old display height.</param>
+	/// <param name="w_new">New display width.</param>
+	/// <param name="h_new">New display height</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererResize(cdrawRenderer const* const renderer, uint32_t const windowIndex, uint32_t const w_old, uint32_t const h_old, uint32_t const w_new, uint32_t const h_new);
+
+	/// <summary>
+	/// Invoke renderer attach window (check index against limit).
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="windowIndex">Index of window to attach and manage.</param>
+	/// <param name="p_data">Pointer to platform data.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererAttachWindow(cdrawRenderer const* const renderer, uint32_t const windowIndex, ptrk_t const p_data);
+
+	/// <summary>
+	/// Invoke renderer detach window (check index against limit).
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="windowIndex">Index of window to detach.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererDetachWindow(cdrawRenderer const* const renderer, uint32_t const windowIndex);
+
+	/// <summary>
+	/// Invoke renderer check window support count.
+	/// </summary>
+	/// <param name="renderer">Target renderer.</param>
+	/// <param name="count_out">Pointer to store window support count.</param>
+	/// <returns>Zero if success; Error code otherwise.</returns>
+	result_t cdrawRendererWindowsSupported(cdrawRenderer const* const renderer, uint32_t* const count_out);
 
 
 #ifdef __cplusplus
 }
 #endif // #ifdef __cplusplus
+
+
+#include "_inl/cdrawRenderer.inl"
 
 
 #endif // #ifndef _CDRAW_RENDERER_H_

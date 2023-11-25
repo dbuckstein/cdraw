@@ -142,6 +142,21 @@ typedef uint64_t							qword_t;	// Quad-word type (8 bytes).
 #define uint16_invalid						UINT16_MAX	// Global value representing invalid 16-bit unsigned integer.
 #define uint32_invalid						UINT32_MAX	// Global value representing invalid 32-bit unsigned integer.
 #define uint64_invalid						UINT64_MAX	// Global value representing invalid 64-bit unsigned integer.
+#define fp_invalid							NAN			// Global value representing invalid floating point number (NaN).
+#define ptr_invalid							NULL		// Global value representing invalid pointer.
+#define cstr_invalid						""			// Global value representing invalid non-null c-style string (also invalid if null).
+
+#define int8_valid(x)						((x)!=int8_invalid)								// True if value is not invalid constant.
+#define int16_valid(x)						((x)!=int16_invalid)							// True if value is not invalid constant.
+#define int32_valid(x)						((x)!=int32_invalid)							// True if value is not invalid constant.
+#define int64_valid(x)						((x)!=int64_invalid)							// True if value is not invalid constant.
+#define uint8_valid(x)						((x)!=uint8_invalid)							// True if value is not invalid constant.
+#define uint16_valid(x)						((x)!=uint16_invalid)							// True if value is not invalid constant.
+#define uint32_valid(x)						((x)!=uint32_invalid)							// True if value is not invalid constant.
+#define uint64_valid(x)						((x)!=uint64_invalid)							// True if value is not invalid constant.
+#define fp_valid(x)							(!isnan(x))										// True if value is not NaN.
+#define ptr_valid(x)						((x)!=ptr_invalid)								// True if pointer is initialized.
+#define cstr_valid(x)						(ptr_valid(x)&&(*(x)>0x00i8)&&(*(x)<=0x7Fi8))	// True if pointer is initialized and first character is non-terminating and within standard ASCII range.
 
 
 typedef uint32_t							bitflag_t[8];												// Convenient storage type for 256 bits.
@@ -187,7 +202,7 @@ typedef enum errcode_common_t
 #define result_getwarn(result,warncode)		flagcheck(result_getwarns(result), (1<<(warncode&0xF)))	// Get specific warning code (bit) from result.
 
 
-#define buffer_valid(x)						((x)!=NULL&&*(x)!=0)									// True if pointer is initialized and value it points to is non-zero.
+#define buffer_valid(x)						(ptr_valid(x)&&*(x)!=0)									// True if pointer is initialized and value it points to is non-zero.
 #define buffer_len(x)						(sizeof(x) / sizeof(*(x)))								// Calculate number of elements in buffer (note: does not work on raw pointers).
 #define buffer_init1(dst,offset,type)		(((type*)(dst))[offset]=(type)0)						// Initialize single value in buffer to zero.
 #define buffer_copy1(dst,src,offset,type)	(((type*)(dst))[offset]=((type const*)(src))[offset])	// Copy single value in buffer.
@@ -197,21 +212,32 @@ typedef enum errcode_common_t
 
 #define label_base_type						uint64_t															// Basis type of label type.
 typedef byte_t								label_t[sizeof(label_base_type)*4];									// Convenient label type for predefined small strings or tags.
-typedef byte_t								label_long_t[sizeof(label_t)*4];									// Convenient long label type for predefined longer strings or tags.
-#define label_valid(label)					buffer_valid(label)													// True if label string has contents.
-#define label_term(label)					(label[sizeof(label_t)-1]=0)										// Terminate label string.
-#define label_init(label)					buffer_init4(label,0,label_base_type)								// Initialize label string to empty.
-#define label_copy(dst,src)					buffer_copy4(dst,src,0,label_base_type);label_term(dst)				// Copy and terminate label string.
-#define label_long_term(label_long)			(label_long[sizeof(label_long_t)-1]=0)								// Terminate long label string.
-#define label_long_init(label_long)			buffer_init4(label_long,0,label_t)									// Initialize long label string to empty.
-#define label_long_copy(dst,src)			buffer_copy4(dst,src,0,label_t);label_long_term(dst)				// Copy and terminate long label string.
+#define label_valid(label)					cstr_valid(label)													// True if label string has contents.
+#define label_term(label)					{ label[sizeof(label_t)-1] = 0; }									// Terminate label string.
+#define label_init(label)					{ buffer_init4(label,0,label_base_type); }							// Initialize label string to empty.
+#define label_copy(dst,src)					{ buffer_copy4(dst,src,0,label_base_type); label_term(dst); }		// Copy and terminate label string.
+#define label_copy_safe(dst,src)			if (label_valid(src)) label_copy(dst,src) else label_init(dst)		// Copy and terminate label string if string is valid, otherwise just init.
+
+typedef byte_t								label_long_t[sizeof(label_t) * 4];									// Convenient long label type for predefined longer strings or tags.
+#define label_long_valid(label_long)		label_valid(label_long)												// True if label string has contents.
+#define label_long_term(label_long)			{ label_long[sizeof(label_long_t)-1] = 0; }							// Terminate long label string.
+#define label_long_init(label_long)			{ buffer_init4(label_long,0,label_base_type); buffer_init4(label_long,4,label_base_type); buffer_init4(label_long,8,label_base_type); buffer_init4(label_long,12,label_base_type); }			// Initialize long label string to empty.
+#define label_long_copy(dst,src)			{ buffer_copy4(dst,src,0,label_base_type); buffer_copy4(dst,src,4,label_base_type); buffer_copy4(dst,src,8,label_base_type); buffer_copy4(dst,src,12,label_base_type); label_long_term(dst); }	// Copy and terminate long label string.
+#define label_long_copy_safe(dst,src)		if (label_long_valid(src)) label_long_copy(dst,src) else label_long_init(dst)																													// Copy and terminate label string if string is valid, otherwise just init.
 
 
-#define swap2(x,y,tmp)						(tmp=x);(x=y);(y=tmp)				// Swap two values.
-#define swap3(x,y,z,tmp)					(tmp=x);(x=y);(y=z);(z=tmp)			// Swap three values.
-#define swap3r(x,y,z,tmp)					(tmp=x);(x=z);(z=y);(y=tmp)			// Swap three values (alt).
-#define swap4(x,y,z,w,tmp)					(tmp=x);(x=y);(y=z);(z=w);(w=tmp)	// Swap four values.
-#define swap4r(x,y,z,w,tmp)					(tmp=x);(x=w);(w=z);(z=y);(y=tmp)	// Swap four values (alt).
+#define gSq(x)								((x)*(x))											// General square of input.
+#define gMad(x0,dx,u)						((x0)+(dx)*(u))										// General multiply-add.
+#define gLerp(x0,x1,u)						((x0)+((x1)-(x0))*u)								// General linear interpolation.
+#define gClamp(x,x_min,x_max)				((x)>=(x_min)?(x)<(x_max)?(x):(x_max):(x_min))		// General clamp in range.
+#define gRange(x,x_min,x_max)				((x)>=(x_min)&&(x)<(x_max))							// General range validation (semi-open range).
+#define gCount(x,n)							((x)>0&&(x)<=(n))									// General count validation (semi-open range).
+#define gIndex(x,n)							gRange(x,0,n)										// General index validation (semi-open range).
+#define gSwap(x,y,tmp)						(tmp=x);(x=y);(y=tmp)								// Swap two values.
+#define gSwap3(x,y,z,tmp)					(tmp=x);(x=y);(y=z);(z=tmp)							// Swap three values.
+#define gSwap3r(x,y,z,tmp)					(tmp=x);(x=z);(z=y);(y=tmp)							// Swap three values (alt).
+#define gSwap4(x,y,z,w,tmp)					(tmp=x);(x=y);(y=z);(z=w);(w=tmp)					// Swap four values.
+#define gSwap4r(x,y,z,w,tmp)				(tmp=x);(x=w);(w=z);(z=y);(y=tmp)					// Swap four values (alt).
 
 
 /******************************************************************************
@@ -237,12 +263,12 @@ extern "C" {
 #define failassertret(condition,...)		cdraw_assert(condition); failret(condition, __VA_ARGS__)									// Assert and/or return variadic argument if condition fails.
 #define failassertreset()
 #endif // #else // #if (defined CDRAW_ASSERT_TEST)
-#define asserterr(condition,errcode)		cdraw_assert(condition); failret(condition, result_seterror(errcode))						// Assert and/or return error result if condition fails.
-#define asserterr_rng(x,xmin,xmax,errcode)	asserterr((x)>=(xmin)&&(x)<=(xmax), errcode)												// Assert and/or return error result if value is not in range.
-#define asserterr_ptr(ptr,errcode)			asserterr((ptr)!=NULL, errcode)																// Assert and/or return error result if pointer is not initialized.
-#define asserterr_ptrval(ptr,errcode)		asserterr(buffer_valid(ptr), errcode)														// Assert and/or return error result if pointer or its value is not initialized.
-#define asserterr_cstr(cstr,errcode)		asserterr(label_valid(cstr), errcode)														// Assert and/or return error result if c-style string is not initialized.
-#define asserterr_count(x,count,errcode)	asserterr_rng(x, 0, count, errcode)															// Assert and/or return error result if value is negative or exceeds count.
+#define asserterr(condition,errcode)			cdraw_assert(condition); failret(condition, result_seterror(errcode))					// Assert and/or return error result if condition fails.
+#define asserterr_ptr(ptr,errcode)				asserterr(ptr_valid(ptr), errcode)														// Assert and/or return error result if pointer is not initialized.
+#define asserterr_ptrval(ptr,errcode)			asserterr(buffer_valid(ptr), errcode)													// Assert and/or return error result if pointer or its value is not initialized.
+#define asserterr_cstr(cstr,errcode)			asserterr(label_valid(cstr), errcode)													// Assert and/or return error result if c-style string is not initialized.
+#define asserterr_range(x,x_min,x_max,errcode)	asserterr(gRange(x,x_min,x_max), errcode)												// Assert and/or return error result if value is not in range.
+#define asserterr_index(x,n,errcode)			asserterr(gIndex(x,n), errcode)															// Assert and/or return error result if value is negative or exceeds count.
 
 
 #define cdraw_istrue(tolerance_unused,expect_unused,result)		(!!result)																// Definition of true result test.

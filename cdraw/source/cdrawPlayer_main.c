@@ -28,13 +28,15 @@ result_t cdrawPlayer_main(cstrk_t const cmd, ptr_t const data_opt)
 	ptr_t appHandle = NULL;
 	int32_t appCount = -1;
 	cdrawWindow window = { 0 };
-	cdrawWindowControl const control = (cdrawWindowControl_all & ~(cdrawWindowControl_cursor_hide | cdrawWindowControl_cursor_lock | cdrawWindowControl_active_unfocused));
+	cdrawWindowControl const control = (cdrawWindowControl_all
+		//& ~(cdrawWindowControl_active_unfocused)
+		& ~(cdrawWindowControl_cursor_hide | cdrawWindowControl_cursor_lock));
 	cdrawApplicationStartSingleInstance(&appHandle, "cdraw Player Application", &appCount);
 	cdrawConsoleCreate();
 	cdrawWindowCreate(&window, "cdraw Player", 0, 0, 1280, 720, false, control, data_opt);
-	cdrawWindowLoop(data_opt);
-	cdrawWindowRelease(&window);
-	cdrawConsoleRelease();
+	cdrawWindowLoop(&window, data_opt);
+	cdrawWindowDestroy(&window);
+	cdrawConsoleDestroy();
 	cdrawApplicationStopSingleInstance(&appHandle, &appCount);
 	result_return();
 }

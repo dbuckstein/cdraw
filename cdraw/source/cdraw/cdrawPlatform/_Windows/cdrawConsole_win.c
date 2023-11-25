@@ -203,7 +203,7 @@ result_t cdrawConsoleCreate()
 	result_return();
 }
 
-result_t cdrawConsoleRelease()
+result_t cdrawConsoleDestroy()
 {
 	result_init();
 

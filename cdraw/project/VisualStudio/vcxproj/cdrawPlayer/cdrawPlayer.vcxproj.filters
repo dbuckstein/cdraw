@@ -28,13 +28,16 @@
     <Filter Include="Resource Files\_Windows\icon">
       <UniqueIdentifier>{734d3d11-71a5-40e3-937a-4933833abebb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\_Windows\proj">
+      <UniqueIdentifier>{457174d8-20f9-406e-bd07-cb1808d5a8ca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="_Windows\cdrawPlayer_WinMain.c">
+    <ClCompile Include="_Windows\source\cdrawPlayer_WinMain.c">
       <Filter>Source Files\_Windows</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\..\source\cdrawPlayer_main.c">
-      <Filter>Source Files\common</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -48,13 +51,13 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="cdrawPlayer.rc">
-      <Filter>Resource Files\_Windows</Filter>
+    <ResourceCompile Include="_Windows\resource\proj\cdrawPlayer.rc">
+      <Filter>Resource Files\_Windows\proj</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="cdrawPlayer.rc.h">
-      <Filter>Resource Files\_Windows</Filter>
+    <ClInclude Include="_Windows\resource\proj\cdrawPlayer.rc.h">
+      <Filter>Resource Files\_Windows\proj</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

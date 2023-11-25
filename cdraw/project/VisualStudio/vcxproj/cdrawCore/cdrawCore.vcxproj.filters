@@ -16,10 +16,24 @@
     <Filter Include="Source Files\common">
       <UniqueIdentifier>{ad74d58b-8971-47d1-ba2b-900ab89f67ae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\cdrawCore">
+      <UniqueIdentifier>{d5538783-614a-4127-97a3-bbbb347fdd43}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawCore.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawCore\common\cdrawUtility.c">
+      <Filter>Source Files\common</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawCore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\include\cdraw\cdrawCore\cdrawUtility.h">
+      <Filter>Header Files\cdrawCore</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

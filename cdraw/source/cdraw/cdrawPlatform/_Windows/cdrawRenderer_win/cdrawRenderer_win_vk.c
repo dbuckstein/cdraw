@@ -19,17 +19,22 @@
 * Windows implementation of modern Vulkan renderer management.
 */
 
-#include "cdraw/cdrawPlatform/cdrawRenderer.h"
-#if CDRAW_TARGET_WINDOWS
-#include <Windows.h>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+/*
+*	Download and install Vulkan SDK for current platform: 
+*		-> https://vulkan.lunarg.com/sdk/home#windows 
+*		-> Environment variables: VK_SDK_PATH & VULKAN_SDK
+* 
+*	Primary references (chapters cited):
+*		Graham Sellers, "Vulkan Programming Guide"
+*		Parminder Singh, "Learning Vulkan"
+*		Pawel Lapinski, "Vulkan Cookbook"
+*/
 
 #define VK_USE_PLATFORM_WIN32_KHR
-#include "vulkan/vulkan.h"
-
+#include "cdraw/cdrawPlatform/cdrawRenderer.h"
+#include "../../common/cdrawRenderer/cdrawRenderer_vk/_h/cdrawRenderer_vk.h"
+#if CDRAW_TARGET_WINDOWS
+#include <Windows.h>
 
 
 #endif // #if !CDRAW_TARGET_WINDOWS

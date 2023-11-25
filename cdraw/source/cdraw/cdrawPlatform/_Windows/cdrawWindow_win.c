@@ -44,12 +44,14 @@ static const label_long_t gKeyAlt = "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\
 typedef struct cdrawWindow_win
 {
 	struct {
+		HINSTANCE hInst;			// Internal instance handle.
 		HWND hWnd;					// Internal window handle.
 		HDC hDC;					// Internal device context handle.
 	};
 	RECT restoreArea;				// Non-full-screen area.
 	BOOL buildState;				// Hot-build tracker.
 	BOOL mouseState;				// Mouse hovering tracker.
+	BOOL activeState;				// Activation state.
 	TRACKMOUSEEVENT mouseTrack;		// Mouse tracking for entering/exiting window.
 	ptrk_t pluginOwner;				// Original owner of plugin if we have one attached externally.
 	cdrawPlugin pluginDebug;		// Debug plugin instance.
@@ -743,11 +745,14 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 			cdraw_window_valid();
 
 			memset(p_window, 0, sizeof(cdrawWindow_win));
+			p_window->hInst = gWindowPlatform.info.hInstance;
 			p_window->hWnd = hWnd;
 			p_window->hDC = GetDC(hWnd);
 			p_window->mouseTrack.cbSize = sizeof(p_window->mouseTrack);
 			p_window->mouseTrack.hwndTrack = hWnd;
 			p_window->mouseTrack.dwFlags = (TME_LEAVE);
+			cdraw_assert(p_window->hInst && p_window->hWnd && p_window->hDC);
+
 			TrackMouseEvent(&p_window->mouseTrack);
 			SetWindowLongPtrA(hWnd, GWLP_USERDATA, (LONG_PTR)window);
 			++gWindowPlatform.windowCount;
@@ -768,15 +773,8 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 		// WINDOW DESTROYED - would clean up rendering here
 	case WM_DESTROY: {
 		cdraw_window_valid();
-		if (cdraw_window_ownsplugin())
-		{
-			if (result_isclean(cdrawPluginUnload(window->p_plugin, p_window)))
-			{
-				window->p_plugin = NULL;
-				p_window->pluginOwner = NULL;
-			}
-		}
-
+		SendMessageA(hWnd, cdrawWinCtrlMsg_unload, wParam, lParam);
+		
 		ReleaseDC(hWnd, p_window->hDC);
 		free(p_window);
 		p_window = NULL;
@@ -866,6 +864,7 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 	case WM_ACTIVATE: {
 		word_t const value = LOWORD(wParam);
 		cdraw_window_valid();
+		p_window->activeState = value;
 		switch (value)
 		{
 		case WA_ACTIVE:
@@ -1110,6 +1109,8 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 				window->p_plugin = &p_window->pluginDebug;
 				p_window->pluginOwner = p_window;
 				cdrawPluginCallOnWindowAttach(window->p_plugin, p_window, window->sz_w, window->sz_h, window->pos_x, window->pos_y, p_window);
+				if (p_window->activeState || (window->control & cdrawWindowControl_active_unfocused))
+					cdrawPluginCallOnWindowActivate(window->p_plugin, p_window, p_window);
 			}
 		}
 	}	break;
@@ -1140,8 +1141,14 @@ static LRESULT __stdcall cdrawWindowInternalEvent_win(HWND hWnd, UINT message, W
 			if (cdraw_window_ownsplugin())
 			{
 				window->p_plugin->id = INT_MAX;
+				cdrawPluginCallOnWindowDeactivate(window->p_plugin, p_window, p_window);
+				cdrawPluginCallOnWindowDetach(window->p_plugin, p_window, p_window);
 				if (result_isclean(cdrawPluginUnload(window->p_plugin, p_window)))
 				{
+					// clear window
+					RedrawWindow(hWnd, NULL, NULL, (RDW_ERASE | RDW_INVALIDATE | RDW_INTERNALPAINT));
+
+					// reset
 					window->p_plugin = NULL;
 					p_window->pluginOwner = NULL;
 				}
@@ -1333,7 +1340,7 @@ static result_t cdrawApplicationInternalStartSingleInstance(ptr_t* const handle_
 
 	// create mutex handle
 	ptr_t const handle = CreateMutexA(0, TRUE, instanceName);
-	failassertret(handle, errcode_window_init);
+	asserterr_ptr(handle, errcode_window_init);
 
 	// check if instance exists
 	dword_t status = GetLastError();
@@ -1399,7 +1406,7 @@ result_t cdrawApplicationStopSingleInstance(ptr_t* const p_handle, uint32_t* con
 	bool released;
 	released = ReleaseMutex(*p_handle);
 	released = released && CloseHandle(*p_handle);
-	failret(released, errcode_window_init);
+	failret(released, result_seterror(errcode_window_init));
 
 	// update count
 	if (available_out_opt)
@@ -1421,7 +1428,7 @@ result_t cdrawApplicationStartMultipleInstance(ptr_t* const p_handle_out, label_
 
 	// create semaphore handle, max count (signaled)
 	ptr_t const handle = CreateSemaphoreA(0, limit, limit, instanceName);
-	failassertret(handle, errcode_window_init);
+	asserterr_ptr(handle, errcode_window_init);
 
 	dword_t status = GetLastError();
 
@@ -1432,7 +1439,7 @@ result_t cdrawApplicationStartMultipleInstance(ptr_t* const p_handle_out, label_
 	if (!signaled)
 	{
 		status = CloseHandle(handle);
-		failret(signaled, errcode_window_init);
+		failret(signaled, result_seterror(errcode_window_init));
 	}
 
 	// check if waited too long for new instance
@@ -1488,7 +1495,7 @@ result_t cdrawApplicationStopMultipleInstance(ptr_t* const p_handle, uint32_t* c
 	bool released;
 	released = ReleaseSemaphore(*p_handle, 1, available_out_opt);
 	released = released && CloseHandle(*p_handle);
-	failret(released, errcode_window_init);
+	failret(released, result_seterror(errcode_window_init));
 
 	// update count
 	if (available_out_opt)
@@ -1524,7 +1531,7 @@ result_t cdrawWindowCreate(cdrawWindow* const window, label_t const windowName, 
 
 	if (gWindowPlatform.windowCount == 0)
 		cdrawWindowInternalInfoCreate_win();
-	failret(cdrawWindowInternalInfoReady_win(), errcode_window_init);
+	failret(cdrawWindowInternalInfoReady_win(), result_seterror(errcode_window_init));
 
 	handle = CreateWindowExA(
 		styleEx, gWindowPlatform.info.lpszClassName, windowName, style,
@@ -1538,7 +1545,7 @@ result_t cdrawWindowCreate(cdrawWindow* const window, label_t const windowName, 
 	}
 	if (gWindowPlatform.windowCount == 0)
 		cdrawWindowInternalInfoRelease_win();
-	failret(handle, errcode_window_init);
+	failret(handle, result_seterror(errcode_window_init));
 
 	ShowCursor(!hideCursor);
 	ShowWindow(handle, showWindow);
@@ -1554,21 +1561,21 @@ result_t cdrawWindowCreate(cdrawWindow* const window, label_t const windowName, 
 	result_return();
 }
 
-result_t cdrawWindowRelease(cdrawWindow* const window)
+result_t cdrawWindowDestroy(cdrawWindow* const window)
 {
 	result_init();
 	asserterr(window, errcode_invalidarg);
 	if (p_window)
 	{
 		BOOL const destroyed = DestroyWindow(p_window->hWnd);
-		failret(destroyed, errcode_window_init);
+		failret(destroyed, result_seterror(errcode_window_init));
 	}
 	if (gWindowPlatform.windowCount == 0)
 		cdrawWindowInternalInfoRelease_win();
 	result_return();
 }
 
-result_t cdrawWindowLoop(ptr_t const data_opt)
+result_t cdrawWindowLoop(cdrawWindow* const window_opt, ptr_t const data_opt)
 {
 	// default data if not entered loop
 	if (data_opt)
@@ -1602,7 +1609,8 @@ result_t cdrawWindowLoop(ptr_t const data_opt)
 		// if no message, idle
 		else
 		{
-			window = msg.hwnd ? (cdrawWindow*)GetWindowLongPtrA(msg.hwnd, GWLP_USERDATA) : NULL;
+			// select window
+			window = msg.hwnd ? (cdrawWindow*)GetWindowLongPtrA(msg.hwnd, GWLP_USERDATA) : window_opt;
 
 			// idle callback
 			if (window && cdraw_window_cancallback())
@@ -1648,7 +1656,7 @@ result_t cdrawWindowPluginAttach(cdrawWindow* const window, cdrawPlugin* const p
 	result_init();
 	asserterr(window && p_window, errcode_invalidarg);
 	asserterr(plugin && plugin->p_handle, errcode_invalidarg);
-	failret(!window->p_plugin, errcode_window_init);
+	failret(!window->p_plugin, result_seterror(errcode_window_init));
 	window->p_plugin = plugin;
 	p_window->pluginOwner = plugin->p_owner;
 	cdraw_window_callback(cdrawPluginCallOnWindowAttach, window->sz_w, window->sz_h, window->pos_x, window->pos_y, p_window);
@@ -1659,10 +1667,19 @@ result_t cdrawWindowPluginDetach(cdrawWindow* const window)
 {
 	result_init();
 	asserterr(window && p_window, errcode_invalidarg);
-	failret(!cdraw_window_ownsplugin(), errcode_window_init);
+	failret(!cdraw_window_ownsplugin(), result_seterror(errcode_window_init));
 	cdraw_window_callback(cdrawPluginCallOnWindowDetach, p_window);
 	window->p_plugin = NULL;
 	p_window->pluginOwner = NULL;
+	result_return();
+}
+
+result_t cdrawWindowAttachToRenderer(cdrawWindow const* const window, cdrawRenderer const* const renderer, uint32_t const windowIndex)
+{
+	result_init();
+	asserterr(window && p_window, errcode_invalidarg);
+	asserterr(renderer && renderer->r, errcode_invalidarg);
+	result_inc(cdrawRendererAttachWindow(renderer, windowIndex, p_window));
 	result_return();
 }
 

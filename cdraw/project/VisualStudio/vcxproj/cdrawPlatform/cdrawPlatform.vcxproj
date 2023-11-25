@@ -188,6 +188,13 @@
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_gl.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_sw.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererDebug_vk.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererDevice_vk.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererFramebuffer_vk.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererImage_vk.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererInstance_vk.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererMemory_vk.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\cdrawRendererPresentation_vk.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawTimer.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawConsole_win.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawPlugin_win.c" />
@@ -196,6 +203,7 @@
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_gl.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_sw.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_vk.c" />
+    <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawRenderer_win\cdrawRenderer_win_vk\cdrawRendererPresentation_win_vk.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawTimer_win.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawWindow_win.c" />
     <ClCompile Include="..\..\..\..\source\cdraw\cdrawPlatform\_Windows\cdrawWindow_win_pdb.c" />
@@ -208,6 +216,17 @@
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawRenderer.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawTimer.h" />
     <ClInclude Include="..\..\..\..\include\cdraw\cdrawPlatform\cdrawWindow.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererDebug_vk.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererDevice_vk.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererFramebuffer_vk.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererImage_vk.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererInstance_vk.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererMemory_vk.h" />
+    <ClInclude Include="..\..\..\..\source\cdraw\cdrawPlatform\common\cdrawRenderer\cdrawRenderer_vk\_h\cdrawRenderer_vk\cdrawRendererPresentation_vk.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\include\cdraw\cdrawPlatform\_inl\cdrawRenderer.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -20,6 +20,7 @@
 */
 
 #include "cdraw/cdrawPlatform/cdrawTimer.h"
+#include "cdraw/cdrawCore/cdrawUtility.h"
 
 
 /******************************************************************************
@@ -94,40 +95,6 @@ CDRAW_INL result_t cdrawTimerInternalStepMulti(cdrawTimer* const timer, ctime_t 
 	// send back final time
 	*dt_track_out = dt_track;
 	return count;
-}
-
-CDRAW_INL int64_t cdrawTimerInternalReduceRationalGCD(int64_t numerator, int64_t denominator, int64_t* const numerator_out, int64_t* const denominator_out, int64_t* const gcd_out_opt)
-{
-	failassertret(numerator_out && denominator_out, 0);
-
-	int64_t i = 0, r = denominator, n = numerator, d = 0;
-
-	// iterate to find GCD
-	while (r)
-	{
-		d = r;		// previous remainder becomes denominator
-		r = n % d;	// calculate new remainder
-		n = d;		// previous denominator becomes numerator
-	}
-
-	// d now holds the GCD
-	if (d)
-	{
-		// reduce fraction
-		numerator /= d;
-		denominator /= d;
-
-		// calculate integer and remainder
-		i = numerator / denominator;
-		numerator %= denominator;
-	}
-
-	// store final numerator and denominator, return integer
-	*numerator_out = numerator;
-	*denominator_out = denominator;
-	if (gcd_out_opt)
-		*gcd_out_opt = d;
-	return i;
 }
 
 
@@ -206,6 +173,24 @@ result_t cdrawTimerStateGetDeltaTimeRatio(cdrawTimerState const* const timerStat
 	result_return();
 }
 
+result_t cdrawTimerGetSystemFrequency(ctime_t* const cps_out)
+{
+	result_init();
+	asserterr_ptr(cps_out, errcode_invalidarg);
+	bool const result = cdrawTimerInternalSysInit(cps_out);
+	asserterr(result, errcode_timer_sample);
+	result_return();
+}
+
+result_t cdrawTimerGetSystemTime(ctime_t* const t_out)
+{
+	result_init();
+	asserterr_ptr(t_out, errcode_invalidarg);
+	bool const result = cdrawTimerInternalSysStep(t_out);
+	asserterr(result, errcode_timer_sample);
+	result_return();
+}
+
 result_t cdrawTimerInitSystem(cdrawTimer* const timer)
 {
 	result_init();
@@ -216,9 +201,11 @@ result_t cdrawTimerInitSystem(cdrawTimer* const timer)
 	asserterr(result, errcode_timer_sample);
 
 	// set values, considered an "always tick" timer with the exception of a set rate and time tracker
-	timer->state.t1 = timer->state.dtx = timer->state.cps;
-	timer->state.t0 = timer->state.dt = timer->state.t = timer->t_scale = 0;
-	failassert(cdrawTimerStateInternalValidate(&timer->state));
+	timer->state.dtx = timer->state.cps;
+	timer->state.dt = timer->t_scale = 0;
+	timer->state.t0 = timer->state.t = timer->t_track;
+	timer->state.t1 = (timer->state.t0 + timer->state.dtx);
+	failassert(cdrawTimerStateInternalValidateBounds(&timer->state));
 	result_return();
 }
 
@@ -233,7 +220,7 @@ result_t cdrawTimerStepSystem(cdrawTimer* const timer)
 	// always tick, tracking time and delta
 	ctime_t const dt_track = (timer->t_track - timer->state.t);
 	cdrawTimerInternalStepSpecial(timer, dt_track);
-	result_inc(1);
+	result_raisewarn(warncode_timer_ticked);
 	result_return();
 }
 
@@ -248,7 +235,7 @@ result_t cdrawTimerStepSystemClip(cdrawTimer* const timer)
 	// always tick, tracking time and delta
 	ctime_t const dt_track = ((timer->t_track - timer->state.t) % timer->state.cps);
 	cdrawTimerInternalStepSpecial(timer, dt_track);
-	result_inc(1);
+	result_raisewarn(warncode_timer_ticked);
 	result_return();
 }
 
@@ -265,7 +252,7 @@ result_t cdrawTimerStepSystemCallback(cdrawTimer* const timer, cdrawTimerCallbac
 	result_t const callbackResult = callback(callbackArg_opt, &timer->state);
 	if (callbackResult_out_opt)
 		*callbackResult_out_opt = callbackResult;
-	result_inc(1);
+	result_raisewarn(warncode_timer_ticked);
 	result_return();
 }
 
@@ -282,7 +269,7 @@ result_t cdrawTimerStepSystemClipCallback(cdrawTimer* const timer, cdrawTimerCal
 	result_t const callbackResult = callback(callbackArg_opt, &timer->state);
 	if (callbackResult_out_opt)
 		*callbackResult_out_opt = callbackResult;
-	result_inc(1);
+	result_raisewarn(warncode_timer_ticked);
 	result_return();
 }
 
@@ -310,16 +297,15 @@ result_t cdrawTimerStepSystemMultiCallback(cdrawTimer* const timer, result_t* co
 		*callbackResult_out_opt = callbackResult;
 	if (count_out_opt)
 		*count_out_opt = count;
-	result_inc(1);
+	result_raisewarn(warncode_timer_ticked);
 	result_return();
 }
 
-result_t cdrawTimerSet(cdrawTimer* const timer, cdrawTimer const* const parent, uint16_t const ticksPerSecond)
+result_t cdrawTimerSet(cdrawTimer* const timer, ctime_t const cps_parent, uint16_t const ticksPerSecond)
 {
 	result_init();
 	asserterr_ptr(timer, errcode_invalidarg);
-	asserterr_ptr(parent, errcode_invalidarg);
-	asserterr(parent->state.cps, errcode_invalidarg);
+	asserterr(cps_parent, errcode_invalidarg);
 	if (ticksPerSecond > 0)
 	{
 		// time potentially increases faster than expected
@@ -328,21 +314,29 @@ result_t cdrawTimerSet(cdrawTimer* const timer, cdrawTimer const* const parent, 
 		//		-> parent->state.dtx = 500,000
 		//		-> parent->state.cps = 30,000,000
 		// calculate interval to handle remainder
-		timer->state.dtx = cdrawTimerInternalReduceRationalGCD(parent->state.cps, ticksPerSecond, &timer->t_track, &timer->t_scale, 0);
+		timer->state.dtx = cdrawUtilityReduceRationalGCD(cps_parent, ticksPerSecond, &timer->t_track, &timer->t_scale, 0);
 		asserterr(timer->state.dtx, errcode_timer_sample);
 		timer->state.t1 = timer->state.dtx = (timer->state.dtx * timer->t_scale + timer->t_track);
 		timer->state.t0 = timer->state.dt = timer->state.t = timer->t_track = 0;
-		timer->state.cps = timer->t_scale * parent->state.cps;
+		timer->state.cps = timer->t_scale * cps_parent;
 	}
 	else
 	{
 		// functionally equivalent to "always tick"
 		timer->state.t1 = timer->state.dtx = 1;
 		timer->state.t0 = timer->state.dt = timer->state.t = 0;
-		timer->state.cps = parent->state.cps;
+		timer->state.cps = cps_parent;
 		timer->t_track = timer->t_scale = 0;
 	}
 	failassert(cdrawTimerStateInternalValidate(&timer->state));
+	result_return();
+}
+
+result_t cdrawTimerParentSet(cdrawTimer* const timer, cdrawTimer const* const parent, uint16_t const ticksPerSecond)
+{
+	result_init();
+	asserterr_ptr(parent, errcode_invalidarg);
+	result_inc(cdrawTimerSet(timer, parent->state.cps, ticksPerSecond));
 	result_return();
 }
 
@@ -355,12 +349,12 @@ result_t cdrawTimerStep(cdrawTimer* const timer, ctime_t const dt_parent)
 	{
 		ctime_t const dt_track = (dt_parent * timer->t_scale);
 		if (cdrawTimerInternalStepNormal(timer, dt_track))
-			result_inc(1);
+			result_raisewarn(warncode_timer_ticked);
 	}
 	else
 	{
 		cdrawTimerInternalStepSpecial(timer, dt_parent);
-		result_inc(1);
+		result_raisewarn(warncode_timer_ticked);
 	}
 	result_return();
 }
@@ -374,12 +368,12 @@ result_t cdrawTimerStepClip(cdrawTimer* const timer, ctime_t const dt_parent)
 	{
 		ctime_t const dt_track = ((dt_parent * timer->t_scale) % timer->state.dtx);
 		if (cdrawTimerInternalStepNormal(timer, dt_track))
-			result_inc(1);
+			result_raisewarn(warncode_timer_ticked);
 	}
 	else
 	{
 		cdrawTimerInternalStepSpecial(timer, dt_parent);
-		result_inc(1);
+		result_raisewarn(warncode_timer_ticked);
 	}
 	result_return();
 }
@@ -398,7 +392,7 @@ result_t cdrawTimerStepCallback(cdrawTimer* const timer, ctime_t const dt_parent
 		result_t const callbackResult = callback(callbackArg_opt, &timer->state);
 		if (callbackResult_out_opt)
 			*callbackResult_out_opt = callbackResult;
-		result_inc(1);
+		result_raisewarn(warncode_timer_ticked);
 	}
 	result_return();
 }
@@ -417,7 +411,7 @@ result_t cdrawTimerStepClipCallback(cdrawTimer* const timer, ctime_t const dt_pa
 		result_t const callbackResult = callback(callbackArg_opt, &timer->state);
 		if (callbackResult_out_opt)
 			*callbackResult_out_opt = callbackResult;
-		result_inc(1);
+		result_raisewarn(warncode_timer_ticked);
 	}
 	result_return();
 }
@@ -497,9 +491,49 @@ result_t cdrawTimerStepMultiCallback(cdrawTimer* const timer, ctime_t const dt_p
 	{
 		if(callbackResult_out_opt)
 			*callbackResult_out_opt = callbackResult;
-		result_inc(1);
+		result_raisewarn(warncode_timer_ticked);
 	}
 	if (count_out_opt)
 		*count_out_opt = count;
+	result_return();
+}
+
+result_t cdrawTimerParentStep(cdrawTimer* const timer, cdrawTimer const* const parent)
+{
+	result_init();
+	asserterr_ptr(parent, errcode_invalidarg);
+	result_inc(cdrawTimerStep(timer, parent->state.dt));
+	result_return();
+}
+
+result_t cdrawTimerParentStepClip(cdrawTimer* const timer, cdrawTimer const* const parent)
+{
+	result_init();
+	asserterr_ptr(parent, errcode_invalidarg);
+	result_inc(cdrawTimerStep(timer, parent->state.dt));
+	result_return();
+}
+
+result_t cdrawTimerParentStepCallback(cdrawTimer* const timer, cdrawTimer const* const parent, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt)
+{
+	result_init();
+	asserterr_ptr(parent, errcode_invalidarg);
+	result_inc(cdrawTimerStepCallback(timer, parent->state.dt, callback, callbackArg_opt, callbackResult_out_opt));
+	result_return();
+}
+
+result_t cdrawTimerParentStepClipCallback(cdrawTimer* const timer, cdrawTimer const* const parent, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt)
+{
+	result_init();
+	asserterr_ptr(parent, errcode_invalidarg);
+	result_inc(cdrawTimerStepClipCallback(timer, parent->state.dt, callback, callbackArg_opt, callbackResult_out_opt));
+	result_return();
+}
+
+result_t cdrawTimerParentStepMultiCallback(cdrawTimer* const timer, cdrawTimer const* const parent, result_t* const count_out_opt, cdrawTimerCallback const callback, ptr_t const callbackArg_opt, result_t* const callbackResult_out_opt)
+{
+	result_init();
+	asserterr_ptr(parent, errcode_invalidarg);
+	result_inc(cdrawTimerStepMultiCallback(timer, parent->state.dt, count_out_opt, callback, callbackArg_opt, callbackResult_out_opt));
 	result_return();
 }

@@ -205,7 +205,7 @@ CDRAW_INL ptr_t cdrawPluginInternalLoad(cdrawPlugin* const plugin, cdrawPluginIn
 	ptr_t handle = NULL;
 	label_long_t path = "./cdrawPlugin/";
 	label_t ext;
-	failassertret(label_valid(pluginInfo->dylib), NULL);
+	failassertret(label_long_valid(pluginInfo->dylib), NULL);
 	strcat(strcat(path, pluginInfo->dylib), cdrawPluginInternalDylibGetExt(ext, sizeof(ext)));
 	handle = cdrawPluginInternalDylibLoad(path);
 	failassertret(handle, NULL);
@@ -225,7 +225,7 @@ CDRAW_INL bool cdrawPluginInternalUnload(cdrawPlugin* const plugin)
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>
+/// <returns>Zero if success; Error code otherwise.</returns>
 static result_t cdrawPluginCallPostLoad(cdrawPlugin* const plugin, ptrk_t const caller);
 
 /// <summary>
@@ -233,7 +233,7 @@ static result_t cdrawPluginCallPostLoad(cdrawPlugin* const plugin, ptrk_t const 
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>
+/// <returns>Zero if success; Error code otherwise.</returns>
 static result_t cdrawPluginCallPreHotload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 /// <summary>
@@ -241,7 +241,7 @@ static result_t cdrawPluginCallPreHotload(cdrawPlugin* const plugin, ptrk_t cons
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>
+/// <returns>Zero if success; Error code otherwise.</returns>
 static result_t cdrawPluginCallPostHotload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 /// <summary>
@@ -249,7 +249,7 @@ static result_t cdrawPluginCallPostHotload(cdrawPlugin* const plugin, ptrk_t con
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>
+/// <returns>Zero if success; Error code otherwise.</returns>
 static result_t cdrawPluginCallPreReload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 /// <summary>
@@ -257,7 +257,7 @@ static result_t cdrawPluginCallPreReload(cdrawPlugin* const plugin, ptrk_t const
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>
+/// <returns>Zero if success; Error code otherwise.</returns>
 static result_t cdrawPluginCallPostReload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 /// <summary>
@@ -265,7 +265,7 @@ static result_t cdrawPluginCallPostReload(cdrawPlugin* const plugin, ptrk_t cons
 /// </summary>
 /// <param name="plugin">Target plugin.</param>
 /// <param name="caller">Pointer to caller of this function; must match owner.</param>
-/// <returns>Zero if success, error code otherwise.</returns>	
+/// <returns>Zero if success; Error code otherwise.</returns>	
 static result_t cdrawPluginCallPreUnload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 
@@ -283,7 +283,7 @@ result_t cdrawPluginInfoInit(cdrawPluginInfo* const pluginInfo, label_t const na
 	strncpy(pluginInfo->dylib, label_valid(dylib) ? dylib : def.dylib, sizeof(def.dylib));
 	strncpy(pluginInfo->author, label_valid(author) ? author : def.author, sizeof(def.author));
 	strncpy(pluginInfo->version, label_valid(version) ? version : def.version, sizeof(def.version));
-	strncpy(pluginInfo->details, label_valid(details) ? details : def.details, sizeof(def.details));
+	strncpy(pluginInfo->details, label_long_valid(details) ? details : def.details, sizeof(def.details));
 	if (callbackNames)
 	{
 		size_t i;
@@ -439,7 +439,7 @@ result_t cdrawPluginLoad(cdrawPlugin* const plugin, cdrawPluginInfo const* const
 	asserterr(plugin && (plugin->id == -1) && !plugin->p_handle, errcode_invalidarg);
 	asserterr(!plugin->p_owner, errcode_invalidarg);
 	plugin->p_handle = cdrawPluginInternalLoad(plugin, pluginInfo);
-	failassertret(plugin->p_handle, errcode_plugin_init);
+	asserterr(plugin->p_handle, errcode_plugin_init);
 	plugin->info = *pluginInfo;
 	plugin->id = id;
 	plugin->p_owner = owner_opt;
@@ -458,9 +458,9 @@ result_t cdrawPluginReload(cdrawPlugin* const plugin, ptrk_t const caller)
 	asserterr(!plugin->p_owner || (plugin->p_owner == caller), errcode_invalidarg);
 	cdrawPluginCallPreReload(plugin, caller);
 	unloadResult = cdrawPluginInternalUnload(plugin);
-	failassertret(unloadResult, errcode_plugin_init);
+	asserterr(unloadResult, errcode_plugin_init);
 	plugin->p_handle = cdrawPluginInternalLoad(plugin, &plugin->info);
-	failassertret(plugin->p_handle, errcode_plugin_init);
+	asserterr(plugin->p_handle, errcode_plugin_init);
 	cdrawPluginCallPostReload(plugin, caller);
 	result_return();
 }
@@ -476,7 +476,7 @@ result_t cdrawPluginUnload(cdrawPlugin* const plugin, ptrk_t const caller)
 	else
 		cdrawPluginCallPreHotload(plugin, caller);
 	unloadResult = cdrawPluginInternalUnload(plugin);
-	failassertret(unloadResult, errcode_plugin_init);
+	asserterr(unloadResult, errcode_plugin_init);
 	cdrawPluginInfoReset(&plugin->info);
 	plugin->id = -1;
 	plugin->p_owner = NULL;

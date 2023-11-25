@@ -143,7 +143,7 @@ extern "C" {
 	/// <param name="version">Short version string.</param>
 	/// <param name="details">Longer details string.</param>
 	/// <param name="callbackNames">List of callback names.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawPluginInfoInit(cdrawPluginInfo* const pluginInfo, label_t const name, label_t const dylib, label_t const author, label_t const version, label_long_t const details, label_t const callbackNames[32]);
 
 	/// <summary>
@@ -152,14 +152,14 @@ extern "C" {
 	/// <param name="pluginInfo">Plugin info descriptor.</param>
 	/// <param name="author">Short author string.</param>
 	/// <param name="version">Short version string.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawPluginInfoInitDefault(cdrawPluginInfo* const pluginInfo, label_t const author, label_t const version);
 
 	/// <summary>
 	/// Reset plugin info descriptor.
 	/// </summary>
 	/// <param name="pluginInfo">Plugin info descriptor.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawPluginInfoReset(cdrawPluginInfo* const pluginInfo);
 
 	/// <summary>
@@ -168,14 +168,14 @@ extern "C" {
 	/// <param name="pluginInfoList_out">List of plugin info descriptors (points to null).</param>
 	/// <param name="count_out">Pointer to storage for number of info descriptors loaded.</param>
 	/// <param name="listFile">Path to file.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawPluginInfoListLoad(cdrawPluginInfo** const pluginInfoList_out, size_t* const count_out, cstrk_t const listFile);
 
 	/// <summary>
 	/// Release loaded list of plugin info descriptors.
 	/// </summary>
 	/// <param name="pluginInfoList">List of plugin info descriptors (points to valid descriptors).</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawPluginInfoListRelease(cdrawPluginInfo** const pluginInfoList);
 
 	/// <summary>
@@ -183,14 +183,14 @@ extern "C" {
 	/// </summary>
 	/// <param name="pluginInfo">Plugin info descriptor.</param>
 	/// <param name="stringPtr">Pointer to string to be concatenated with info (user must ensure buffer has enough space).</param>
-	/// <returns></returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawPluginInfoPrint(cdrawPluginInfo const* const pluginInfo, cstr_t* const stringPtr);
 
 	/// <summary>
 	/// Reset plugin descriptor.
 	/// </summary>
 	/// <param name="plugin">Plugin descriptor.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawPluginReset(cdrawPlugin* const plugin);
 
 	/// <summary>
@@ -200,7 +200,7 @@ extern "C" {
 	/// <param name="pluginInfo"></param>
 	/// <param name="id"></param>
 	/// <param name="owner_opt">Pointer to owner of plugin for control over its manipulation.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawPluginLoad(cdrawPlugin* const plugin, cdrawPluginInfo const* const pluginInfo, ptrdiff_t const id, ptrk_t const owner_opt);
 
 	/// <summary>
@@ -208,7 +208,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawPluginReload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 	/// <summary>
@@ -216,7 +216,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>
+	/// <returns>Zero if success; Error code otherwise.</returns>
 	result_t cdrawPluginUnload(cdrawPlugin* const plugin, ptrk_t const caller);
 
 	/// <summary>
@@ -229,7 +229,7 @@ extern "C" {
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
 	/// <param name="windowPlatform_opt">Optional pointer to window platform data.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnWindowAttach(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const w, int32_t const h, int32_t const x, int32_t const y, ptrk_t const windowPlatform_opt);
 	
 	/// <summary>
@@ -238,7 +238,7 @@ extern "C" {
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="windowPlatform_opt">Optional pointer to window platform data.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnWindowDetach(cdrawPlugin const* const plugin, ptrk_t const caller, ptrk_t const windowPlatform_opt);
 	
 	/// <summary>
@@ -247,7 +247,7 @@ extern "C" {
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="windowPlatform_opt">Optional pointer to window platform data.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnWindowActivate(cdrawPlugin const* const plugin, ptrk_t const caller, ptrk_t const windowPlatform_opt);
 	
 	/// <summary>
@@ -256,7 +256,7 @@ extern "C" {
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="windowPlatform_opt">Optional pointer to window platform data.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnWindowDeactivate(cdrawPlugin const* const plugin, ptrk_t const caller, ptrk_t const windowPlatform_opt);
 	
 	/// <summary>
@@ -266,7 +266,7 @@ extern "C" {
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="w">Horizontal dimension (width).</param>
 	/// <param name="h">Vertical dimension (height).</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnWindowResize(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const w, int32_t const h);
 	
 	/// <summary>
@@ -276,7 +276,7 @@ extern "C" {
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnWindowMove(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y);
 	
 	/// <summary>
@@ -284,7 +284,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnDisplay(cdrawPlugin const* const plugin, ptrk_t const caller);
 	
 	/// <summary>
@@ -292,7 +292,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnIdle(cdrawPlugin const* const plugin, ptrk_t const caller);
 	
 	/// <summary>
@@ -301,7 +301,7 @@ extern "C" {
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="virtkey">Virtual key code.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnVirtkeyPress(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const virtkey);
 	
 	/// <summary>
@@ -310,7 +310,7 @@ extern "C" {
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="virtkey">Virtual key code.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnVirtkeyHold(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const virtkey);
 	
 	/// <summary>
@@ -319,7 +319,7 @@ extern "C" {
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="virtkey">Virtual key code.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnVirtkeyRelease(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const virtkey);
 	
 	/// <summary>
@@ -328,7 +328,7 @@ extern "C" {
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="key">ASCII key code.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnKeyPress(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const key);
 	
 	/// <summary>
@@ -337,7 +337,7 @@ extern "C" {
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="key">ASCII key code.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnKeyHold(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const key);
 	
 	/// <summary>
@@ -346,7 +346,7 @@ extern "C" {
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="key">ASCII key code.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnKeyRelease(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const key);
 	
 	/// <summary>
@@ -357,7 +357,7 @@ extern "C" {
 	/// <param name="btn">Mouse button.</param>
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnMousePress(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const btn, int32_t const x, int32_t const y);
 	
 	/// <summary>
@@ -368,7 +368,7 @@ extern "C" {
 	/// <param name="btn">Mouse button.</param>
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnMouseRelease(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const btn, int32_t const x, int32_t const y);
 	
 	/// <summary>
@@ -379,7 +379,7 @@ extern "C" {
 	/// <param name="btn">Mouse button.</param>
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnMouseDouble(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const btn, int32_t const x, int32_t const y);
 	
 	/// <summary>
@@ -390,7 +390,7 @@ extern "C" {
 	/// <param name="delta">Wheel delta.</param>
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnMouseWheel(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const delta, int32_t const x, int32_t const y);
 	
 	/// <summary>
@@ -400,7 +400,7 @@ extern "C" {
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnMouseMove(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y);
 	
 	/// <summary>
@@ -410,7 +410,7 @@ extern "C" {
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnMouseDrag(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y);
 	
 	/// <summary>
@@ -420,7 +420,7 @@ extern "C" {
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnMouseEnter(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y);
 	
 	/// <summary>
@@ -430,7 +430,7 @@ extern "C" {
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="x">Horizontal position.</param>
 	/// <param name="y">Vertical position.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnMouseLeave(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const x, int32_t const y);
 	
 	/// <summary>
@@ -438,7 +438,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnUser1(cdrawPlugin const* const plugin, ptrk_t const caller);
 	
 	/// <summary>
@@ -446,7 +446,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnUser2(cdrawPlugin const* const plugin, ptrk_t const caller);
 	
 	/// <summary>
@@ -454,7 +454,7 @@ extern "C" {
 	/// </summary>
 	/// <param name="plugin">Target plugin.</param>
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnUser3(cdrawPlugin const* const plugin, ptrk_t const caller);
 	
 	/// <summary>
@@ -464,7 +464,7 @@ extern "C" {
 	/// <param name="caller">Pointer to caller of this function; must match owner.</param>
 	/// <param name="argc">Command argument count.</param>
 	/// <param name="argv">Command argument string array.</param>
-	/// <returns>Zero if success, error code otherwise.</returns>	
+	/// <returns>Zero if success; Error code otherwise.</returns>	
 	result_t cdrawPluginCallOnUserCmd(cdrawPlugin const* const plugin, ptrk_t const caller, int32_t const argc, cstrk_t const argv[]);
 
 
