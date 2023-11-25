@@ -26,3 +26,47 @@
 #include <string.h>
 
 #include "GL/glew.h"
+
+
+#if CDRAW_DEBUG
+bool cdrawRendererDisplayTest_gl()
+{
+	static fp32_t const s_clear = 0.5f;
+	static fp32_t const clearColor[][4] = {
+		{ 1.00f, 0.00f, 0.00f, 1.00f, },
+		{ 0.75f, 0.25f, 0.00f, 1.00f, },
+		{ 0.50f, 0.50f, 0.00f, 1.00f, },
+		{ 0.25f, 0.75f, 0.00f, 1.00f, },
+		{ 0.00f, 1.00f, 0.00f, 1.00f, },
+		{ 0.00f, 0.75f, 0.25f, 1.00f, },
+		{ 0.00f, 0.50f, 0.50f, 1.00f, },
+		{ 0.00f, 0.25f, 0.75f, 1.00f, },
+		{ 0.00f, 0.00f, 1.00f, 1.00f, },
+		{ 0.25f, 0.00f, 0.75f, 1.00f, },
+		{ 0.50f, 0.00f, 0.50f, 1.00f, },
+		{ 0.75f, 0.00f, 0.25f, 1.00f, },
+	};
+	static uint32_t const rateToCount = 60 / buffer_len(clearColor);
+	static fp64_t const clearDepth = 1.0;
+	static int32_t const clearStencil = 0;
+	static uint32_t clearColorIdx;
+
+	// select clear values
+	fp32_t clearColorValue[4];
+	fp32_t const* const clearColorValuePtr = clearColor[((clearColorIdx++) / rateToCount) % buffer_len(clearColor)];
+	cdraw_assert(clearColorValuePtr);
+	clearColorValue[0] = clearColorValuePtr[0] * s_clear;
+	clearColorValue[1] = clearColorValuePtr[1] * s_clear;
+	clearColorValue[2] = clearColorValuePtr[2] * s_clear;
+	clearColorValue[3] = clearColorValuePtr[3] * s_clear;
+
+	// clear
+	glClearColor(clearColorValue[0], clearColorValue[1], clearColorValue[2], clearColorValue[3]);
+	glClearDepth(clearDepth);
+	glClearStencil(clearStencil);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	// done
+	return true;
+}
+#endif // #if CDRAW_DEBUG
