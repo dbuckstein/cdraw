@@ -32,6 +32,12 @@ result_t cdrawRendererRefresh_vk(cdrawRenderer const* const renderer);
 result_t cdrawRendererRefreshAPI_vk();
 
 
+result_t cdrawRendererCreate_gl(cdrawRenderer* const renderer, uint32_t const surfaceCountMax);
+result_t cdrawRendererDestroy_gl(cdrawRenderer* const renderer);
+result_t cdrawRendererRefresh_gl(cdrawRenderer const* const renderer);
+result_t cdrawRendererRefreshAPI_gl();
+
+
 result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const renderAPI, uint32_t const windowsAllowed)
 {
 	result_init();
@@ -50,7 +56,7 @@ result_t cdrawRendererCreate(cdrawRenderer* const renderer, cdrawRenderAPI const
 		result = cdrawRendererCreate_vk(renderer, windowsAllowed);
 		break;
 	case cdrawRenderAPI_OpenGL:
-		printf("\n cdrawRendererCreate: OpenGL rendering has not yet been implemented for this platform.");
+		result = cdrawRendererCreate_gl(renderer, windowsAllowed);
 		break;
 	case cdrawRenderAPI_Direct3D:
 		printf("\n cdrawRendererCreate: Direct3D rendering has not yet been implemented for this platform.");
@@ -86,7 +92,7 @@ result_t cdrawRendererDestroy(cdrawRenderer* const renderer)
 		result = cdrawRendererDestroy_vk(renderer);
 		break;
 	case cdrawRenderAPI_OpenGL:
-		printf("\n cdrawRendererDestroy: OpenGL rendering has not yet been implemented for this platform.");
+		result = cdrawRendererDestroy_gl(renderer);
 		break;
 	case cdrawRenderAPI_Direct3D:
 		printf("\n cdrawRendererDestroy: Direct3D rendering has not yet been implemented for this platform.");
@@ -117,7 +123,7 @@ result_t cdrawRendererRefresh(cdrawRenderer const* const renderer)
 		result = cdrawRendererRefresh_vk(renderer);
 		break;
 	case cdrawRenderAPI_OpenGL:
-		printf("\n cdrawRendererDestroy: OpenGL rendering has not yet been implemented for this platform.");
+		result = cdrawRendererRefresh_gl(renderer);
 		break;
 	case cdrawRenderAPI_Direct3D:
 		printf("\n cdrawRendererDestroy: Direct3D rendering has not yet been implemented for this platform.");
@@ -145,7 +151,7 @@ result_t cdrawRendererRefreshAPI(cdrawRenderAPI const renderAPI)
 		result = cdrawRendererRefreshAPI_vk();
 		break;
 	case cdrawRenderAPI_OpenGL:
-		printf("\n cdrawRendererDestroy: OpenGL rendering has not yet been implemented for this platform.");
+		result = cdrawRendererRefreshAPI_gl();
 		break;
 	case cdrawRenderAPI_Direct3D:
 		printf("\n cdrawRendererDestroy: Direct3D rendering has not yet been implemented for this platform.");
